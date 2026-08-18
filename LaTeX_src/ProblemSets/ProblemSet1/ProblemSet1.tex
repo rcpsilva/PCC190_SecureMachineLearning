@@ -1,0 +1,105 @@
+\documentclass[10pt]{extarticle}
+
+% ============================================================
+% Pacotes
+% ============================================================
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[brazil]{babel}
+\usepackage{amsmath,amssymb}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage[margin=1.5cm]{geometry}
+\usepackage{titlesec}
+\usepackage{fancyhdr}
+\usepackage{hyperref}
+
+% ============================================================
+% Paleta de cores
+% ============================================================
+\definecolor{darkblue}{RGB}{0,51,102}
+\definecolor{accentorange}{RGB}{230,126,34}
+
+% ============================================================
+% Estilo de títulos
+% ============================================================
+\titleformat{\section}
+  {\normalfont\Large\bfseries\color{darkblue}}
+  {\thesection}{1em}{}
+\titleformat{\subsection}
+  {\normalfont\large\bfseries\color{accentorange}}
+  {\thesubsection}{1em}{}
+
+% ============================================================
+% Cabeçalho e rodapé
+% ============================================================
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0.4pt}
+\fancyhead[L]{\color{darkblue}\small Problem Set 1}
+\fancyhead[R]{\color{darkblue}\small PCC190 - Secure Machine Learning}
+\fancyfoot[C]{\thepage}
+
+% ============================================================
+% Estilo da lista de questões
+% ============================================================
+\newlist{questoes}{enumerate}{1}
+\setlist[questoes,1]{label=\textbf{\color{darkblue}\arabic*.},leftmargin=1.5cm,itemsep=0.8em}
+
+\newlist{itens}{enumerate}{1}
+\setlist[itens,1]{label=\alph*),leftmargin=1cm}
+
+\begin{document}
+
+% ============================================================
+% Cabeçalho do documento
+% ============================================================
+\begin{center}
+    {\LARGE\bfseries\color{darkblue}Problem Set 1}\\[0.3cm]
+    {\large\color{accentorange} PCC190 - Secure Machine Learning}\\[0.5cm]
+\end{center}
+
+
+% ============================================================
+% Questões
+% ============================================================
+\begin{questoes}
+
+\item Why is machine learning important nowadays? What is its concomitant risk?
+
+\item How does the book define the problem of secure machine learning? Are there other possible definitions? What are they?
+
+\item What are the key strengths of learning approaches, and how can they be subverted?
+
+\item What is the main reason machine learning techniques are being applied to a growing number of systems?
+
+\item What is a malfeasance detection problem?
+
+\item Give examples of malfeasance detection problems that can be solved with machine learning techniques, and explain how those techniques solve them.
+
+\item According to the book, what is the primary vulnerability in learners that attackers can exploit?
+
+\item What are the two fundamental questions regarding machine learning security?
+
+\item Describe how a spam filter based on machine learning works.
+
+\item Describe the operation of a network anomaly detector based on PCA. How can an attacker evade such a system?
+
+\item Why would privacy be a concern in machine learning systems? Give examples.
+
+\item What are the steps involved in the evaluation of a computer system's security?
+
+\item What is computer security concerned about?
+
+\item In your own words, describe the following classical security principles:
+\begin{itens}
+    \item Proactive analysis
+    \item Kerckhoffs's Principle
+    \item Conservative design
+    \item Threat modeling (how is a threat model constructed?)
+\end{itens}
+
+\end{questoes}
+
+\end{document}
