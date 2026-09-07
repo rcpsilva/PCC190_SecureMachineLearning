@@ -1,0 +1,115 @@
+\documentclass[10pt]{extarticle}
+
+% ============================================================
+% Pacotes
+% ============================================================
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[brazil]{babel}
+\usepackage{amsmath,amssymb}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage[margin=1.5cm]{geometry}
+\usepackage{titlesec}
+\usepackage{fancyhdr}
+\usepackage{hyperref}
+
+% ============================================================
+% Paleta de cores
+% ============================================================
+\definecolor{darkblue}{RGB}{0,51,102}
+\definecolor{accentorange}{RGB}{230,126,34}
+
+% ============================================================
+% Estilo de títulos
+% ============================================================
+\titleformat{\section}
+  {\normalfont\Large\bfseries\color{darkblue}}
+  {\thesection}{1em}{}
+\titleformat{\subsection}
+  {\normalfont\large\bfseries\color{accentorange}}
+  {\thesubsection}{1em}{}
+
+% ============================================================
+% Cabeçalho e rodapé
+% ============================================================
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0.4pt}
+\fancyhead[L]{\color{darkblue}\small Problem Set 2}
+\fancyhead[R]{\color{darkblue}\small PCC190 - Secure Machine Learning}
+\fancyfoot[C]{\thepage}
+
+% ============================================================
+% Estilo da lista de questões
+% ============================================================
+\newlist{questoes}{enumerate}{1}
+\setlist[questoes,1]{label=\textbf{\color{darkblue}\arabic*.},leftmargin=1.5cm,itemsep=0.8em}
+
+\newlist{itens}{enumerate}{1}
+\setlist[itens,1]{label=\alph*),leftmargin=1cm}
+
+\begin{document}
+
+% ============================================================
+% Cabeçalho do documento
+% ============================================================
+\begin{center}
+    {\LARGE\bfseries\color{darkblue}Problem Set 2}\\[0.3cm]
+    {\large\color{accentorange} PCC190 - Secure Machine Learning}\\[0.5cm]
+\end{center}
+
+
+% ============================================================
+% Questões
+% ============================================================
+\begin{questoes}
+
+\item Define the symbol $=$.
+
+\item Define the symbol $\triangleq$.
+
+\item Present the formal definition of a learning algorithm given by Mitchell (1997).
+
+\item Explain the learning framework depicted in Figure 2.1(a).
+
+\item Define inductive bias in the context of learning algorithms. Present some examples.
+
+\item What is empirical risk? Why can a machine learning algorithm be described as an empirical risk minimization procedure?
+
+\item Explain the sentence: ``Minimizing the average loss on the training data is often used as a surrogate for minimizing the expected loss on unseen data.''
+
+\item What is the stationarity assumption?
+
+\item Define each of the symbols below: $\omega$, $\Omega$, $x$, $\mathcal{X}$, $D$, $x_i$, $\mathcal{X}_i$.
+
+\item How does the book define data collection?
+
+\item What is the common assumption made by all the learning algorithms studied in the book regarding the structure of the data?
+
+\item What is the difference between explanatory variables and response variables? How do these concepts relate to the data point $x$, the label $y$, and the paired space $\mathcal{Z} = \mathcal{X} \times \mathcal{Y}$?
+
+\item What is feature selection, and how does it differ from the measurement process $\xi$? Why does the book choose not to distinguish between the two?
+
+\item What is a hypothesis space $\mathcal{F}$? Illustrate with an example how assumptions about the form of the hypotheses can restrict this space.
+
+\item What is the difference between a learning model and a training procedure? Use the location estimation example (mean versus median) to explain why this distinction is useful for understanding a learner's vulnerabilities.
+
+\item Describe the supervised learning framework. How is a learning algorithm $H^{(N)}$ formally defined, and what does it mean for such an algorithm to have a randomized element?
+
+\item What is the difference between batch learning and online learning?
+
+\item In a binary classification setting applied to security problems, what do the positive and negative classes typically represent? How does the anomaly detection setting studied in Chapter 6 differ from standard binary classification?
+
+\item What is the difference between the risk $R(P_{\mathcal{Z}}, f)$ and the empirical risk $\tilde{R}_N(f)$? Why does the learner minimize the latter instead of the former?
+
+\item What is regularization, and what problem does it address? In Equation 2.1, what do $\rho(f)$ and $\lambda$ represent?
+
+\item What are false positives (FP) and false negatives (FN)? What are the false-positive rate (FPR) and the false-negative rate (FNR), and why is choosing a tradeoff between them an application-specific decision?
+
+\item Why does the book restrict its analysis primarily to binary classification, and which other learning paradigms are mentioned but left out of the discussion?
+
+\end{questoes}
+
+\end{document}
