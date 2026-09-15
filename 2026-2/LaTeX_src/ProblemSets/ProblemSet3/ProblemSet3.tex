@@ -1,0 +1,112 @@
+\documentclass[10pt]{extarticle}
+
+% ============================================================
+% Pacotes
+% ============================================================
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[brazil]{babel}
+\usepackage{amsmath,amssymb}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage[margin=1.5cm]{geometry}
+\usepackage{titlesec}
+\usepackage{fancyhdr}
+\usepackage{hyperref}
+
+% ============================================================
+% Paleta de cores
+% ============================================================
+\definecolor{darkblue}{RGB}{0,51,102}
+\definecolor{accentorange}{RGB}{230,126,34}
+
+% ============================================================
+% Estilo de títulos
+% ============================================================
+\titleformat{\section}
+  {\normalfont\Large\bfseries\color{darkblue}}
+  {\thesection}{1em}{}
+\titleformat{\subsection}
+  {\normalfont\large\bfseries\color{accentorange}}
+  {\thesubsection}{1em}{}
+
+% ============================================================
+% Cabeçalho e rodapé
+% ============================================================
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0.4pt}
+\fancyhead[L]{\color{darkblue}\small Problem Set 3}
+\fancyhead[R]{\color{darkblue}\small PCC190 - Secure Machine Learning}
+\fancyfoot[C]{\thepage}
+
+% ============================================================
+% Estilo da lista de questões
+% ============================================================
+\newlist{questoes}{enumerate}{1}
+\setlist[questoes,1]{label=\textbf{\color{darkblue}\arabic*.},leftmargin=1.5cm,itemsep=0.8em}
+
+\newlist{itens}{enumerate}{1}
+\setlist[itens,1]{label=\alph*),leftmargin=1cm}
+
+\begin{document}
+
+% ============================================================
+% Cabeçalho do documento
+% ============================================================
+\begin{center}
+    {\LARGE\bfseries\color{darkblue}Problem Set 3}\\[0.3cm]
+    {\large\color{accentorange} PCC190 - Secure Machine Learning}\\[0.3cm]
+    {\normalsize\color{darkblue} Chapter 3: A Framework for Secure Learning}\\[0.5cm]
+\end{center}
+
+
+% ============================================================
+% Questões
+% ============================================================
+\begin{questoes}
+
+\item What is the stationarity assumption made by many machine learning methods? Why is this assumption central to the secure learning problem, and how can an attacker violate it more easily than natural nonstationarity would?
+
+\item List the phases of the learning process that an attacker can target, as outlined in Section 3.1 (measuring, feature selection, learning model selection, training, prediction). Explain how an attack against the measuring phase differs from an attack against the training phase in terms of cost of recovery for the defender.
+
+\item Define the Integrity goal, the Availability goal, and the Privacy goal of a security-sensitive classifier. For each goal, state whether it is more closely associated with false negatives, false positives, or neither.
+
+\item The book assumes that the attacker and the defender each have a cost function. Explain the relationship assumed between these two cost functions, and explain the sentence: ``the attacker and defender would not be adversaries if their goals aligned.''
+
+\item According to the threat model in Section 3.2.2, what does the attacker typically know about the training algorithm and the training data? What restrictions can limit the attacker's ability to generate or label arbitrary training instances?
+
+\item Present the three axes of the taxonomy of attacks against machine learning systems: INFLUENCE, SECURITY VIOLATION, and SPECIFICITY. For each axis, name its categories. Explain why the taxonomy yields at least 12 distinct classes of attacks.
+
+\item Formalize the Exploratory game: state the defender's move, the attacker's move, and the steps of the evaluation phase. What information can the attacker's procedure $A^{(eval)}$ use when constructing the evaluation distribution?
+
+\item How does the Causative game differ from the Exploratory game? Which new procedure does the attacker choose, and what part of the learning process does it allow the attacker to influence that the Exploratory attacker cannot?
+
+\item Explain the difference between the direct (insertion) corruption model and the data alteration corruption model for an attacker's control over training data. Give one learning system discussed in the book that is analyzed under each model.
+
+\item What are class limitations and feature limitations on an attacker's capabilities? Illustrate feature limitations using the email example given in Section 3.3.3.3.
+
+\item Using Example 3.1 (The Shifty Intruder), explain the difference between a Targeted and an Indiscriminate Exploratory Integrity attack.
+
+\item Section 3.4.4.1 proposes defending against Exploratory attacks without probing by limiting information about training data, feature selection, and the hypothesis space or learning procedure. Briefly describe one concrete defense technique from each of these three strategies.
+
+\item What is a probing attack? Define the ACRE-learning problem and explain what it means for a classifier to be ACRE-learnable.
+
+\item Describe the reject on negative impact (RONI) defense against Causative attacks. What quantity does it measure for a candidate training instance, and how does it decide whether to discard that instance?
+
+\item Kearns \& Li's extension of PAC learning to maliciously contaminated training data shows that a learner cannot succeed once the attacker controls a fraction $\beta \geq \epsilon/(1+\epsilon)$ of the training data. Explain what $\epsilon$ represents in this context and what the bound implies about the attacker's task as $\epsilon$ shrinks.
+
+\item Define the breakdown point and the influence function of an estimator in the context of robust statistics. How do these two concepts relate to the security of a learning algorithm against Causative attacks?
+
+\item What distinguishes a repeated (iterated) learning game from the one-shot Exploratory and Causative games presented earlier in the chapter? Define regret, and explain what it means for the defender's worst-case regret $R^*$ to be small relative to $K$.
+
+\item State Definition 3.1 ($\epsilon$-differential privacy). Explain, in your own words, what the definition guarantees when comparing a mechanism's responses on two neighboring databases.
+
+\item Section 3.7.2 describes a brute-force Exploratory privacy attack against a differentially private mechanism. Outline the three steps of this attack, and explain why it fails with high probability when $\epsilon$ is sufficiently small.
+
+\item Describe one approach discussed in Section 3.7.3 for measuring the utility of a differentially private mechanism. Explain the fundamental tradeoff established by Dinur \& Nissim (2003) between the accuracy of a mechanism's responses and the privacy it can guarantee.
+
+\end{questoes}
+
+\end{document}
