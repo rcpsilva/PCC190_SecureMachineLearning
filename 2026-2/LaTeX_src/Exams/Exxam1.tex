@@ -1,0 +1,240 @@
+\documentclass[10pt,a4paper]{extarticle}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{mathpazo}
+\usepackage[english]{babel}
+\usepackage{amsmath, amssymb, amsthm}
+\usepackage{geometry}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{microtype}
+\usepackage{fancyhdr}
+\usepackage{lastpage}
+\usepackage{environ}
+\usepackage[most]{tcolorbox}
+
+\geometry{margin=2cm, headheight=14pt}
+\setlist{itemsep=3pt, topsep=3pt, parsep=2pt}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{4pt}
+
+% Palette
+\definecolor{navy}{RGB}{20, 50, 100}
+\definecolor{accent}{RGB}{230, 120, 20}
+
+% Key mode: compile with  pdflatex "\def\keymode{}\input{pcc190_exam1.tex}"
+\newif\ifkey
+\ifdefined\keymode \keytrue \fi
+
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0.4pt}
+\fancyhead[L]{\small\color{navy}PCC190: Secure Machine Learning}
+\ifkey
+  \fancyhead[R]{\small\color{accent}\textbf{ANSWER KEY} \color{navy}| Exam 1, Chapters 1 to 3}
+\else
+  \fancyhead[R]{\small\color{navy}Exam 1, Chapters 1 to 3}
+\fi
+\fancyfoot[C]{\small\thepage\ / \pageref{LastPage}}
+
+\newcommand{\question}[3]{%
+  \bigskip
+  \begin{tcolorbox}[colback=navy!6, colframe=navy, boxrule=0.6pt, arc=1pt,
+                    left=5pt, right=5pt, top=2pt, bottom=2pt]
+    \textbf{\color{navy}Question #1: #2}\hfill\textbf{\color{accent}[#3 points]}
+  \end{tcolorbox}\nopagebreak[4]}
+\newcommand{\pts}[1]{\textbf{\color{accent}[#1]}\enspace}
+
+\ifkey
+  \newenvironment{sol}{\par\smallskip
+    \begin{tcolorbox}[colback=accent!6, colframe=accent, boxrule=0.5pt, arc=1pt,
+                      left=5pt, right=5pt, top=2pt, bottom=2pt, breakable, fontupper=\small]
+    \textbf{\color{accent}Key.}\ }{\end{tcolorbox}\par}
+\else
+  \NewEnviron{sol}{}
+\fi
+
+\begin{document}
+
+\begin{center}
+  {\Large\bfseries\color{navy} PCC190: Secure Machine Learning}\\[2pt]
+  {\large Exam 1}\\[2pt]
+  \ifkey {\large\bfseries\color{accent} Answer key and grading notes} \fi
+\end{center}
+
+\vspace{2pt}
+\begin{tabular}{@{}p{0.48\textwidth}p{0.48\textwidth}@{}}
+Name: \rule{0.32\textwidth}{0.4pt} & Date: \rule{0.25\textwidth}{0.4pt}\\[4pt]
+Student ID: \rule{0.27\textwidth}{0.4pt} & Duration: 100 minutes\\
+\end{tabular}
+
+\begin{tcolorbox}[colback=navy!4, colframe=navy!60, boxrule=0.4pt, arc=1pt, left=5pt, right=5pt, top=3pt, bottom=3pt]
+\textbf{Instructions.} Every question presents a scenario and asks you to reason about it. Nothing here is graded on reciting definitions. Names of categories (for example, the labels of a taxonomy) may be replaced by a correct description in your own words, and a correct name with a justification that does not fit the scenario earns little credit. Answer in a few lines per item and state your assumptions when a scenario is underspecified. Each question is worth 20 points, so plan for about 18 minutes per question. Feel free to ask me anything during the exam. If your question is not about the content being evaluated, I will be glad to answer it.
+
+\smallskip
+\textbf{Notation.} Data live in \(\mathcal Z=\mathcal X\times\mathcal Y\) with distribution \(P_Z\). A learner \(H^{(N)}\) maps a training set \(D^{(train)}\) of \(N\) examples to a hypothesis \(f\in\mathcal F\). The loss is \(\ell(y,\hat y)\ge 0\), the risk is \(R(P_Z,f)=\mathbb E_{(x,y)\sim P_Z}[\ell(y,f(x))]\), and the empirical risk on a dataset \(D\) is \(\tilde R_N(f)=\frac1N\sum_{(x,y)\in D}\ell(y,f(x))\). In binary security tasks the positive class \((+)\) is malicious and the negative class \((-)\) is benign. A false positive (FP) is a benign instance labeled \(+\); a false negative (FN) is a malicious instance labeled \(-\). FPR is the fraction of benign instances flagged and FNR the fraction of malicious instances missed. In attack scenarios, \(A^{(train)}\) and \(A^{(eval)}\) denote the attacker's procedures that shape the training and the evaluation data, respectively.
+\end{tcolorbox}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{@{}lccccc|c@{}}
+\toprule
+Question & 1 & 2 & 3 & 4 & 5 & Total\\
+\midrule
+Points & 20 & 20 & 20 & 20 & 20 & 100\\
+Score & & & & & & \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+% ---------------------------------------------------------------- Q1
+\question{1}{A learned phishing filter for a university}{20}
+
+A university with 30{,}000 mail accounts filters phishing\footnote{A social engineering attack in which someone impersonates a trusted party, such as a bank, an employer, a delivery company or a university IT office, to trick you into handing over sensitive information or taking a harmful action.} with rules written and updated by its security analysts. The IT director proposes replacing the rules with a classifier retrained every night. Features come from message content and sender metadata. Labels come from the ``Report phishing'' and ``Not phishing'' buttons, which any user can click on any message. The proposal states: \emph{``Because the model adapts to new campaigns, attackers will find it harder to evade than a fixed rule set.''}
+
+\begin{enumerate}[label=(\alph*)]
+\item \pts{10} (i) Give two properties of this task that make a learning-based approach attractive. (ii) Explain in what sense the proposal's claim is only half right: which property of the learner produces the benefit, and why does the same property create an attack surface that the rule set does not have? (iii) Name the assumption about the data on which most learning guarantees rely. Describe one concrete way an adversary could violate it through the \emph{training} data and one through the \emph{evaluation} data in this deployment.
+
+\begin{sol}
+\textbf{(i) (2 pts, 1 each, any two):} the set of campaigns is too large or too fast-changing to codify by hand; the system must evolve as behavior changes; there are large amounts of labeled data with hidden patterns; decisions gain statistical grounding. \textbf{(ii) (3 pts):} the benefit comes from adaptivity, that is, from inferring the decision rule from data. An adversary who can influence the data can therefore steer what is learned. With a rule set the attacker can only exploit flaws that already exist; with a learner the attacker can also \emph{mislead the learner into creating new flaws} (poisoning through nightly retraining and user labels). Cap at 2/3 if the answer only says ``learning is insecure'' without tying it to adaptivity and to the data the attacker can reach. \textbf{(iii) (5 pts):} the assumption is that training and evaluation data are drawn from the same stationary, well-behaved distribution \(P_Z\) (1 pt). Training violation (2 pts), examples: send crafted messages to many accounts and use attacker-controlled accounts to click ``Not phishing'' on them; send messages with tokens typical of legitimate university mail so the filter learns to flag legitimate mail. Evaluation violation (2 pts), example: after probing or guessing the features, craft phishing messages whose features mimic benign mail, so the evaluation distribution is shifted \emph{by the attacker} away from what the model saw. The key point is that the shift is chosen adversarially and is not benign drift. Give half credit if the example does not say which data is being changed.
+\end{sol}
+
+\item \pts{10} Two statements from the project meeting: (i) ``No attacks on the current filter have been reported, so we will run the security review after launch.'' (ii) ``The feature list and model type are proprietary, so the review can assume the attacker knows neither.'' Respond to each using the design principles discussed in Chapter 1. Then state, in one sentence, a more defensible assumption about attacker knowledge for (ii).
+
+\begin{sol}
+\textbf{(i) Proactive analysis (4 pts):} vulnerabilities are cheaper to repair before deployment than through patches or recalls afterwards; absence of reports is weak evidence, since attackers have more incentive once the learner is the countermeasure, and launch is exactly the moment of exposure. Revelation of a flaw in a deployed system also erodes user confidence. \textbf{(ii) Kerckhoffs (4 pts):} security should not depend on unrealistic expectations of secrecy; if the secret leaks, the system is immediately compromised. \textbf{Sentence (2 pts):} for example, ``assume the attacker knows the learning algorithm and feature family and has partial information about the training distribution, and treat secrecy of exact parameters as a bonus, not a requirement.'' Bonus insight (no extra points): levels of knowledge can be varied as a parameter to measure how much each source of information helps the attacker.
+\end{sol}
+\end{enumerate}
+
+% ---------------------------------------------------------------- Q2
+\question{2}{Statistical learning applied to a security task}{20}
+
+A network intrusion detector is a binary classifier with \(\mathcal X=\mathbb R^D\) and \(\mathcal Y=\{-,+\}\).
+
+\begin{enumerate}[label=(\alph*)]
+\item \pts{6} A learner \(H^{(N)}\) returns the hypothesis \(f\) defined as follows: if the input appears in \(D^{(train)}\), return its training label; for every other input, return \(-\). Assume 5\% of sessions in \(P_Z\) are malicious, the features are real-valued so that a new session never repeats a training point, and the loss is 0 for a correct prediction, 10 for an FN and 1 for an FP. (i) Compute \(\tilde R_N(f)\) on \(D^{(train)}\). (ii) Compute \(R(P_Z,f)\). (iii) Name the phenomenon and give two different ways to prevent it, saying which object of the learning setup each one changes.
+
+\begin{sol}
+(i) \(\tilde R_N(f)=0\) (1 pt). (ii) Every new malicious session is missed and every new benign session is correct, so \(R=0.05\times 10=0.5\) (2 pts). (iii) Overfitting (1 pt). Restrict the hypothesis space \(\mathcal F\) (for example, to linear functions), or regularize by minimizing \(\tilde R_N(f)+\lambda\rho(f)\), which changes the objective the training procedure optimizes (2 pts). The moral for later questions: a small training risk certifies nothing without a stationarity assumption.
+\end{sol}
+
+\item \pts{9} Two classifiers are evaluated on the same \(D^{(eval)}\) of 1000 sessions, of which 40 are malicious. Classifier A makes 8 FNs and 48 FPs. Classifier B makes 2 FNs and 120 FPs. Let the loss be \(c\) for an FN and 1 for an FP. (i) Give FPR and FNR of each. (ii) Give the empirical risk of each as a function of \(c\). (iii) For which values of \(c\) is B preferable? (iv) In one sentence each, describe a deployment where a large \(c\) is justified and one where a small \(c\) is.
+
+\begin{sol}
+(i) A: FPR \(=48/960=5\%\), FNR \(=8/40=20\%\). B: FPR \(=120/960=12.5\%\), FNR \(=2/40=5\%\) (2 pts). (ii) \(\tilde R_A=(8c+48)/1000\), \(\tilde R_B=(2c+120)/1000\) (2 pts). (iii) They tie at \(6c=72\), so \(c=12\); B is preferable for \(c>12\) (3 pts). (iv) (2 pts) Large \(c\): a miss gives the attacker control of a critical asset (ransomware on hospital systems). Small \(c\): a false alarm blocks paying customers or consumes scarce analyst time, and a miss is cheap. Any argument that connects the ratio to the relative cost of Integrity and Availability failures is acceptable.
+\end{sol}
+
+\item \pts{5} Assign each attack to the phase of the learning pipeline it targets (measurement, feature selection, learning model, training, prediction). (i) Padding phishing pages with innocuous content so that extracted measurements look like those of benign pages. (ii) Injecting data so that a feature selection step, which ranks features using the training set, promotes a useless feature. (iii) Building instances that no linear boundary can separate against a learner that assumes linear separability. (iv) Repeatedly querying the deployed classifier to find instances it misses. Then state which phase is the costliest to repair after a successful attack and why.
+
+\begin{sol}
+(i) Measurement (accept feature selection with justification); (ii) feature selection attacked as training, because it depends on training data; (iii) learning model, exploiting an erroneous modeling assumption; (iv) prediction. (3 pts, 0.75 each.) \textbf{Costliest (2 pts):} measurement, because it is an irreversible process that may require re-instrumentation; feature selection can be redone by reprocessing the measurements and possibly automated, while changing the model may require redesigning the system.
+\end{sol}
+\end{enumerate}
+
+% ---------------------------------------------------------------- Q3
+\question{3}{Security goals}{20}
+
+Consider four systems and adversaries.
+
+\begin{itemize}[leftmargin=1.2cm, label={}]
+\item \textbf{A.} An endpoint classifier labels executables as malware on a company's laptops. A ransomware crew wants its sample to run.
+\item \textbf{B.} A payments processor's fraud model automatically blocks suspicious transactions. A rival wants a competitor's legitimate transactions to be blocked.
+\item \textbf{C.} A hospital publishes a readmission-risk model as a public web calculator. An insurer wants to learn whether a specific applicant's record was used to train it. It only sends queries and reads the returned scores.
+\item \textbf{D.} A spam filter is retrained on user feedback. A spammer sends messages designed so that, after retraining, legitimate messages from one bank are filtered as spam. Every message the spammer sends is genuinely spam.
+\end{itemize}
+
+\begin{enumerate}[label=(\alph*)]
+\item \pts{12} For each system, state the asset at stake, the security goal being attacked, and the error type (FN, FP, or neither) that the attack needs to induce or exploit. In addition, for C explain why the FN and FP rates of the model cannot reveal this breach and why some leakage is unavoidable, and for D explain the apparent mismatch between the kind of messages the attacker sends and the kind of failure it wants.
+
+\begin{sol}
+\textbf{A (2 pts):} the laptops and data; Integrity; FN. \textbf{B (2 pts):} the competitor's ability to sell and legitimate customers' access to the service; Availability; FP. \textbf{C (4 pts):} confidentiality of the training records; Privacy; neither (2 pts). The FN and FP rates concern the correctness of predictions, while the privacy goal concerns what the learner reveals about its training instances, so a model with excellent error rates can still leak (1 pt). A learner is a summary of its training data and must reveal aggregate information to predict well, so some leakage is inevitable, which is why stronger guarantees (for example, differential privacy) trade off against accuracy (1 pt). \textbf{D (4 pts):} the delivery of legitimate mail; Availability; FP (2 pts). An external attacker can only produce malicious (positive-class) instances, yet the failure it wants is on benign instances; poisoning through training bridges that gap (2 pts).
+\end{sol}
+
+\item \pts{8} For the endpoint classifier of A, the evaluation set has 1000 files, 50 malicious and 950 benign. Before an attack targeting one malware family, the classifier makes 5 FNs and 22 FPs. Afterwards it makes 25 FNs and 22 FPs. (i) Compute accuracy and FNR before and after. (ii) A manager concludes ``accuracy fell by only two points, no incident.'' Explain why this is wrong and which measurements should be reported for a security-sensitive detector.
+
+\begin{sol}
+(i) Accuracy: \(97.3\%\to 95.3\%\). FNR: \(5/50=10\%\to 25/50=50\%\) (3 pts). (ii) (5 pts) The Integrity goal is badly violated: five times as much malware gets through. Accuracy is dominated by the majority (benign) class and hides this. Report FNR and FPR separately, FNR at a fixed FPR calibrated on held-out data, cost-weighted risk reflecting the asymmetry of the goals, and preferably per-family or per-subpopulation errors so that a targeted attack is visible.
+\end{sol}
+\end{enumerate}
+
+% ---------------------------------------------------------------- Q4
+\question{4}{Building threat models}{20}
+
+\textbf{System 1.} A backbone operator, every 5 minutes, collects the byte counts on all links into one vector and fits PCA on the last weeks of vectors to model normal traffic. It raises an alarm when a new vector is far from the normal subspace. The adversary is a botnet operator planning a volume-based denial-of-service attack against a customer and wants it to go unnoticed. The adversary can send traffic through the backbone from many hosts but does not control other users' traffic or the routing.
+
+\textbf{System 2.} A spam filter retrained periodically on user feedback, targeted by a spammer.
+
+\begin{enumerate}[label=(\alph*)]
+\item \pts{8} For System 1: (i) Should the corruption be modeled as data insertion or data alteration? Justify with how data points are generated. (ii) Which class of instances can the adversary influence, and what is peculiar about this detector's training data? (iii) Are all features equally controllable? Give a concrete example.
+
+\begin{sol}
+(i) (3 pts) Alteration: each data point is a time slice built from the traffic of many actors; the adversary cannot create a new point nor set one arbitrarily, but can add limited traffic to existing points. Its power is measured by the total amount of alteration. (ii) (3 pts) An external adversary can only add its own (malicious-class) traffic; because the detector is trained only on data assumed normal, the chaff enters the training data implicitly as normal traffic. Accept any reasoned answer. (iii) (2 pts) No: the adversary can affect only links its flows traverse, given routing it does not control, and it cannot remove others' traffic.
+\end{sol}
+
+\item \pts{5} For System 2, write a compact threat model of the spammer covering its \emph{incentives}, \emph{objectives}, \emph{resources}, \emph{capabilities and knowledge}, and \emph{limitations}. Each element must be specific to this system and stated in one sentence.
+
+\begin{sol}
+1 pt per element; generic statements without link to the system earn 0.5. Sample: \emph{incentive}, revenue per delivered spam message, or making a competitor's mail unreliable; \emph{objective}, get spam delivered (Integrity) or cause legitimate mail to be filtered (Availability); \emph{resources}, ability to send a bounded number of messages per day, purchased or compromised accounts for feedback; \emph{capabilities and knowledge}, can craft arbitrary message content, knows the algorithm (naive-Bayes-style) and the language statistics of legitimate mail, can probe by sending test messages; \emph{limitations}, cannot alter mail sent by third parties, cannot choose the labels assigned by trusted analysts, cannot control headers added in transit.
+\end{sol}
+
+\item \pts{7} Two analysts disagree. Analyst A: ``assume the attacker controls 100\% of the training data and knows everything.'' Analyst B: ``assume the attacker can inject at most 1\% of messages, cannot choose labels and knows nothing about the system.'' Critique each in one or two sentences, and state what the security report should deliver instead.
+
+\begin{sol}
+A (2 pts): a worst-case adversary is legitimate as a bound, but against total control of the data nothing useful can be learned; the analysis says little about realistic attackers and yields an unnecessarily bleak conclusion. B (2 pts): unjustified restrictions and reliance on secrecy violate conservative design and Kerckhoffs' principle; a stronger adversary will surprise the defender. Report (3 pts): a threat model with restrictions that are argued for the domain, and the relationship between attacker effort (fraction of data controlled, information available) and effect (FNR, FPR) over a range of threat levels, so that different designs can be compared and others can critique the assumptions.
+\end{sol}
+\end{enumerate}
+
+% ---------------------------------------------------------------- Q5
+\question{5}{Taxonomy and the adversarial learning game}{20}
+
+\begin{enumerate}[label=(\alph*)]
+\item \pts{8} Classify each scenario along the three axes of the taxonomy of attacks (influence, security violation, specificity), with a one-line justification tied to the scenario.
+\begin{itemize}[leftmargin=1.2cm, label={}]
+\item \textbf{S1.} A spam filter is retrained on user feedback. A spammer wants one particular message, a competitor's tender reply expected tomorrow, to be filtered, and sends correctly labeled spam containing words it expects in that reply.
+\item \textbf{S2.} A botnet operator adds chaff traffic over several weeks to the training window of a PCA-based volume detector, so that later denial-of-service attacks on any link will not raise alarms.
+\item \textbf{S3.} An insurer queries a public medical risk model to determine whether one applicant's record was in the training set.
+\item \textbf{S4.} An intrusion detection system is deployed and frozen (no retraining). An attacker forges packets carrying a competitor's web store as source so that the system blocks the store's real customers.
+\end{itemize}
+
+\begin{sol}
+2 pts per scenario (1 for the three values, 1 for the justification). \textbf{S1:} Causative (influences training), Availability (legitimate message becomes FP), Targeted (one message). \textbf{S2:} Causative, Integrity (FNs on attacks), Indiscriminate (any link, any attack). \textbf{S3:} Exploratory (queries only), Privacy, Targeted (one training instance). \textbf{S4:} Exploratory (the model is fixed and only evaluation data are shaped), Availability (FPs on legitimate traffic), Targeted (one store). Do not penalize a well-argued Indiscriminate for S1 or S4 if the reasoning is about breadth of instances affected, but a justification must be present.
+\end{sol}
+
+\item \pts{6} A malware author has black-box access to an antivirus vendor's cloud API. The author submits variants of one sample and observes the verdicts until a variant passes, then deploys that variant. (i) Classify influence and violation. (ii) Is the attack Targeted or Indiscriminate? Explain what the answer depends on. (iii) Suppose the vendor adds submitted samples to its next retraining set. What changes in the classification, which attacker procedure (\(A^{(train)}\) or \(A^{(eval)}\)) is now available, and why does it matter for the defender?
+
+\begin{sol}
+(i) Exploratory, Integrity (1 pt). (ii) It depends on the objective: targeted if only this one sample must pass, indiscriminate if the aim is a transformation that lets a whole class of malware evade; each axis is really a spectrum and the analyst must decide from the attacker's goal (2 pts). (iii) The probes enter the training data, so the attacker acquires an \(A^{(train)}\) move in addition to \(A^{(eval)}\) and the attack becomes Causative as well; the defender must then consider poisoning (for instance, sanitize submitted samples), since the influence axis determines the legal moves in the game (3 pts).
+\end{sol}
+
+\item \pts{6} Three candidate defenses: (D1) sanitize the training set by discarding points whose inclusion increases error on trusted data; (D2) monitor and rate-limit queries to the deployed model; (D3) add calibrated noise to the trained model before release (differential privacy). For each, name the part of the taxonomy it addresses and one part it leaves uncovered. Then state one cost that all three defenses share and explain why a defense for one class of attack does not automatically cover another.
+
+\begin{sol}
+1 pt each for D1 to D3, 1.5 pts for the shared cost, 1.5 pts for why not automatic. \textbf{D1:} Causative (Integrity and Availability); does not stop test-time evasion. \textbf{D2:} Exploratory attacks that need probing (evasion, privacy probing); does not stop poisoning nor an attacker who needs no queries because it knows the algorithm and has surrogate data. \textbf{D3:} Privacy (Exploratory and Causative); does not address Integrity or Availability. \textbf{Shared cost:} defenses trade robustness for effectiveness on non-adversarial data (accuracy, privacy versus utility, false alarms on benign shifts). \textbf{Why not automatic:} each cell of the taxonomy corresponds to a different game (different legal moves and cost shape), so a defense is tied to the assumptions of the game it was designed for.
+\end{sol}
+\end{enumerate}
+
+\ifkey
+\bigskip
+\begin{tcolorbox}[colback=navy!4, colframe=navy, boxrule=0.5pt, arc=1pt, left=5pt, right=5pt, top=3pt, bottom=3pt, title={\bfseries Coverage map and grading notes}, coltitle=white, colbacktitle=navy, fonttitle=\small]
+\small
+\begin{tabular}{@{}p{1.6cm}p{4.5cm}p{9.5cm}@{}}
+\toprule
+Question & Topic & Skill assessed\\
+\midrule
+1 & Motivation & Argue why learning helps and hurts; identify the violated assumption; apply the principles of proactive analysis and Kerckhoffs to management claims\\
+2 & Statistical learning background & Use risk, empirical risk, hypothesis space, regularization, loss asymmetry and the pipeline phases in computations and in attack analysis\\
+3 & Security goals & Map scenarios to Integrity, Availability and Privacy and to FN, FP or neither; evaluate with metrics that reflect the goal\\
+4 & Threat models & Choose corruption model, class and feature limitations; write and criticize a threat model\\
+5 & Taxonomy & Classify and justify along three axes; handle an ambiguous case; connect the axes to the structure of the game; match defenses to cells\\
+\bottomrule
+\end{tabular}
+
+\smallskip
+\textbf{Timing.} Thirteen items over 90 minutes. The fastest items are Q2(a), Q3(b), Q4(b) and Q5(a); the slowest are Q1(a), Q3(a) and Q4(a). \textbf{Notes.} Award partial credit in proportion to the reasoning shown, not to the vocabulary used. Where a student uses a different but defensible classification (Q5a, Q5b), grade the justification.
+\end{tcolorbox}
+\fi
+
+\end{document}
