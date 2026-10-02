@@ -1,0 +1,88 @@
+\begin{thebibliography}{}
+
+\bibitem[Bagdasaryan et~al., 2020]{bagdasaryan2020backdoor}
+Bagdasaryan, E., Veit, A., Hua, Y., Estrin, D., and Shmatikov, V. (2020).
+\newblock How to backdoor federated learning.
+\newblock In {\em Proceedings of the 23rd International Conference on Artificial Intelligence and Statistics (AISTATS)}, pages 2938--2948.
+
+\bibitem[Biggio et~al., 2012]{biggio2012poisoning}
+Biggio, B., Nelson, B., and Laskov, P. (2012).
+\newblock Poisoning attacks against support vector machines.
+\newblock In {\em Proceedings of the 29th International Conference on Machine Learning (ICML)}.
+
+\bibitem[Chen et~al., 2017]{chen2017targeted}
+Chen, X., Liu, C., Li, B., Lu, K., and Song, D. (2017).
+\newblock Targeted backdoor attacks on deep learning systems using data poisoning.
+\newblock {\em arXiv preprint arXiv:1712.05526}.
+
+\bibitem[Geiping et~al., 2021]{geiping2021witches}
+Geiping, J., Fowl, L., Huang, W.~R., Czaja, W., Taylor, G., Moeller, M., and Goldstein, T. (2021).
+\newblock Witches' brew: Industrial scale data poisoning via gradient matching.
+\newblock In {\em International Conference on Learning Representations (ICLR)}.
+
+\bibitem[Gu et~al., 2019]{gu2019badnets}
+Gu, T., Liu, K., Dolan-Gavitt, B., and Garg, S. (2019).
+\newblock {BadNets}: Evaluating backdooring attacks on deep neural networks.
+\newblock {\em IEEE Access}, 7:47230--47244.
+
+\bibitem[Huang et~al., 2020]{huang2020metapoison}
+Huang, W.~R., Geiping, J., Fowl, L., Taylor, G., and Goldstein, T. (2020).
+\newblock {MetaPoison}: Practical general-purpose clean-label data poisoning.
+\newblock In {\em Advances in Neural Information Processing Systems (NeurIPS)}.
+
+\bibitem[Jagielski et~al., 2018]{jagielski2018manipulating}
+Jagielski, M., Oprea, A., Biggio, B., Liu, C., Nita-Rotaru, C., and Li, B. (2018).
+\newblock Manipulating machine learning: Poisoning attacks and countermeasures for regression learning.
+\newblock In {\em IEEE Symposium on Security and Privacy (S\&P)}, pages 19--35.
+
+\bibitem[Koh and Liang, 2017]{koh2017influence}
+Koh, P.~W. and Liang, P. (2017).
+\newblock Understanding black-box predictions via influence functions.
+\newblock In {\em Proceedings of the 34th International Conference on Machine Learning (ICML)}, pages 1885--1894.
+
+\bibitem[Liu et~al., 2018]{liu2018trojaning}
+Liu, Y., Ma, S., Aafer, Y., Lee, W.-C., Zhai, J., Wang, W., and Zhang, X. (2018).
+\newblock Trojaning attack on neural networks.
+\newblock In {\em Network and Distributed System Security Symposium (NDSS)}.
+
+\bibitem[Mu{\~n}oz-Gonz{\'a}lez et~al., 2017]{munoz2017backgradient}
+Mu{\~n}oz-Gonz{\'a}lez, L., Biggio, B., Demontis, A., Paudice, A., Wongrassamee, V., Lupu, E.~C., and Roli, F. (2017).
+\newblock Towards poisoning of deep learning algorithms with back-gradient optimization.
+\newblock In {\em Proceedings of the 10th ACM Workshop on Artificial Intelligence and Security (AISec)}, pages 27--38.
+
+\bibitem[Saha et~al., 2020]{saha2020hidden}
+Saha, A., Subramanya, A., and Pirsiavash, H. (2020).
+\newblock Hidden trigger backdoor attacks.
+\newblock In {\em Proceedings of the AAAI Conference on Artificial Intelligence}, pages 11957--11965.
+
+\bibitem[Shafahi et~al., 2018]{shafahi2018poison}
+Shafahi, A., Huang, W.~R., Najibi, M., Suciu, O., Studer, C., Dumitras, T., and Goldstein, T. (2018).
+\newblock Poison frogs! {Targeted} clean-label poisoning attacks on neural networks.
+\newblock In {\em Advances in Neural Information Processing Systems (NeurIPS)}.
+
+\bibitem[Steinhardt et~al., 2017]{steinhardt2017certified}
+Steinhardt, J., Koh, P.~W., and Liang, P. (2017).
+\newblock Certified defenses for data poisoning attacks.
+\newblock In {\em Advances in Neural Information Processing Systems (NeurIPS)}.
+
+\bibitem[Tran et~al., 2018]{tran2018spectral}
+Tran, B., Li, J., and Madry, A. (2018).
+\newblock Spectral signatures in backdoor attacks.
+\newblock In {\em Advances in Neural Information Processing Systems (NeurIPS)}.
+
+\bibitem[Turner et~al., 2019]{turner2019label}
+Turner, A., Tsipras, D., and Madry, A. (2019).
+\newblock Label-consistent backdoor attacks.
+\newblock {\em arXiv preprint arXiv:1912.02771}.
+
+\bibitem[Xiao et~al., 2012]{xiao2012labelflip}
+Xiao, H., Xiao, H., and Eckert, C. (2012).
+\newblock Adversarial label flips attack on support vector machines.
+\newblock In {\em Proceedings of the 20th European Conference on Artificial Intelligence (ECAI)}, pages 870--875.
+
+\bibitem[Zhu et~al., 2019]{zhu2019transferable}
+Zhu, C., Huang, W.~R., Shafahi, A., Li, H., Taylor, G., Studer, C., and Goldstein, T. (2019).
+\newblock Transferable clean-label poisoning attacks on deep neural nets.
+\newblock In {\em Proceedings of the 36th International Conference on Machine Learning (ICML)}, pages 7614--7623.
+
+\end{thebibliography}

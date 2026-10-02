@@ -1,0 +1,93 @@
+\begin{thebibliography}{}
+
+\bibitem[Apruzzese et~al., 2023]{apruzzese2023real}
+Apruzzese, G., Anderson, H.~S., Dambra, S., Freeman, D., Pierazzi, F., and Roundy, K. (2023).
+\newblock ``real attackers don't compute gradients'': Bridging the gap between adversarial {ML} research and practice.
+\newblock In {\em IEEE Conference on Secure and Trustworthy Machine Learning (SaTML)}, pages 339--364.
+
+\bibitem[Athalye et~al., 2018]{athalye2018obfuscated}
+Athalye, A., Carlini, N., and Wagner, D. (2018).
+\newblock Obfuscated gradients give a false sense of security: Circumventing defenses to adversarial examples.
+\newblock In {\em Proceedings of the 35th International Conference on Machine Learning (ICML)}, pages 274--283.
+
+\bibitem[Carlini et~al., 2019]{carlini2019evaluating}
+Carlini, N., Athalye, A., Papernot, N., Brendel, W., Rauber, J., Tsipras, D., Goodfellow, I., Madry, A., and Kurakin, A. (2019).
+\newblock On evaluating adversarial robustness.
+\newblock {\em arXiv preprint arXiv:1902.06705}.
+
+\bibitem[Carlini and Wagner, 2017]{carlini2017detected}
+Carlini, N. and Wagner, D. (2017).
+\newblock Adversarial examples are not easily detected: Bypassing ten detection methods.
+\newblock In {\em Proceedings of the 10th ACM Workshop on Artificial Intelligence and Security (AISec)}, pages 3--14.
+
+\bibitem[Croce et~al., 2021]{croce2021robustbench}
+Croce, F., Andriushchenko, M., Sehwag, V., Debenedetti, E., Flammarion, N., Chiang, M., Mittal, P., and Hein, M. (2021).
+\newblock {RobustBench}: A standardized adversarial robustness benchmark.
+\newblock In {\em Advances in Neural Information Processing Systems (NeurIPS), Datasets and Benchmarks Track}.
+
+\bibitem[Croce and Hein, 2020a]{croce2020fab}
+Croce, F. and Hein, M. (2020a).
+\newblock Minimally distorted adversarial examples with a fast adaptive boundary attack.
+\newblock In {\em Proceedings of the 37th International Conference on Machine Learning (ICML)}, pages 2196--2205.
+
+\bibitem[Croce and Hein, 2020b]{croce2020reliable}
+Croce, F. and Hein, M. (2020b).
+\newblock Reliable evaluation of adversarial robustness with an ensemble of diverse parameter-free attacks.
+\newblock In {\em Proceedings of the 37th International Conference on Machine Learning (ICML)}, pages 2206--2216.
+
+\bibitem[Engstrom et~al., 2019]{engstrom2019spatial}
+Engstrom, L., Tran, B., Tsipras, D., Schmidt, L., and Madry, A. (2019).
+\newblock Exploring the landscape of spatial robustness.
+\newblock In {\em Proceedings of the 36th International Conference on Machine Learning (ICML)}, pages 1802--1811.
+
+\bibitem[Hendrycks and Dietterich, 2019]{hendrycks2019benchmarking}
+Hendrycks, D. and Dietterich, T. (2019).
+\newblock Benchmarking neural network robustness to common corruptions and perturbations.
+\newblock In {\em International Conference on Learning Representations (ICLR)}.
+
+\bibitem[Kim, 2020]{kim2020torchattacks}
+Kim, H. (2020).
+\newblock Torchattacks: A {PyTorch} repository for adversarial attacks.
+\newblock {\em arXiv preprint arXiv:2010.01950}.
+
+\bibitem[Laidlaw et~al., 2021]{laidlaw2021perceptual}
+Laidlaw, C., Singla, S., and Feizi, S. (2021).
+\newblock Perceptual adversarial robustness: Defense against unseen threat models.
+\newblock In {\em International Conference on Learning Representations (ICLR)}.
+
+\bibitem[Maini et~al., 2020]{maini2020union}
+Maini, P., Wong, E., and Kolter, J.~Z. (2020).
+\newblock Adversarial robustness against the union of multiple perturbation models.
+\newblock In {\em Proceedings of the 37th International Conference on Machine Learning (ICML)}, pages 6640--6650.
+
+\bibitem[Morris et~al., 2020]{morris2020textattack}
+Morris, J., Lifland, E., Yoo, J.~Y., Grigsby, J., Jin, D., and Qi, Y. (2020).
+\newblock {TextAttack}: A framework for adversarial attacks, data augmentation, and adversarial training in {NLP}.
+\newblock In {\em Proceedings of the 2020 Conference on Empirical Methods in Natural Language Processing: System Demonstrations}, pages 119--126.
+
+\bibitem[Nicolae et~al., 2018]{nicolae2018art}
+Nicolae, M.-I., Sinn, M., Tran, M.~N., Buesser, B., Rawat, A., Wistuba, M., Zantedeschi, V., Baracaldo, N., Chen, B., Ludwig, H., Molloy, I.~M., and Edwards, B. (2018).
+\newblock Adversarial robustness toolbox v1.0.0.
+\newblock {\em arXiv preprint arXiv:1807.01069}.
+
+\bibitem[Rauber et~al., 2020]{rauber2020foolbox}
+Rauber, J., Zimmermann, R., Bethge, M., and Brendel, W. (2020).
+\newblock Foolbox native: Fast adversarial attacks to benchmark the robustness of machine learning models in {PyTorch}, {TensorFlow}, and {JAX}.
+\newblock {\em Journal of Open Source Software}, 5(53):2607.
+
+\bibitem[Tram{\`e}r and Boneh, 2019]{tramer2019multiple}
+Tram{\`e}r, F. and Boneh, D. (2019).
+\newblock Adversarial training and robustness for multiple perturbations.
+\newblock In {\em Advances in Neural Information Processing Systems (NeurIPS)}.
+
+\bibitem[Tram{\`e}r et~al., 2020]{tramer2020adaptive}
+Tram{\`e}r, F., Carlini, N., Brendel, W., and Madry, A. (2020).
+\newblock On adaptive attacks to adversarial example defenses.
+\newblock In {\em Advances in Neural Information Processing Systems (NeurIPS)}.
+
+\bibitem[Weng et~al., 2018]{weng2018clever}
+Weng, T.-W., Zhang, H., Chen, P.-Y., Yi, J., Su, D., Gao, Y., Hsieh, C.-J., and Daniel, L. (2018).
+\newblock Evaluating the robustness of neural networks: An extreme value theory approach.
+\newblock In {\em International Conference on Learning Representations (ICLR)}.
+
+\end{thebibliography}

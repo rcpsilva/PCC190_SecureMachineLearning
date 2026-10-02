@@ -1,0 +1,430 @@
+\documentclass[10pt,a4paper]{extarticle}
+\newcommand{\coursehead}{PCC190 -- Secure Machine Learning}
+\newcommand{\chapterhead}{Chapter 2: Evasion Attacks}
+\usepackage{parskip}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[english]{babel}
+\usepackage{amsmath, amssymb, amsthm}
+\usepackage{geometry}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{tabularx}
+\usepackage{enumitem}
+\usepackage{microtype}
+\usepackage{csquotes}
+\usepackage{natbib}
+\usepackage{fancyhdr}
+\usepackage[most]{tcolorbox}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{hyperref}
+
+\definecolor{dblue}{RGB}{16, 42, 92}
+\definecolor{dorange}{RGB}{230, 115, 0}
+\definecolor{codebg}{rgb}{0.95,0.95,0.95}
+
+\hypersetup{colorlinks=true, linkcolor=dblue, citecolor=dorange, urlcolor=dblue}
+
+\setlist{nosep}
+\geometry{margin=2cm, headheight=14pt}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\color{dblue}\coursehead}
+\fancyhead[R]{\small\color{dblue}\chapterhead}
+\fancyfoot[C]{\small\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\headrule}{\hbox to\headwidth{\color{dorange}\leaders\hrule height \headrulewidth\hfill}}
+
+\lstset{
+    language=Python,
+    backgroundcolor=\color{codebg},
+    basicstyle=\ttfamily\footnotesize,
+    keywordstyle=\color{dblue}\bfseries,
+    commentstyle=\color{gray},
+    stringstyle=\color{dorange!80!black},
+    showstringspaces=false,
+    frame=single,
+    breaklines=true,
+    inputencoding=utf8
+}
+
+\newtcolorbox{keybox}[1][]{colback=dblue!5, colframe=dblue, fonttitle=\bfseries, title={#1}, breakable}
+\newtcolorbox{warnbox}[1][]{colback=dorange!7, colframe=dorange, fonttitle=\bfseries, title={#1}, breakable}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}[section]
+\newtheorem{example}{Example}[section]
+\newtheorem{remark}{Remark}[section]
+
+% Notation
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\X}{\mathcal{X}}
+\newcommand{\Y}{\mathcal{Y}}
+\newcommand{\D}{\mathcal{D}}
+\newcommand{\Loss}{\mathcal{L}}
+\newcommand{\x}{\mathbf{x}}
+\newcommand{\xadv}{\mathbf{x}'}
+\newcommand{\bdelta}{\boldsymbol{\delta}}
+\newcommand{\btheta}{\boldsymbol{\theta}}
+\newcommand{\B}{\mathcal{B}}
+\newcommand{\Proj}{\Pi}
+\DeclareMathOperator*{\argmax}{arg\,max}
+\DeclareMathOperator*{\argmin}{arg\,min}
+\DeclareMathOperator{\sign}{sign}
+
+\title{Chapter 2\\Advanced Evasion Attacks}
+\author{PCC190 -- Secure Machine Learning\\Prof.\ Rodrigo C.\ P.\ Silva -- DECOM/UFOP}
+\date{\today}
+
+\begin{document}
+\maketitle
+\thispagestyle{fancy}
+\tableofcontents
+
+\section*{Setting and notation}
+\addcontentsline{toc}{section}{Setting and notation}
+
+We keep the notation of Chapter~1: classifier \(f\) with logits \(Z(\x)\in\R^K\), probabilities \(F(\x)\), loss \(\Loss(\x, y)\) (we drop \(\btheta\) since the model is fixed at inference time), threat set \(\B_p(\x,\epsilon)\) and valid input domain \(\X = [0,1]^d\). All attacks in this chapter solve, exactly or approximately, one of two problems:
+\[
+\text{(budget)}\;\; \max_{\xadv \in \B_p(\x,\epsilon)\cap\X} \Loss(\xadv, y)
+\qquad\qquad
+\text{(min-norm)}\;\; \min_{\bdelta} \|\bdelta\|_p \;\text{ s.t. }\; f(\x+\bdelta)\neq y,\; \x+\bdelta\in\X.
+\]
+What changes from one family to the next is the information the attacker has about \(f\): gradients (white-box), scores, labels only, or nothing about the target at all (transfer). We denote by \(\Proj_{S}(\cdot)\) the Euclidean projection onto a set \(S\), and by \(\mathrm{clip}_{[0,1]}\) the elementwise projection onto the box.
+
+\section{Gradient-Based Attacks: FGSM, BIM and PGD}
+
+\subsection{Fast Gradient Sign Method (FGSM)}
+
+Linearize the loss around \(\x\): \(\Loss(\x+\bdelta, y) \approx \Loss(\x, y) + \bdelta^\top \mathbf{g}\), with \(\mathbf{g} = \nabla_{\x}\Loss(\x,y)\). Maximizing this linear model over \(\|\bdelta\|_p\le\epsilon\) is a closed-form problem whose solution is given by the dual norm. For \(p=\infty\), the maximizer is \(\bdelta = \epsilon\,\sign(\mathbf{g})\), and the attack is \citep{goodfellow2015explaining}
+\begin{equation}\label{eq:fgsm}
+\xadv = \mathrm{clip}_{[0,1]}\big(\x + \epsilon\,\sign(\nabla_{\x}\Loss(\x,y))\big).
+\end{equation}
+For \(p=2\) the same reasoning gives the \emph{fast gradient method} (FGM), \(\bdelta = \epsilon\,\mathbf{g}/\|\mathbf{g}\|_2\). The targeted version descends the loss of the target class: \(\xadv = \x - \epsilon\,\sign(\nabla_{\x}\Loss(\x,t))\).
+
+\begin{proposition}[Steepest ascent direction]
+For any \(\mathbf{g}\in\R^d\) and \(p\ge1\), \(\max_{\|\bdelta\|_p\le\epsilon}\bdelta^\top\mathbf{g} = \epsilon\|\mathbf{g}\|_q\), with \(1/p+1/q=1\). For \(p=\infty\) (so \(q=1\)) the maximum is attained at \(\bdelta=\epsilon\,\sign(\mathbf{g})\); for \(p=2\) at \(\bdelta=\epsilon\,\mathbf{g}/\|\mathbf{g}\|_2\).
+\end{proposition}
+
+\paragraph{Analysis.} FGSM costs one forward and one backward pass. It is exactly optimal only if the loss is linear in the ball, which it is not for deep networks. Its value today is as a fast baseline and as an inexpensive generator for adversarial training. It is a \emph{weak} attack for evaluation: a model can resist FGSM while being completely broken by iterative attacks. In fact, models trained only on FGSM examples are known to exhibit \emph{label leaking} and a form of gradient masking where the loss surface becomes highly curved near the data, making the single linear step uninformative \citep{tramer2018ensemble}.
+
+\subsection{Basic Iterative Method (BIM)}
+
+\citet{kurakin2017physical} proposed taking many small FGSM steps of size \(\alpha<\epsilon\) and clipping back into the ball after each step:
+\begin{equation}\label{eq:bim}
+\x^{(0)} = \x,\qquad
+\x^{(k+1)} = \mathrm{clip}_{\B_\infty(\x,\epsilon)\cap[0,1]^d}\Big(\x^{(k)} + \alpha\,\sign\big(\nabla_{\x}\Loss(\x^{(k)},y)\big)\Big).
+\end{equation}
+A common heuristic is \(T = \lceil\min(\epsilon+4,\,1.25\epsilon)\rceil\) steps for \(\epsilon\) in 0-255 units with \(\alpha = 1/255\), so that the iterate can reach the boundary of the ball.
+
+\subsection{Projected Gradient Descent (PGD)}
+
+\citet{madry2018towards} framed the iterative attack as projected (steepest) ascent on the constrained problem, with two practical additions: a \emph{random start} inside the ball and, often, \emph{multiple restarts}.
+
+\begin{algorithm}[h]
+\caption{PGD attack, \(\ell_\infty\), untargeted}
+\begin{algorithmic}[1]
+\Require \(\x, y\), budget \(\epsilon\), step size \(\alpha\), iterations \(T\), restarts \(R\)
+\State \(\xadv_{\text{best}} \gets \x\)
+\For{\(r=1,\dots,R\)}
+  \State \(\x^{(0)} \gets \mathrm{clip}_{[0,1]}(\x + \mathbf{u}),\; \mathbf{u}\sim\mathcal{U}[-\epsilon,\epsilon]^d\)
+  \For{\(k=0,\dots,T-1\)}
+    \State \(\mathbf{g} \gets \nabla_{\x}\Loss(\x^{(k)},y)\)
+    \State \(\x^{(k+1)} \gets \Proj_{\B_\infty(\x,\epsilon)\cap[0,1]^d}\big(\x^{(k)}+\alpha\,\sign(\mathbf{g})\big)\)
+  \EndFor
+  \State keep \(\x^{(T)}\) as \(\xadv_{\text{best}}\) if it misclassifies (or has higher loss)
+\EndFor
+\State \Return \(\xadv_{\text{best}}\)
+\end{algorithmic}
+\end{algorithm}
+
+For the \(\ell_\infty\) ball intersected with the box, the projection is separable and reduces to elementwise clipping: \(\Proj(\mathbf{z})_i = \min\big(\max(z_i,\, x_i-\epsilon,\, 0),\, x_i+\epsilon,\, 1\big)\). For \(\ell_2\), the step is \(\alpha\,\mathbf{g}/\|\mathbf{g}\|_2\) and the projection onto the ball rescales \(\bdelta\) to norm \(\epsilon\) if it exceeds it (the exact projection onto the intersection with the box is not a simple composition, but clipping after rescaling is the usual approximation).
+
+\paragraph{Why PGD became the reference first-order attack.} \citet{madry2018towards} observed empirically that, from many random starts, PGD finds local maxima of the loss with remarkably concentrated values. This suggests that, for first-order methods, PGD is close to the best one can do, which motivated using PGD both to evaluate models and to train them. This is an empirical observation, not a theorem: the inner problem is nonconcave and PGD offers no global guarantee.
+
+\paragraph{Practical analysis.}
+\begin{itemize}
+  \item \textbf{Step size and iterations.} Too large an \(\alpha\) oscillates at the corners of the ball; too small an \(\alpha\) with few iterations never reaches the boundary. A typical CIFAR-10 setting is \(\epsilon=8/255\), \(\alpha=2/255\), \(T\in[20,100]\).
+  \item \textbf{Loss choice.} Cross-entropy saturates when the model is very confident, giving tiny gradients. Margin losses on logits, such as \(\max_{j\neq y}Z_j(\x)-Z_y(\x)\) (Section~\ref{sec:cw}), or the difference-of-logits-ratio loss, are often stronger.
+  \item \textbf{Fixed schedules are brittle.} APGD \citep{croce2020reliable} adapts the step size and adds momentum, removing the hyperparameter sensitivity of PGD. Together with complementary attacks, it forms AutoAttack, the current standard for reporting \(\ell_\infty\) and \(\ell_2\) robustness (Chapter~6).
+\end{itemize}
+
+\begin{warnbox}[Reading PGD results]
+A PGD robust accuracy is an \emph{upper bound} on true robust accuracy. Sanity checks: accuracy should decrease monotonically with \(\epsilon\) and reach zero for large \(\epsilon\); more iterations and restarts should not increase accuracy; PGD should beat FGSM; white-box should beat black-box. Violations indicate gradient masking or a bug \citep{carlini2019evaluating}.
+\end{warnbox}
+
+\section{Optimization-Based Attacks: Carlini and Wagner}\label{sec:cw}
+
+\citet{carlini2017towards} (C\&W) attack the minimum-norm problem directly. Two obstacles must be removed: the constraint \(f(\x+\bdelta)=t\) is discrete, and the box constraint \(\x+\bdelta\in[0,1]^d\) is awkward for gradient methods.
+
+\paragraph{From a hard constraint to a penalty.} Replace the classification constraint by a function \(h\) such that \(f(\x+\bdelta)=t\) holds whenever \(h(\x+\bdelta)\le0\). After comparing several candidates, C\&W recommend the logit margin
+\begin{equation}\label{eq:cwloss}
+h(\xadv) = \max\Big(\max_{j\neq t} Z_j(\xadv) - Z_t(\xadv),\; -\kappa\Big),
+\end{equation}
+where \(\kappa\ge0\) is a \emph{confidence} parameter: the attack keeps pushing until the target logit exceeds every other logit by at least \(\kappa\). For the untargeted version, use \(\max(Z_y - \max_{j\neq y}Z_j, -\kappa)\). Working with logits instead of softmax probabilities avoids saturation.
+
+\paragraph{Removing the box constraint.} Change variables to \(\mathbf{w}\in\R^d\) with
+\[
+\xadv = \tfrac12\big(\tanh(\mathbf{w})+1\big),
+\]
+so that \(\xadv\in[0,1]^d\) automatically and the problem becomes unconstrained in \(\mathbf{w}\).
+
+\paragraph{The \(\ell_2\) attack.} Combining both,
+\begin{equation}\label{eq:cwl2}
+\min_{\mathbf{w}}\; \big\|\tfrac12(\tanh(\mathbf{w})+1)-\x\big\|_2^2 + c\cdot h\big(\tfrac12(\tanh(\mathbf{w})+1)\big),
+\end{equation}
+solved with Adam. The constant \(c>0\) trades off distortion against success; it is chosen per input by \emph{binary search}: increase \(c\) when the attack fails, decrease it when it succeeds, and keep the smallest successful perturbation.
+
+\paragraph{\(\ell_0\) and \(\ell_\infty\) variants.} The \(\ell_\infty\) norm is non-differentiable and gradient descent on it oscillates, so C\&W replace it by the penalty \(\sum_i \max(|\delta_i|-\tau,0)\) and shrink \(\tau\) over iterations. The \(\ell_0\) attack repeatedly runs the \(\ell_2\) attack and freezes the pixels that contributed least, shrinking the set of modifiable features.
+
+\paragraph{Analysis.}
+\begin{itemize}
+  \item C\&W produces much smaller perturbations than FGSM/PGD at a fixed success rate and was historically decisive in breaking defenses such as defensive distillation, which shrank softmax gradients but left logits informative.
+  \item It is expensive: thousands of gradient steps per input including the binary search.
+  \item It reports a \emph{distance}, not a success rate at fixed \(\epsilon\). To compare with PGD, count the fraction of inputs whose minimal C\&W perturbation is below \(\epsilon\).
+  \item The margin loss (Eq.~\ref{eq:cwloss}) is widely reused inside PGD (\enquote{PGD-CW}), often outperforming cross-entropy.
+\end{itemize}
+
+\begin{remark}
+DeepFool \citep{moosavi2016deepfool} is a cheaper minimum-norm alternative: at each step it linearizes all class boundaries and jumps to the nearest one, which for a linear classifier recovers the exact minimal \(\ell_2\) perturbation (compare Exercise~2 of Chapter~1).
+\end{remark}
+
+\section{Score-Based Attacks}
+
+Now suppose the attacker can query \(F(\x)\) (or the top-\(k\) scores) but has no gradients. The loss \(\Loss(\x,y)\) is still computable from scores, so the budget problem can still be attacked, provided we can \emph{estimate} the gradient or avoid it.
+
+\subsection{Zeroth-order gradient estimation}
+
+\paragraph{Coordinate-wise finite differences.} ZOO \citep{chen2017zoo} estimates partial derivatives with symmetric differences,
+\[
+\hat g_i = \frac{\Loss(\x+h\mathbf{e}_i,y)-\Loss(\x-h\mathbf{e}_i,y)}{2h},
+\]
+updating a random batch of coordinates per iteration (with a C\&W-style objective). An exact gradient needs \(2d\) queries, which is prohibitive for images; ZOO mitigates this by attacking in a downsampled space and prioritizing important coordinates.
+
+\paragraph{Random-direction estimators (NES).} \citet{ilyas2018blackbox} use natural evolution strategies. They sample \(n\) directions \(\mathbf{u}_i\sim\mathcal{N}(0,I)\) and estimate
+\begin{equation}\label{eq:nes}
+\hat{\mathbf{g}} = \frac{1}{2n\sigma}\sum_{i=1}^{n}\big[\Loss(\x+\sigma\mathbf{u}_i,y)-\Loss(\x-\sigma\mathbf{u}_i,y)\big]\mathbf{u}_i,
+\end{equation}
+which is an unbiased estimate of the gradient of a Gaussian-smoothed loss. Plugging \(\hat{\mathbf{g}}\) into PGD gives an effective attack with far fewer than \(d\) queries per step. The same paper handles the \emph{partial-information} (top-\(k\) only) and \emph{label-only} settings. SPSA \citep{uesato2018adversarial} is a closely related estimator using Rademacher directions; it is also a standard tool to test for gradient masking, since it does not rely on the model's backpropagated gradients.
+
+\subsection{Gradient-free random search}
+
+\paragraph{Square Attack.} \citet{andriushchenko2020square} dispense with gradient estimation. At each iteration a random square window is chosen and the perturbation inside it is resampled at the vertices of the \(\ell_\infty\) ball (values \(\pm\epsilon\)); the change is accepted only if the margin loss decreases. Window size shrinks over time. Despite its simplicity, Square Attack is among the most query-efficient score-based attacks and, because it never touches gradients, is immune to gradient masking. It is part of AutoAttack for that reason.
+
+\paragraph{Analysis.} Score-based attacks reveal that hiding gradients is not a defense: if scores are exposed, gradients can be approximated. Their cost is measured in queries, typically hundreds to a few thousand per image for untargeted \(\ell_\infty\) attacks on CIFAR-scale models, more for targeted attacks and larger inputs. Defenses that only return labels, add noise to scores, or rate-limit queries raise the cost but do not eliminate the threat.
+
+\section{Decision-Based Attacks}
+
+In the hardest query setting the attacker sees only \(f(\x)\). The loss is now a step function, and its finite differences are zero almost everywhere. Decision-based attacks therefore work with the geometry of the decision boundary directly, and naturally solve the \emph{min-norm} problem.
+
+\paragraph{Boundary Attack.} \citet{brendel2018decision} start from a point that is already adversarial (for untargeted attacks, random noise that is misclassified; for targeted attacks, an image of the target class) and perform a random walk \emph{along} the boundary that progressively reduces the distance to \(\x\). Each step combines an orthogonal random perturbation (exploring along the boundary) and a small step toward \(\x\), and is accepted only if the point remains adversarial. Step sizes are adapted from the acceptance rate. It needs only labels but can require tens of thousands of queries.
+
+\paragraph{HopSkipJump.} \citet{chen2020hopskipjump} improve query efficiency by estimating the gradient direction \emph{at the boundary} from binary feedback. At a boundary point \(\xadv_b\), define \(\phi(\mathbf{z}) = +1\) if \(\mathbf{z}\) is adversarial and \(-1\) otherwise. Then
+\[
+\widehat{\nabla} = \frac{1}{n}\sum_{i=1}^{n}\phi(\xadv_b+\sigma\mathbf{u}_i)\,\mathbf{u}_i
+\]
+points, in expectation and for small \(\sigma\), along the boundary normal. Each iteration: (i) estimate the normal, (ii) take a geometric step along it, (iii) binary-search back to the boundary on the segment toward \(\x\). It supports both \(\ell_2\) and \(\ell_\infty\) and converges with far fewer queries than the Boundary Attack.
+
+\begin{keybox}[Information versus cost]
+\begin{tabular}{@{}lll@{}}
+White-box & exact gradients & tens of forward/backward passes \\
+Score-based & loss values & \(10^2\)--\(10^4\) queries \\
+Decision-based & labels & \(10^3\)--\(10^5\) queries \\
+Transfer & nothing from target & zero queries, lower success \\
+\end{tabular}
+
+\smallskip
+Less information means higher cost and, usually, larger perturbations, but almost never complete protection.
+\end{keybox}
+
+\section{Transferability of Adversarial Examples}
+
+\citet{szegedy2014intriguing} already noted that adversarial examples crafted for one network often fool another network trained on different data or with a different architecture. \citet{papernot2017practical} turned this into a practical black-box attack: train a \emph{substitute} model by querying the target on synthetic inputs (using Jacobian-based dataset augmentation), attack the substitute with white-box methods, and submit the result to the target.
+
+\paragraph{Why transfer works.} Two complementary explanations:
+\begin{itemize}
+  \item \textbf{Shared subspaces.} \citet{tramer2017space} estimate that adversarial perturbations span a subspace of considerable dimension around each input, and that the decision boundaries of different models are close and aligned within it, so perturbations crossing one boundary tend to cross the other.
+  \item \textbf{Shared non-robust features.} If models trained on the same distribution learn the same brittle but predictive features \citep{ilyas2019features}, a perturbation that manipulates those features affects all of them.
+\end{itemize}
+
+\paragraph{What makes examples transfer better.} Strong white-box optimization tends to \emph{overfit} to the surrogate: highly specific perturbations exploit idiosyncrasies of one model. Empirically:
+\begin{itemize}
+  \item Untargeted examples transfer far better than targeted ones \citep{liu2017delving}.
+  \item Higher-confidence examples (larger \(\kappa\) in C\&W) transfer better than minimal ones.
+  \item \emph{Momentum} stabilizes the update direction and reduces overfitting to the surrogate (MI-FGSM, \citealp{dong2018boosting}):
+  \[
+  \mathbf{m}^{(k+1)} = \mu\,\mathbf{m}^{(k)} + \frac{\nabla_{\x}\Loss(\x^{(k)},y)}{\|\nabla_{\x}\Loss(\x^{(k)},y)\|_1},\qquad
+  \x^{(k+1)} = \Proj\big(\x^{(k)}+\alpha\,\sign(\mathbf{m}^{(k+1)})\big).
+  \]
+  \item \emph{Input diversity}: applying random resizing and padding before each gradient computation acts like data augmentation for the attack \citep{xie2019improving}.
+  \item Attacking an \emph{ensemble} of surrogates (next section).
+\end{itemize}
+
+\begin{warnbox}[Transfer and evaluation]
+Transfer success depends heavily on surrogate choice; low transfer success is not evidence of robustness. Conversely, if a transfer attack beats your white-box attack on a defended model, the white-box attack is failing, which is a classic sign of gradient masking.
+\end{warnbox}
+
+\section{Attacking Ensemble Models}
+
+Ensembles appear in this chapter in two roles: as targets that claim robustness, and as surrogates that improve transfer.
+
+\paragraph{Ensembles as surrogates.} \citet{liu2017delving} showed that optimizing a perturbation against several models simultaneously yields examples that transfer much better, including targeted examples, to an unseen model. For models \(f_1,\dots,f_M\) with weights \(w_m\ge0\), \(\sum_m w_m=1\), the common fusion choices are
+\begin{align*}
+\text{logit fusion:}\quad & Z_{\text{ens}}(\x) = \textstyle\sum_m w_m Z_m(\x), \\
+\text{probability fusion:}\quad & F_{\text{ens}}(\x) = \textstyle\sum_m w_m F_m(\x), \\
+\text{loss fusion:}\quad & \Loss_{\text{ens}}(\x,y) = \textstyle\sum_m w_m \Loss_m(\x,y).
+\end{align*}
+Logit fusion is usually the most effective for transfer. The intuition: a direction that fools many diverse models is more likely to exploit features shared by all models, including the unseen target.
+
+\paragraph{Ensembles as defenses.} An ensemble is a single differentiable function. If the defender averages logits or probabilities, a white-box attacker simply attacks the averaged output with PGD, exactly as for a single model. Problems arise only with \emph{non-differentiable} aggregation (majority vote) or with \emph{randomized} selection of members. In those cases:
+\begin{itemize}
+  \item Replace the vote with a differentiable surrogate (average of logits or probabilities) for gradient computation; the resulting example usually fools the vote as well.
+  \item For random member selection, optimize the \emph{expected} loss, \(\mathbb{E}_m[\Loss_m(\xadv,y)]\), i.e., Expectation over Transformation \citep{athalye2018eot}.
+  \item For ensembles of detectors or heterogeneous defenses, attack all components jointly with a combined loss. \citet{he2017ensemble} showed that combining several weak defenses does not yield a strong one under adaptive attack.
+\end{itemize}
+\emph{Ensemble adversarial training} \citep{tramer2018ensemble} is a different idea: augmenting training with adversarial examples transferred from other, fixed models. It improves robustness to \emph{transfer} attacks specifically, not to white-box attacks on the defended model.
+
+\section{Hands-On: Implementing Evasion Attacks}
+
+The following PyTorch code implements the attacks of this chapter in their simplest form. It assumes a model \texttt{model} in \texttt{eval()} mode that receives images in \([0,1]\) (place any normalization inside the model), and batches \texttt{x}, \texttt{y}. Any CIFAR-10 classifier will do; pretrained robust and non-robust models are available in RobustBench.
+
+\subsection{FGSM and PGD}
+
+\begin{lstlisting}
+import torch
+import torch.nn.functional as F
+
+def fgsm(model, x, y, eps):
+    x = x.clone().detach().requires_grad_(True)
+    loss = F.cross_entropy(model(x), y)
+    grad, = torch.autograd.grad(loss, x)
+    return (x + eps * grad.sign()).clamp(0, 1).detach()
+
+def margin_loss(logits, y):
+    # max_{j != y} Z_j - Z_y   (positive => misclassified)
+    true = logits.gather(1, y[:, None]).squeeze(1)
+    other = logits.clone()
+    other.scatter_(1, y[:, None], -float("inf"))
+    return other.max(1).values - true
+
+def pgd_linf(model, x, y, eps, alpha, steps, restarts=1, loss="ce"):
+    best = x.clone()
+    fooled = torch.zeros(len(x), dtype=torch.bool, device=x.device)
+    for _ in range(restarts):
+        delta = torch.empty_like(x).uniform_(-eps, eps)
+        xa = (x + delta).clamp(0, 1).detach()
+        for _ in range(steps):
+            xa.requires_grad_(True)
+            logits = model(xa)
+            l = F.cross_entropy(logits, y) if loss == "ce" \
+                else margin_loss(logits, y).sum()
+            grad, = torch.autograd.grad(l, xa)
+            xa = xa.detach() + alpha * grad.sign()
+            xa = torch.min(torch.max(xa, x - eps), x + eps).clamp(0, 1)
+        with torch.no_grad():
+            succ = model(xa).argmax(1) != y
+        new = succ & ~fooled
+        best[new] = xa[new]
+        fooled |= succ
+    return best, fooled
+\end{lstlisting}
+
+\subsection{Carlini--Wagner \(\ell_2\) (single \(c\), no binary search)}
+
+\begin{lstlisting}
+def cw_l2(model, x, y, c=1.0, kappa=0.0, steps=200, lr=1e-2):
+    # change of variables: x' = (tanh(w) + 1) / 2
+    w = torch.atanh((x * 2 - 1).clamp(-1 + 1e-6, 1 - 1e-6)).detach()
+    w.requires_grad_(True)
+    opt = torch.optim.Adam([w], lr=lr)
+    for _ in range(steps):
+        xa = (torch.tanh(w) + 1) / 2
+        logits = model(xa)
+        true = logits.gather(1, y[:, None]).squeeze(1)
+        other = logits.clone()
+        other.scatter_(1, y[:, None], -float("inf"))
+        h = torch.clamp(true - other.max(1).values, min=-kappa)
+        dist = ((xa - x) ** 2).flatten(1).sum(1)
+        loss = (dist + c * h).sum()
+        opt.zero_grad(); loss.backward(); opt.step()
+    return ((torch.tanh(w) + 1) / 2).detach()
+\end{lstlisting}
+
+\subsection{A score-based attack: NES gradient estimate inside PGD}
+
+\begin{lstlisting}
+@torch.no_grad()
+def nes_grad(model, x, y, sigma=1e-3, n=50):
+    g = torch.zeros_like(x)
+    for _ in range(n // 2):
+        u = torch.randn_like(x)
+        lp = F.cross_entropy(model(x + sigma * u), y, reduction="none")
+        lm = F.cross_entropy(model(x - sigma * u), y, reduction="none")
+        g += (lp - lm).view(-1, *[1] * (x.dim() - 1)) * u
+    return g / (n * sigma)   # n queries per estimate
+
+def nes_pgd(model, x, y, eps, alpha, steps, **kw):
+    xa = x.clone()
+    for _ in range(steps):
+        g = nes_grad(model, xa, y, **kw)
+        xa = xa + alpha * g.sign()
+        xa = torch.min(torch.max(xa, x - eps), x + eps).clamp(0, 1)
+    return xa
+\end{lstlisting}
+
+\subsection{Transfer from an ensemble of surrogates}
+
+\begin{lstlisting}
+class LogitEnsemble(torch.nn.Module):
+    def __init__(self, models, weights=None):
+        super().__init__()
+        self.models = torch.nn.ModuleList(models)
+        self.w = weights or [1 / len(models)] * len(models)
+    def forward(self, x):
+        return sum(w * m(x) for w, m in zip(self.w, self.models))
+
+# craft on surrogates, evaluate on the held-out target
+surrogate = LogitEnsemble([resnet18, vgg16, densenet121]).eval()
+x_adv, _ = pgd_linf(surrogate, x, y, eps=8/255, alpha=2/255, steps=20)
+transfer_rate = (target(x_adv).argmax(1) != y).float().mean()
+\end{lstlisting}
+
+\subsection{Suggested experiments}
+
+\begin{enumerate}[label=\textbf{\arabic*.}]
+  \item On a standard (non-robust) CIFAR-10 model, plot accuracy versus \(\epsilon\in\{0,1,2,4,8\}/255\) for FGSM, PGD-20 with cross-entropy and PGD-20 with the margin loss. Repeat on a robust model from RobustBench. Which attack is strongest, and does the ranking change?
+  \item For PGD, vary \(\alpha\) and the number of steps with fixed \(\epsilon=8/255\). Identify a configuration that underestimates attack strength and explain why.
+  \item Run C\&W \(\ell_2\) with binary search over \(c\) on 100 test images. Report the median minimal \(\ell_2\) distance and compare the fraction below \(\epsilon_2=0.5\) with PGD-\(\ell_2\) at that budget.
+  \item Implement NES-PGD and plot success rate versus number of queries. How many queries are needed to match 90\% of white-box PGD success?
+  \item Craft examples on a single surrogate and on a three-model logit ensemble. Measure transfer to a held-out architecture, with and without momentum (MI-FGSM). Report untargeted and targeted transfer rates.
+\end{enumerate}
+
+\begin{warnbox}[Implementation pitfalls]
+\begin{itemize}
+  \item Keep the model in \texttt{eval()} mode; batch normalization in training mode changes outputs per batch.
+  \item Put normalization inside the model so that \(\epsilon\) is expressed in pixel space.
+  \item Evaluate only on initially correctly classified points, or report clean accuracy alongside robust accuracy.
+  \item Check that \(\|\xadv-\x\|_\infty\le\epsilon\) and \(\xadv\in[0,1]^d\) after the attack. Bugs here silently inflate success rates.
+\end{itemize}
+\end{warnbox}
+
+\section*{Exercises}
+\addcontentsline{toc}{section}{Exercises}
+
+\begin{enumerate}[label=\textbf{\arabic*.}]
+  \item Prove the steepest ascent proposition using Hölder's inequality, and derive the FGM update for \(\ell_1\). Why is the \(\ell_1\) steepest ascent step a poor attack in practice?
+  \item Show that for \(p=\infty\), Euclidean projection onto \(\B_\infty(\x,\epsilon)\cap[0,1]^d\) is elementwise clipping. Why does this fail for \(\ell_2\)?
+  \item Explain why cross-entropy may yield vanishing gradients for highly confident predictions, while the margin loss of Eq.~\eqref{eq:cwloss} does not.
+  \item Show that Eq.~\eqref{eq:nes} is an unbiased estimator of \(\nabla_{\x}\mathbb{E}_{\mathbf{u}\sim\mathcal{N}(0,I)}[\Loss(\x+\sigma\mathbf{u},y)]\). (Hint: Stein's lemma.)
+  \item A defender uses a majority vote over five independently trained networks and reports that PGD on each individual member fails to fool the vote. Describe a correct adaptive attack.
+\end{enumerate}
+
+\bibliographystyle{apalike}
+\bibliography{references}
+\end{document}

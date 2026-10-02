@@ -1,0 +1,314 @@
+\documentclass[10pt,a4paper]{extarticle}
+\newcommand{\coursehead}{PCC190 -- Secure Machine Learning}
+\newcommand{\chapterhead}{Chapter 6: Evaluating Robustness}
+\usepackage{parskip}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[english]{babel}
+\usepackage{amsmath, amssymb, amsthm}
+\usepackage{geometry}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{tabularx}
+\usepackage{enumitem}
+\usepackage{microtype}
+\usepackage{csquotes}
+\usepackage{natbib}
+\usepackage{fancyhdr}
+\usepackage[most]{tcolorbox}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{hyperref}
+
+\definecolor{dblue}{RGB}{16, 42, 92}
+\definecolor{dorange}{RGB}{230, 115, 0}
+\definecolor{codebg}{rgb}{0.95,0.95,0.95}
+
+\hypersetup{colorlinks=true, linkcolor=dblue, citecolor=dorange, urlcolor=dblue}
+
+\setlist{nosep}
+\geometry{margin=2cm, headheight=20pt}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\color{dblue}\coursehead}
+\fancyhead[R]{\small\color{dblue}\chapterhead}
+\fancyfoot[C]{\small\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\headrule}{\hbox to\headwidth{\color{dorange}\leaders\hrule height \headrulewidth\hfill}}
+
+\lstset{
+    language=Python,
+    backgroundcolor=\color{codebg},
+    basicstyle=\ttfamily\footnotesize,
+    keywordstyle=\color{dblue}\bfseries,
+    commentstyle=\color{gray},
+    stringstyle=\color{dorange!80!black},
+    showstringspaces=false,
+    frame=single,
+    breaklines=true,
+    inputencoding=utf8
+}
+
+\newtcolorbox{keybox}[1][]{colback=dblue!5, colframe=dblue, fonttitle=\bfseries, title={#1}, breakable}
+\newtcolorbox{warnbox}[1][]{colback=dorange!7, colframe=dorange, fonttitle=\bfseries, title={#1}, breakable}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}[section]
+\newtheorem{example}{Example}[section]
+\newtheorem{remark}{Remark}[section]
+
+% Notation
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\X}{\mathcal{X}}
+\newcommand{\Y}{\mathcal{Y}}
+\newcommand{\D}{\mathcal{D}}
+\newcommand{\Loss}{\mathcal{L}}
+\newcommand{\x}{\mathbf{x}}
+\newcommand{\xadv}{\mathbf{x}'}
+\newcommand{\bdelta}{\boldsymbol{\delta}}
+\newcommand{\btheta}{\boldsymbol{\theta}}
+\newcommand{\B}{\mathcal{B}}
+\newcommand{\Proj}{\Pi}
+\DeclareMathOperator*{\argmax}{arg\,max}
+\DeclareMathOperator*{\argmin}{arg\,min}
+\DeclareMathOperator{\sign}{sign}
+
+\title{Chapter 6\\Evaluating Model Robustness}
+\author{PCC190 -- Secure Machine Learning\\Prof.\ Rodrigo C.\ P.\ Silva -- DECOM/UFOP}
+\date{\today}
+
+\begin{document}
+\maketitle
+\thispagestyle{fancy}
+\tableofcontents
+
+\section*{Why evaluation deserves its own chapter}
+\addcontentsline{toc}{section}{Why evaluation deserves its own chapter}
+
+The history of adversarial ML is largely a history of defenses that were reported as robust and later broken, often within weeks and often by straightforward modifications of known attacks \citep{carlini2017detected,athalye2018obfuscated,tramer2020adaptive}. The cause was rarely dishonesty. It was the asymmetry of the problem: a defense claim is a universal statement (\emph{no} attack in the threat model succeeds), while an evaluation is a finite set of attacks. The burden is on the evaluator to make that finite set as strong as possible. This chapter covers what to measure, which tools to use, how to build adaptive attacks, and how to read the numbers. The main reference is \citet{carlini2019evaluating}.
+
+\section{Metrics for Adversarial Robustness}
+
+Throughout, \(\{(\x_i,y_i)\}_{i=1}^{N}\) is a test set, \(\mathcal{A}\) an attack returning \(\xadv_i=\mathcal{A}(\x_i,y_i)\) within the threat set \(\B_p(\x_i,\epsilon)\), and \(f\) the evaluated model (including any preprocessing or randomness).
+
+\subsection{Budget-based metrics}
+
+\begin{definition}[Empirical robust accuracy]
+\[
+\mathrm{RA}_{\mathcal{A}}(\epsilon)=\frac{1}{N}\sum_{i=1}^{N}\mathbb{1}\big[f(\x_i)=y_i\;\wedge\;f(\mathcal{A}(\x_i,y_i))=y_i\big].
+\]
+For a set of attacks \(\{\mathcal{A}_1,\dots,\mathcal{A}_J\}\), the \emph{worst-case} robust accuracy counts a point as robust only if \emph{every} attack fails on it:
+\[
+\mathrm{RA}_{\text{worst}}(\epsilon)=\frac{1}{N}\sum_{i}\mathbb{1}\Big[f(\x_i)=y_i\;\wedge\;\textstyle\bigwedge_{j}f(\mathcal{A}_j(\x_i,y_i))=y_i\Big].
+\]
+\end{definition}
+
+Per-example worst case is strictly more informative than reporting the minimum of per-attack accuracies, because different attacks succeed on different points. The true robust accuracy \(\mathrm{RA}^\star(\epsilon)\) (no adversarial example exists) satisfies
+\begin{equation}\label{eq:sandwich}
+\mathrm{CA}(\epsilon)\;\le\;\mathrm{RA}^\star(\epsilon)\;\le\;\mathrm{RA}_{\text{worst}}(\epsilon)\;\le\;\mathrm{RA}_{\mathcal{A}_j}(\epsilon),
+\end{equation}
+where \(\mathrm{CA}(\epsilon)\) is a certified accuracy, when available (Chapter~5).
+
+\paragraph{Attack success rate (ASR).} Fraction of initially correct points that become misclassified (or reach the target, for targeted attacks). Always state the denominator: \enquote{all points} and \enquote{initially correct points} give different numbers.
+
+\paragraph{Robustness curves.} Report \(\mathrm{RA}(\epsilon)\) over a range of \(\epsilon\), not a single value. A curve that does not reach zero for large \(\epsilon\) signals a flawed evaluation (Section~\ref{sec:adaptive}). The area under the curve summarizes it in one number.
+
+\subsection{Distance-based metrics}
+
+Minimum-norm attacks (C\&W, DeepFool, FAB, \citealp{croce2020fab}) return, for each \(\x_i\), the smallest perturbation \(\hat\rho_i\) they found. Since any attack finds a perturbation at least as large as the true minimum \(\rho^\star_i\), we have \(\hat\rho_i\ge\rho^\star_i\). Report the median \(\hat\rho\) and the empirical CDF; the robustness curve at any \(\epsilon\) is the fraction of points with \(\hat\rho_i>\epsilon\).
+
+\begin{warnbox}[Estimates are not lower bounds]
+Score-based estimates of the minimal perturbation, such as CLEVER \citep{weng2018clever}, use sampling and extreme value theory to estimate a local Lipschitz constant. They are \emph{estimates} and can overstate robustness, especially under gradient masking. Only verification or certification gives lower bounds on \(\rho^\star\).
+\end{warnbox}
+
+\subsection{Cost metrics}
+
+For black-box attacks, success should be reported together with the cost: the median number of queries per successful attack and the success rate as a function of the query budget. For poisoning, report CA and ASR versus poisoning rate (Chapter~3). For privacy, report TPR at low FPR and, for DP models, the empirical \(\varepsilon\) lower bound (Chapter~4).
+
+\section{Benchmarking Tools and Frameworks}
+
+Reimplementing attacks is a common source of evaluation bugs. Use maintained libraries, and cross-check with at least two.
+
+\begin{table}[h]
+\centering\small
+\begin{tabularx}{\textwidth}{>{\bfseries}l X}
+\toprule
+Tool & Purpose \\
+\midrule
+AutoAttack \citep{croce2020reliable} & Parameter-free ensemble for \(\ell_\infty\), \(\ell_2\), \(\ell_1\): APGD-CE, APGD-T (targeted, margin loss), FAB-T, Square. The standard reporting protocol for image classifiers. \\
+RobustBench \citep{croce2021robustbench} & Leaderboard and model zoo evaluated with AutoAttack on CIFAR-10/100 and ImageNet, plus common corruptions. Useful for baselines and pretrained robust models. \\
+Foolbox \citep{rauber2020foolbox} & Many gradient and decision-based attacks with a uniform interface (PyTorch, TensorFlow, JAX). \\
+ART \citep{nicolae2018art} & Broad toolbox: evasion, poisoning, extraction and inference attacks, plus defenses; supports many model types including tree ensembles. \\
+torchattacks \citep{kim2020torchattacks} & Lightweight PyTorch implementations of common evasion attacks. \\
+TextAttack \citep{morris2020textattack} & NLP attacks built from goal, constraints, transformation and search (Chapter~7). \\
+\bottomrule
+\end{tabularx}
+\caption{Common evaluation tools.}
+\end{table}
+
+\paragraph{AutoAttack in practice.} AutoAttack combines attacks with different failure modes: APGD with cross-entropy and with a targeted margin loss handles gradient-based search with adaptive step sizes; FAB finds minimal perturbations; Square Attack is gradient-free and therefore insensitive to gradient masking. It is evaluated in worst-case fashion per example. Its \emph{standard} version is deterministic; the \emph{rand} version uses EOT for randomized defenses.
+
+\begin{warnbox}[A standard attack is not an adaptive attack]
+AutoAttack is a strong \emph{minimum} for evaluation, not a sufficient one. \citet{tramer2020adaptive} broke thirteen defenses, several of which had been evaluated with strong standardized attacks, by tailoring the attack to each defense. Benchmarks such as RobustBench restrict entries to defenses where standardized attacks are considered reliable (for example, no randomness, no non-differentiable preprocessing, no detection).
+\end{warnbox}
+
+\section{Adaptive Attacks: Evaluating Defenses Properly}\label{sec:adaptive}
+
+\begin{definition}[Adaptive attack]
+An attack designed with full knowledge of the defense, including its preprocessing, randomness, detectors and training procedure, that optimizes an objective aligned with defeating that specific defense.
+\end{definition}
+
+\subsection{A recipe}
+
+Following \citet{tramer2020adaptive} and \citet{carlini2019evaluating}:
+\begin{enumerate}
+  \item \textbf{Understand the defense.} Identify every component between input and decision: transformations, randomness, detectors, ensembles, abstention.
+  \item \textbf{Simplify.} Remove components that do not contribute to robustness and check whether the remaining core is still robust. Defenses often have one component doing the work.
+  \item \textbf{Define a loss that matches success.} If the defense also detects, success means \emph{misclassified and not detected}: combine the classification margin with the detector score. If the defense abstains, abstention is not a correct answer unless the threat model says so.
+  \item \textbf{Make the loss optimizable.} Replace non-differentiable steps with BPDA, average over randomness with EOT, use logits or margin losses to avoid saturation, reparameterize iterative defenses (Chapter~5).
+  \item \textbf{Optimize well.} Many iterations, restarts, step-size schedules; verify convergence by plotting the loss.
+  \item \textbf{Try gradient-free attacks} as a check (Square, SPSA, decision-based).
+\end{enumerate}
+
+\subsection{Sanity checks}
+
+\begin{keybox}[Checklist before believing a robustness number]
+\begin{itemize}
+  \item Accuracy decreases monotonically in \(\epsilon\) and reaches (near) zero for large \(\epsilon\).
+  \item Iterative attacks beat single-step attacks; white-box beats black-box and transfer.
+  \item More iterations and restarts do not increase the success rate further (convergence).
+  \item Targeted attacks toward each class succeed for large \(\epsilon\).
+  \item The attack succeeds against the undefended base model with the same hyperparameters.
+  \item Adversarial examples are verified: inside the threat set, valid domain, misclassified by the full defended pipeline (with fresh randomness).
+  \item Clean accuracy is reported alongside robust accuracy.
+\end{itemize}
+\end{keybox}
+
+\begin{example}[Detector plus classifier]
+A defense pairs a classifier \(f\) with a detector \(d(\x)\in[0,1]\), rejecting inputs with \(d(\x)>\tau\). Attacking only \(f\) finds examples that \(d\) flags, so the defense appears robust. The adaptive attack optimizes
+\[
+\max_{\xadv\in\B_p(\x,\epsilon)}\;\big[\max_{j\neq y}Z_j(\xadv)-Z_y(\xadv)\big]-\lambda\,\max\big(0,\,d(\xadv)-\tau+\kappa\big),
+\]
+or equivalently treats the detector's rejection as an extra class \(K+1\) of a combined model and requires the attack to avoid both \(y\) and \(K+1\). This construction bypassed ten published detectors \citep{carlini2017detected}.
+\end{example}
+
+\section{Security Evaluations under Different Threat Models}
+
+A complete evaluation states which threat models were tested and which were not.
+
+\paragraph{Knowledge.} White-box evaluations upper-bound what weaker attackers can do; they are the reference. Black-box results are informative about deployment risk (queries needed, cost) but are not robustness evidence. Transfer results from multiple surrogates indicate whether the defense resists attackers without model access.
+
+\paragraph{Multiple and unforeseen perturbations.} Robustness to one \(\ell_p\) ball does not transfer to others \citep{tramer2019multiple}. Evaluate several norms and their union \citep{maini2020union}, spatial transformations such as rotations and translations \citep{engstrom2019spatial}, perceptual threat models \citep{laidlaw2021perceptual}, and natural corruptions such as noise, blur and weather \citep{hendrycks2019benchmarking}. Report results for the threat model used in training separately from the unseen ones.
+
+\paragraph{Training-time threats.} For poisoning defenses, evaluate with attacks that know the defense (for example, poisons crafted to evade spectral filtering), across poisoning rates and trigger types, and report clean accuracy and ASR after the defense.
+
+\paragraph{Privacy threats.} Use the strongest available membership inference (LiRA, Chapter~4) at low FPR, include canaries or worst-case records, and compare with DP guarantees when they exist.
+
+\paragraph{System-level threats.} Real attackers often do not compute gradients \citep{apruzzese2023real}: they exploit the pipeline (input validation, preprocessing, fallbacks, human review). A threat model for a deployed system should include those components, and the evaluation should state what is out of scope.
+
+\section{Interpreting Robustness Evaluation Results}
+
+\paragraph{Upper versus lower bounds.} By Eq.~\eqref{eq:sandwich}, an empirical number is an upper bound that can only go down as attacks improve; a certified number is a lower bound. The gap between them measures how much we do not know.
+
+\paragraph{Statistical uncertainty.} Robust accuracy is a binomial proportion. With \(N\) test points and estimate \(\hat p\), a 95\% normal-approximation interval is
+\[
+\hat p\pm1.96\sqrt{\hat p(1-\hat p)/N}.
+\]
+For \(N=1000\) and \(\hat p=0.55\) the half-width is about \(3.1\) percentage points, so differences of one or two points between defenses evaluated on 1000 examples are not meaningful. Variance across training seeds should also be reported.
+
+\paragraph{Comparability.} Results are comparable only with identical threat model (\(p\), \(\epsilon\), input scaling), test subset, attack configuration, and the same handling of initially misclassified points. Check whether \(\epsilon\) is in \([0,1]\) or \([0,255]\) units and whether normalization was applied before or after the perturbation.
+
+\paragraph{What a number does not mean.} 60\% robust accuracy at \(\ell_\infty\), \(\epsilon=8/255\) does not mean the model is 60\% secure in deployment. It means that, for this threat model and this attack suite, on this test distribution, 40\% of inputs admit an adversarial example. It says nothing about larger perturbations, other perturbation types, poisoning, or privacy.
+
+\begin{keybox}[Minimum reporting standard]
+Threat model (goal, knowledge, capability); clean accuracy; robust accuracy with worst-case over an attack suite including AutoAttack and at least one adaptive attack; robustness curve over \(\epsilon\); attack hyperparameters and convergence evidence; confidence intervals; code and model release.
+\end{keybox}
+
+\section{Hands-On: Setting Up Robustness Benchmarks}
+
+\subsection{Loading models and running AutoAttack}
+
+\begin{lstlisting}
+# pip install git+https://github.com/RobustBench/robustbench.git
+# pip install git+https://github.com/fra31/auto-attack
+import torch
+from robustbench.utils import load_model
+from robustbench.data import load_cifar10
+from autoattack import AutoAttack
+
+x, y = load_cifar10(n_examples=1000)
+x, y = x.cuda(), y.cuda()
+
+std = load_model("Standard", dataset="cifar10", threat_model="Linf").cuda().eval()
+# pick any entry from the RobustBench CIFAR-10 Linf leaderboard
+rob = load_model("<leaderboard-model-name>", dataset="cifar10",
+                 threat_model="Linf").cuda().eval()
+
+for name, model in [("standard", std), ("robust", rob)]:
+    adversary = AutoAttack(model, norm="Linf", eps=8/255, version="standard")
+    x_adv = adversary.run_standard_evaluation(x, y, bs=250)
+    acc = (model(x_adv).argmax(1) == y).float().mean().item()
+    print(name, "robust acc:", acc)
+\end{lstlisting}
+
+\subsection{Robustness curve with per-example worst case}
+
+\begin{lstlisting}
+import numpy as np
+
+def worst_case_robust(model, x, y, attacks):
+    # attacks: list of callables (model, x, y) -> x_adv
+    with torch.no_grad():
+        robust = model(x).argmax(1) == y
+    for atk in attacks:
+        idx = robust.nonzero().squeeze(1)
+        if len(idx) == 0: break
+        xa = atk(model, x[idx], y[idx])
+        assert (xa - x[idx]).abs().max() <= eps + 1e-6   # threat model check
+        assert xa.min() >= 0 and xa.max() <= 1
+        with torch.no_grad():
+            robust[idx] &= model(xa).argmax(1) == y[idx]
+    return robust.float().mean().item()
+
+def ci95(p, n):
+    h = 1.96 * np.sqrt(p * (1 - p) / n)
+    return p - h, p + h
+
+for eps in [0, 1/255, 2/255, 4/255, 8/255, 16/255, 32/255]:
+    attacks = [lambda m, a, b: pgd_linf(m, a, b, eps, eps / 4, 50, loss="ce")[0],
+               lambda m, a, b: pgd_linf(m, a, b, eps, eps / 4, 50, loss="cw")[0]]
+    ra = worst_case_robust(rob, x, y, attacks)
+    print(f"eps={eps*255:.0f}/255  RA={ra:.3f}  CI={ci95(ra, len(x))}")
+\end{lstlisting}
+
+(\texttt{pgd\_linf} is the Chapter~2 implementation; \texttt{loss="cw"} selects the margin loss.)
+
+\subsection{Suggested experiments}
+
+\begin{enumerate}[label=\textbf{\arabic*.}]
+  \item Evaluate a standard model and two RobustBench models with AutoAttack at \(\epsilon=8/255\) on 1000 points. Compare with your own PGD-20. Report the gap and its confidence interval.
+  \item Plot robustness curves from \(\epsilon=0\) to \(32/255\). Check that they reach zero.
+  \item Take your fast-AT model from Chapter~5 at an epoch with catastrophic overfitting and run the sanity checklist. Which checks fail?
+  \item Wrap a robust model with a randomized input transformation (random resize and pad). Evaluate it with AutoAttack \emph{standard}, AutoAttack \emph{rand} (EOT), and a hand-written EOT-PGD with 20 samples per gradient. Compare.
+  \item Evaluate an \(\ell_\infty\)-robust model under \(\ell_2\) (\(\epsilon=0.5\)), rotations up to \(30^\circ\), and CIFAR-10-C corruptions. Summarize in a table.
+\end{enumerate}
+
+\section*{Exercises}
+\addcontentsline{toc}{section}{Exercises}
+
+\begin{enumerate}[label=\textbf{\arabic*.}]
+  \item Two attacks give 52\% and 50\% robust accuracy. Show that the per-example worst-case robust accuracy can be anywhere between 2\% and 50\%, and explain why it matters.
+  \item Design an adaptive attack for a defense that applies JPEG compression at a random quality factor before a classifier.
+  \item A paper reports 71.3\% vs 70.1\% robust accuracy for two methods on 500 test points with one seed each. Is the comparison meaningful? Compute the confidence intervals.
+  \item Explain why a certified accuracy higher than an empirical robust accuracy, for the same model and \(\epsilon\), indicates a bug.
+  \item Write a one-paragraph threat model and evaluation plan for a robustness claim about a malware detector, stating what is explicitly out of scope.
+\end{enumerate}
+
+\bibliographystyle{apalike}
+\bibliography{references}
+\end{document}

@@ -1,0 +1,364 @@
+\documentclass[10pt,a4paper]{extarticle}
+\newcommand{\coursehead}{PCC190 -- Secure Machine Learning}
+\newcommand{\chapterhead}{Chapter 5: Robust Defenses}
+\usepackage{parskip}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[english]{babel}
+\usepackage{amsmath, amssymb, amsthm}
+\usepackage{geometry}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{tabularx}
+\usepackage{enumitem}
+\usepackage{microtype}
+\usepackage{csquotes}
+\usepackage{natbib}
+\usepackage{fancyhdr}
+\usepackage[most]{tcolorbox}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{hyperref}
+
+\definecolor{dblue}{RGB}{16, 42, 92}
+\definecolor{dorange}{RGB}{230, 115, 0}
+\definecolor{codebg}{rgb}{0.95,0.95,0.95}
+
+\hypersetup{colorlinks=true, linkcolor=dblue, citecolor=dorange, urlcolor=dblue}
+
+\setlist{nosep}
+\geometry{margin=2cm, headheight=20pt}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\color{dblue}\coursehead}
+\fancyhead[R]{\small\color{dblue}\chapterhead}
+\fancyfoot[C]{\small\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\headrule}{\hbox to\headwidth{\color{dorange}\leaders\hrule height \headrulewidth\hfill}}
+
+\lstset{
+    language=Python,
+    backgroundcolor=\color{codebg},
+    basicstyle=\ttfamily\footnotesize,
+    keywordstyle=\color{dblue}\bfseries,
+    commentstyle=\color{gray},
+    stringstyle=\color{dorange!80!black},
+    showstringspaces=false,
+    frame=single,
+    breaklines=true,
+    inputencoding=utf8
+}
+
+\newtcolorbox{keybox}[1][]{colback=dblue!5, colframe=dblue, fonttitle=\bfseries, title={#1}, breakable}
+\newtcolorbox{warnbox}[1][]{colback=dorange!7, colframe=dorange, fonttitle=\bfseries, title={#1}, breakable}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}[section]
+\newtheorem{example}{Example}[section]
+\newtheorem{remark}{Remark}[section]
+
+% Notation
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\X}{\mathcal{X}}
+\newcommand{\Y}{\mathcal{Y}}
+\newcommand{\D}{\mathcal{D}}
+\newcommand{\Loss}{\mathcal{L}}
+\newcommand{\x}{\mathbf{x}}
+\newcommand{\xadv}{\mathbf{x}'}
+\newcommand{\bdelta}{\boldsymbol{\delta}}
+\newcommand{\btheta}{\boldsymbol{\theta}}
+\newcommand{\B}{\mathcal{B}}
+\newcommand{\Proj}{\Pi}
+\DeclareMathOperator*{\argmax}{arg\,max}
+\DeclareMathOperator*{\argmin}{arg\,min}
+\DeclareMathOperator{\sign}{sign}
+
+\title{Chapter 5\\Robust Defense Mechanisms}
+\author{PCC190 -- Secure Machine Learning\\Prof.\ Rodrigo C.\ P.\ Silva -- DECOM/UFOP}
+\date{\today}
+
+\begin{document}
+\maketitle
+\thispagestyle{fancy}
+\tableofcontents
+
+\section*{Setting and notation}
+\addcontentsline{toc}{section}{Setting and notation}
+
+We reuse the notation of Chapters~1--3. The defender's objects are the training procedure, the model \(f_{\btheta}\), and possibly a preprocessing map \(g:\X\to\X\) applied before classification. A defense is only meaningful together with a threat model (Chapter~1): for evasion, typically \(\B_p(\x,\epsilon)\) with a white-box adaptive attacker; for poisoning, a poisoning rate \(\gamma\) and a trigger or perturbation family. We distinguish \emph{empirical} defenses, evaluated by running attacks (which only gives an upper bound on robust accuracy), from \emph{certified} defenses, which give a proven lower bound.
+
+\section{Adversarial Training}
+
+\subsection{The min-max formulation}
+
+Adversarial training minimizes the adversarial risk of Chapter~1 \citep{madry2018towards}:
+\begin{equation}\label{eq:minmax}
+\min_{\btheta}\;\mathbb{E}_{(\x,y)\sim\D}\Big[\max_{\bdelta\in\B_p(0,\epsilon)}\Loss(\btheta;\x+\bdelta,y)\Big].
+\end{equation}
+The inner maximization is the attack; the outer minimization is training. In practice the inner problem is approximated by PGD with \(K\) steps, and the outer by SGD on the resulting adversarial examples.
+
+\paragraph{Why train on the approximate maximizer?} Danskin's theorem says that, under regularity conditions, the gradient of \(\phi(\btheta)=\max_{\bdelta}\Loss(\btheta;\x+\bdelta,y)\) is \(\nabla_{\btheta}\Loss(\btheta;\x+\bdelta^\star,y)\) at a maximizer \(\bdelta^\star\). Deep networks violate the assumptions (non-unique maximizers, non-smoothness), but the principle explains why using the loss gradient at the PGD solution is a sensible descent direction for the robust objective.
+
+\begin{algorithm}[h]
+\caption{PGD adversarial training (one epoch)}
+\begin{algorithmic}[1]
+\For{each minibatch \((X,Y)\)}
+  \State \(X' \gets \mathrm{PGD}_K(f_{\btheta},X,Y,\epsilon,\alpha)\) \Comment{model in eval mode for the attack, or consistent BN handling}
+  \State \(\btheta \gets \btheta - \eta\,\nabla_{\btheta}\frac{1}{|X|}\sum\Loss(\btheta;X',Y)\)
+\EndFor
+\end{algorithmic}
+\end{algorithm}
+
+\subsection{Variations}
+
+\paragraph{TRADES.} \citet{zhang2019trades} decompose robust error into natural error plus boundary error and optimize a surrogate:
+\begin{equation}\label{eq:trades}
+\min_{\btheta}\;\mathbb{E}\Big[\Loss_{\text{CE}}(F(\x),y)+\beta\max_{\xadv\in\B_p(\x,\epsilon)}\mathrm{KL}\big(F(\x)\,\|\,F(\xadv)\big)\Big].
+\end{equation}
+The first term fits clean data; the second pushes the decision boundary away from the data by making predictions locally constant. \(\beta\) controls the accuracy-robustness trade-off explicitly.
+
+\paragraph{Fast adversarial training.} PGD-\(K\) training costs about \(K+1\) times standard training. \enquote{Free} adversarial training \citep{shafahi2019free} recycles the backward pass to update both the perturbation and the weights. \citet{wong2020fast} showed that single-step FGSM training with a \emph{random start} and a step size of about \(1.25\epsilon\) matches PGD training, provided one guards against \emph{catastrophic overfitting}: a sudden collapse in which PGD accuracy drops to zero while FGSM accuracy stays high. Monitoring PGD accuracy on a validation batch and early stopping are essential.
+
+\paragraph{Robust overfitting and data.} \citet{rice2020overfitting} found that, unlike standard training, robust test accuracy peaks shortly after the first learning-rate decay and then declines while robust training accuracy keeps increasing. Early stopping on robust validation accuracy recovers most of the gap. More data helps substantially: unlabeled data with pseudo-labels \citep{carmon2019unlabeled} and, more recently, millions of images from diffusion models \citep{wang2023better} produce the strongest \(\ell_\infty\) results on CIFAR-10.
+
+\subsection{Costs and limitations}
+
+\begin{itemize}
+  \item \textbf{Accuracy trade-off.} Robust models have lower clean accuracy. \citet{tsipras2019robustness} give examples where robustness and accuracy are provably at odds, though in practice the gap shrinks with more data and capacity.
+  \item \textbf{Threat model specificity.} Training against \(\ell_\infty\) gives limited robustness to \(\ell_2\), \(\ell_1\) or spatial perturbations.
+  \item \textbf{Computation.} Several times the cost of standard training.
+  \item \textbf{No guarantee.} Robust accuracy measured with PGD is an upper bound. Evaluate with AutoAttack \citep{croce2020reliable} and adaptive attacks (Chapter~6).
+\end{itemize}
+
+\section{Certified Defenses: Randomized Smoothing}
+
+Empirical defenses can always be broken by a better attack. Certified defenses prove, for each input, a radius \(R\) such that no perturbation with \(\|\bdelta\|\le R\) changes the prediction. Exact verification of a ReLU network is NP-hard; relaxation-based methods \citep{wong2018provable,gowal2019ibp} scale only to moderately sized networks. Randomized smoothing scales to ImageNet.
+
+\subsection{The smoothed classifier}
+
+Given any base classifier \(f\) and noise level \(\sigma\), define
+\begin{equation}\label{eq:smooth}
+g(\x) = \argmax_{c\in\Y}\;\Pr_{\boldsymbol{\eta}\sim\mathcal{N}(0,\sigma^2I)}\big[f(\x+\boldsymbol{\eta})=c\big].
+\end{equation}
+\(g\) returns the class that \(f\) predicts most often under Gaussian noise.
+
+\begin{theorem}[\citealp{cohen2019certified}]
+Let \(c_A\) be the most likely class for \(g\) at \(\x\), with \(\Pr[f(\x+\boldsymbol{\eta})=c_A]\ge\underline{p_A}\) and \(\max_{c\neq c_A}\Pr[f(\x+\boldsymbol{\eta})=c]\le\overline{p_B}\). Then \(g(\x+\bdelta)=c_A\) for all \(\|\bdelta\|_2<R\), with
+\[
+R=\frac{\sigma}{2}\Big(\Phi^{-1}\big(\underline{p_A}\big)-\Phi^{-1}\big(\overline{p_B}\big)\Big),
+\]
+where \(\Phi^{-1}\) is the standard Gaussian quantile function. Using \(\overline{p_B}=1-\underline{p_A}\) gives \(R=\sigma\,\Phi^{-1}(\underline{p_A})\).
+\end{theorem}
+
+\paragraph{Intuition.} Shifting the input by \(\bdelta\) shifts the Gaussian. The worst case for the defender is that \(f\) is a linear classifier aligned with \(\bdelta\); the Neyman--Pearson lemma shows that this worst case changes the class probabilities by an amount controlled by \(\|\bdelta\|_2/\sigma\). The guarantee holds \emph{regardless of the base classifier}, which can be an arbitrary deep network. \citet{lecuyer2019certified} derived a related, looser guarantee from differential privacy.
+
+\subsection{Prediction and certification in practice}
+
+The probabilities cannot be computed exactly, so they are estimated by Monte Carlo:
+\begin{enumerate}
+  \item Draw \(n_0\) noisy samples to select a candidate \(\hat c_A\).
+  \item Draw \(n\) fresh samples and count \(n_A\) hits for \(\hat c_A\).
+  \item Compute a one-sided \((1-\alpha)\) Clopper--Pearson lower bound \(\underline{p_A}\) from \(n_A/n\).
+  \item If \(\underline{p_A}>1/2\), return \(\hat c_A\) with radius \(R=\sigma\,\Phi^{-1}(\underline{p_A})\); otherwise abstain.
+\end{enumerate}
+The certificate is probabilistic: with probability at least \(1-\alpha\) over the sampling, the stated radius is correct. Note the ceiling: with \(n\) samples, \(\underline{p_A}<1\), so \(R\) is bounded (for \(n=10^5\) and \(\alpha=10^{-3}\), \(R\le\sigma\,\Phi^{-1}(\alpha^{1/n})\approx3.8\sigma\)).
+
+\subsection{Training for smoothing and limitations}
+
+The base classifier must be accurate under Gaussian noise, so it is trained with noise augmentation at the same \(\sigma\); adversarially training the smoothed classifier improves certified radii further \citep{salman2019provably}. Off-the-shelf diffusion denoisers followed by a pretrained classifier give strong certified results without retraining \citep{carlini2023certified}.
+
+Limitations: the certificate is for \(\ell_2\) (certified \(\ell_\infty\) radii from \(\ell_2\) are weak in high dimension, since \(\|\bdelta\|_2\le\sqrt{d}\|\bdelta\|_\infty\)); \(\sigma\) trades clean accuracy against radius; inference requires thousands of forward passes per input; and the certificate applies to \(g\), not to \(f\).
+
+\section{Input Transformation Defenses}
+
+Input transformations apply \(g:\X\to\X\) before classification, hoping to remove adversarial structure while preserving content: JPEG compression, bit-depth reduction and median filtering \citep{xu2018feature}, total variation minimization and image quilting \citep{guo2018countering}, projection onto the range of a generative model \citep{samangouei2018defensegan}, and, more recently, diffusion-based purification \citep{nie2022diffusion}. The same transformations can be used for \emph{detection}: flag inputs whose prediction changes a lot after squeezing \citep{xu2018feature}.
+
+\paragraph{Why they fail against adaptive attackers.} The attacker simply attacks the composed classifier \(f\circ g\). Difficulties in doing so are technical, not fundamental:
+\begin{itemize}
+  \item non-differentiable \(g\) (quantization, JPEG): use BPDA (next section);
+  \item randomized \(g\): use Expectation over Transformation;
+  \item iterative \(g\) (optimization or diffusion): differentiate through it, approximate it, or attack the full stochastic pipeline with many gradient samples.
+\end{itemize}
+\citet{athalye2018obfuscated} broke most preprocessing defenses of ICLR 2018 this way. Diffusion purification remains an area where evaluation is difficult and claims must be checked with full adaptive attacks.
+
+\section{Gradient Masking and Obfuscation}
+
+\begin{definition}[Gradient masking]
+A defense exhibits gradient masking when it makes gradient-based attacks fail without making the model correct on the adversarial inputs that exist. The model is not robust; the attacker's optimizer is blinded.
+\end{definition}
+
+\citet{athalye2018obfuscated} identify three forms:
+\begin{enumerate}
+  \item \textbf{Shattered gradients}: non-differentiable or numerically unstable operations (quantization, thresholding).
+  \item \textbf{Stochastic gradients}: randomized defenses where single-sample gradients are noisy.
+  \item \textbf{Vanishing or exploding gradients}: very deep computation (iterative purification, recurrent unrolling) or saturated softmax outputs, as in defensive distillation \citep{papernot2016distillation}.
+\end{enumerate}
+
+\subsection{Circumvention techniques}
+
+\paragraph{BPDA (Backward Pass Differentiable Approximation).} If \(g\) is non-differentiable but \(g(\x)\approx\x\), use \(g\) in the forward pass and the identity (or another differentiable approximation \(\tilde g\)) in the backward pass:
+\[
+\nabla_{\x}\Loss\big(f(g(\x)),y\big)\;\approx\;\nabla_{\mathbf{z}}\Loss\big(f(\mathbf{z}),y\big)\big|_{\mathbf{z}=g(\x)}.
+\]
+
+\paragraph{EOT (Expectation over Transformation).} For randomized defenses \(g_r\) with random seed \(r\), maximize the expected loss, estimating its gradient by averaging \citep{athalye2018eot}:
+\[
+\nabla_{\x}\,\mathbb{E}_r\big[\Loss(f(g_r(\x)),y)\big]\approx\frac{1}{M}\sum_{m=1}^{M}\nabla_{\x}\Loss\big(f(g_{r_m}(\x)),y\big).
+\]
+
+\paragraph{Reparameterization.} For iterative or vanishing-gradient defenses, write \(\x=h(\mathbf{z})\) with \(h\) such that \(g(h(\mathbf{z}))=h(\mathbf{z})\), and optimize over \(\mathbf{z}\). Using logits or margin losses instead of probabilities avoids softmax saturation.
+
+\begin{keybox}[Red flags for gradient masking \citep{carlini2019evaluating}]
+\begin{itemize}
+  \item One-step attacks perform better than iterative attacks.
+  \item Black-box or transfer attacks perform better than white-box attacks.
+  \item Unbounded attacks (\(\epsilon\to\infty\)) do not reach 100\% success.
+  \item Random sampling within the ball finds adversarial examples that gradient attacks miss.
+  \item Increasing iterations or restarts does not increase success.
+\end{itemize}
+Gradient-free attacks such as Square Attack or SPSA (Chapter~2) are good diagnostics because masking does not affect them.
+\end{keybox}
+
+\section{Defending Against Poisoning and Backdoors}
+
+Defenses act at three points: on the data before training, during training, and on the trained model.
+
+\subsection{Data sanitization}
+
+\paragraph{Outlier removal.} Remove points far from their class centroid or with high loss under a reference model. For convex learners, \citet{steinhardt2017certified} analyze the worst case of sphere and slab defenses. Clean-label poisons are designed to be in-distribution, so simple outlier detection often misses them.
+
+\paragraph{Spectral signatures.} \citet{tran2018spectral} observe that, in the representation \(\mathbf{h}(\x)\) of a backdoored network, poisoned samples of the target class shift the class mean along a particular direction. For each class, center the representations, compute the top right singular vector \(\mathbf{v}\) of the centered matrix, score each sample by \((\mathbf{v}^\top(\mathbf{h}(\x)-\bar{\mathbf{h}}))^2\), remove the highest-scoring samples, and retrain.
+
+\paragraph{Activation clustering.} \citet{chen2019activation} cluster the representations of each class into two groups (after dimensionality reduction) and flag a class whose smaller cluster is suspiciously large and well separated.
+
+\subsection{Robust training}
+
+\begin{itemize}
+  \item \textbf{Partition and vote.} Deep Partition Aggregation \citep{levine2021dpa} trains \(k\) models on disjoint, hash-determined partitions of the data and predicts by majority vote. Each poisoned sample affects at most one model, so the prediction is certifiably unchanged if the vote margin exceeds twice the number of poisoned samples.
+  \item \textbf{Differential privacy.} DP-SGD bounds the influence of any single sample, which limits small-\(\gamma\) targeted poisoning, at the cost of accuracy.
+  \item \textbf{Robust aggregation in federated learning.} Replace averaging with Krum \citep{blanchard2017krum}, coordinate-wise median or trimmed mean \citep{yin2018byzantine}, or norm clipping of updates. These limit, but do not eliminate, backdoor injection by a minority of clients \citep{bagdasaryan2020backdoor}.
+\end{itemize}
+
+\subsection{Model inspection and repair}
+
+\paragraph{Trigger reverse engineering.} Neural Cleanse \citep{wang2019neural} searches, for each candidate target class \(c\), for the smallest mask \(\mathbf{M}\) and pattern \(\mathbf{p}\) that send clean inputs to \(c\):
+\[
+\min_{\mathbf{M},\mathbf{p}}\;\sum_{\x}\Loss\big(f((\mathbf{1}-\mathbf{M})\odot\x+\mathbf{M}\odot\mathbf{p}),c\big)+\lambda\|\mathbf{M}\|_1.
+\]
+A class requiring an anomalously small mask (detected by the median absolute deviation across classes) is flagged as backdoored, and the reversed trigger is used to unlearn it.
+
+\paragraph{Fine-pruning.} \citet{liu2018fine} prune neurons that are dormant on clean data (where backdoors often hide) and then fine-tune on a small clean set.
+
+\paragraph{Run-time detection.} STRIP \citep{gao2019strip} superimposes an input with random clean images and measures the entropy of the predictions; triggered inputs keep predicting the target class, giving abnormally low entropy.
+
+\begin{warnbox}[Adaptive poisoning]
+Each of these defenses relies on a property of known attacks: poisons are outliers, triggers are small, backdoor features are separable. Attacks have been designed to violate each assumption (sample-specific and dynamic triggers, latent-separability-aware poisoning, clean-label poisons). Evaluate poisoning defenses against attackers who know the defense, as for evasion.
+\end{warnbox}
+
+\section{Hands-On: Implementing Adversarial Training}
+
+\subsection{PGD and fast adversarial training}
+
+\begin{lstlisting}
+import torch, torch.nn.functional as F
+
+def pgd(model, x, y, eps, alpha, steps):
+    delta = torch.empty_like(x).uniform_(-eps, eps)
+    delta = ((x + delta).clamp(0, 1) - x).detach()
+    for _ in range(steps):
+        delta.requires_grad_(True)
+        loss = F.cross_entropy(model(x + delta), y)
+        g, = torch.autograd.grad(loss, delta)
+        delta = (delta + alpha * g.sign()).clamp(-eps, eps)
+        delta = ((x + delta).clamp(0, 1) - x).detach()
+    return (x + delta).detach()
+
+def train_epoch(model, loader, opt, eps=8/255, alpha=2/255, steps=10,
+                fast=False):
+    for x, y in loader:
+        x, y = x.cuda(), y.cuda()
+        model.eval()                      # attack with fixed BN statistics
+        if fast:                          # FGSM with random start
+            x_adv = pgd(model, x, y, eps, alpha=1.25 * eps, steps=1)
+        else:
+            x_adv = pgd(model, x, y, eps, alpha, steps)
+        model.train()
+        loss = F.cross_entropy(model(x_adv), y)
+        opt.zero_grad(); loss.backward(); opt.step()
+\end{lstlisting}
+
+\subsection{TRADES loss}
+
+\begin{lstlisting}
+def trades_loss(model, x, y, eps, alpha, steps, beta=6.0):
+    model.eval()
+    with torch.no_grad():
+        p_nat = F.softmax(model(x), 1)
+    x_adv = x + 0.001 * torch.randn_like(x)
+    for _ in range(steps):
+        x_adv.requires_grad_(True)
+        kl = F.kl_div(F.log_softmax(model(x_adv), 1), p_nat,
+                      reduction="batchmean")
+        g, = torch.autograd.grad(kl, x_adv)
+        x_adv = x_adv.detach() + alpha * g.sign()
+        x_adv = torch.min(torch.max(x_adv, x - eps), x + eps).clamp(0, 1)
+    model.train()
+    logits = model(x)
+    robust = F.kl_div(F.log_softmax(model(x_adv), 1), F.softmax(logits, 1),
+                      reduction="batchmean")
+    return F.cross_entropy(logits, y) + beta * robust
+\end{lstlisting}
+
+\subsection{Randomized smoothing certification}
+
+\begin{lstlisting}
+from scipy.stats import beta as Beta, norm
+
+@torch.no_grad()
+def sample_counts(model, x, sigma, n, K, bs=1000):
+    counts = torch.zeros(K, dtype=torch.long)
+    for i in range(0, n, bs):
+        m = min(bs, n - i)
+        noisy = x.repeat(m, 1, 1, 1) + sigma * torch.randn(m, *x.shape[1:],
+                                                           device=x.device)
+        counts += torch.bincount(model(noisy).argmax(1).cpu(), minlength=K)
+    return counts
+
+def certify(model, x, sigma, n0=100, n=100_000, alpha=1e-3, K=10):
+    cA = sample_counts(model, x, sigma, n0, K).argmax().item()
+    nA = sample_counts(model, x, sigma, n, K)[cA].item()
+    pA = Beta.ppf(alpha, nA, n - nA + 1)      # Clopper-Pearson lower bound
+    if pA <= 0.5:
+        return None, 0.0                       # abstain
+    return cA, sigma * norm.ppf(pA)
+\end{lstlisting}
+
+\subsection{Suggested experiments}
+
+\begin{enumerate}[label=\textbf{\arabic*.}]
+  \item Train PreAct ResNet-18 on CIFAR-10 with standard training, PGD-10 adversarial training, fast FGSM training and TRADES (\(\beta\in\{1,6\}\)), all at \(\epsilon=8/255\). Report clean accuracy, PGD-50 accuracy, AutoAttack accuracy and training time.
+  \item Track PGD robust accuracy on a validation set every epoch for PGD training over 200 epochs with a piecewise learning rate. Reproduce robust overfitting and evaluate early stopping.
+  \item Run fast FGSM training with step sizes \(1.25\epsilon\) and \(2\epsilon\). Detect catastrophic overfitting from the training curves.
+  \item Train noise-augmented base classifiers at \(\sigma\in\{0.12,0.25,0.5\}\) and plot certified accuracy versus \(\ell_2\) radius for the smoothed classifiers.
+  \item Wrap a standard model with bit-depth reduction (3 bits). Attack it with plain PGD and with PGD+BPDA. Explain the difference.
+\end{enumerate}
+
+\section*{Exercises}
+\addcontentsline{toc}{section}{Exercises}
+
+\begin{enumerate}[label=\textbf{\arabic*.}]
+  \item State Danskin's theorem and explain which of its assumptions fail for ReLU networks. Why does PGD adversarial training still work in practice?
+  \item For a linear base classifier \(f(\x)=\sign(\mathbf{w}^\top\x+b)\), compute \(\Pr[f(\x+\boldsymbol{\eta})=1]\) under \(\boldsymbol{\eta}\sim\mathcal{N}(0,\sigma^2I)\) and show that the randomized smoothing radius equals the distance from \(\x\) to the hyperplane.
+  \item With \(n=10^4\) samples, all of which return class \(c_A\), and \(\alpha=10^{-3}\), compute the certified radius for \(\sigma=0.25\). What is the maximum radius you could certify with this \(n\)?
+  \item A defense quantizes inputs to 4 bits and reports 70\% robust accuracy under PGD at \(\epsilon=8/255\). Describe how to evaluate it properly and predict the outcome.
+  \item Show that in Deep Partition Aggregation with \(k\) partitions, if the top class has \(n_1\) votes and the runner-up has \(n_2\) votes, the prediction cannot change when at most \(\lfloor(n_1-n_2)/2\rfloor\) training samples are poisoned (ignoring tie-breaking).
+\end{enumerate}
+
+\bibliographystyle{apalike}
+\bibliography{references}
+\end{document}

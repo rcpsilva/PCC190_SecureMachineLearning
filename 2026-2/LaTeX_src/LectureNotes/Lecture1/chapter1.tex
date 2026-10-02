@@ -1,0 +1,349 @@
+\documentclass[10pt,a4paper]{extarticle}
+\newcommand{\coursehead}{PCC190 -- Secure Machine Learning}
+\newcommand{\chapterhead}{Chapter 1: Foundations}
+\usepackage{parskip}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[english]{babel}
+\usepackage{amsmath, amssymb, amsthm}
+\usepackage{geometry}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{tabularx}
+\usepackage{enumitem}
+\usepackage{microtype}
+\usepackage{csquotes}
+\usepackage{natbib}
+\usepackage{fancyhdr}
+\usepackage[most]{tcolorbox}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{hyperref}
+
+\definecolor{dblue}{RGB}{16, 42, 92}
+\definecolor{dorange}{RGB}{230, 115, 0}
+\definecolor{codebg}{rgb}{0.95,0.95,0.95}
+
+\hypersetup{colorlinks=true, linkcolor=dblue, citecolor=dorange, urlcolor=dblue}
+
+\setlist{nosep}
+\geometry{margin=2cm, headheight=14pt}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\color{dblue}\coursehead}
+\fancyhead[R]{\small\color{dblue}\chapterhead}
+\fancyfoot[C]{\small\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\headrule}{\hbox to\headwidth{\color{dorange}\leaders\hrule height \headrulewidth\hfill}}
+
+\lstset{
+    language=Python,
+    backgroundcolor=\color{codebg},
+    basicstyle=\ttfamily\footnotesize,
+    keywordstyle=\color{dblue}\bfseries,
+    commentstyle=\color{gray},
+    stringstyle=\color{dorange!80!black},
+    showstringspaces=false,
+    frame=single,
+    breaklines=true,
+    inputencoding=utf8
+}
+
+\newtcolorbox{keybox}[1][]{colback=dblue!5, colframe=dblue, fonttitle=\bfseries, title={#1}, breakable}
+\newtcolorbox{warnbox}[1][]{colback=dorange!7, colframe=dorange, fonttitle=\bfseries, title={#1}, breakable}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}[section]
+\newtheorem{example}{Example}[section]
+\newtheorem{remark}{Remark}[section]
+
+% Notation
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\X}{\mathcal{X}}
+\newcommand{\Y}{\mathcal{Y}}
+\newcommand{\D}{\mathcal{D}}
+\newcommand{\Loss}{\mathcal{L}}
+\newcommand{\x}{\mathbf{x}}
+\newcommand{\xadv}{\mathbf{x}'}
+\newcommand{\bdelta}{\boldsymbol{\delta}}
+\newcommand{\btheta}{\boldsymbol{\theta}}
+\newcommand{\B}{\mathcal{B}}
+\newcommand{\Proj}{\Pi}
+\DeclareMathOperator*{\argmax}{arg\,max}
+\DeclareMathOperator*{\argmin}{arg\,min}
+\DeclareMathOperator{\sign}{sign}
+
+\title{Chapter 1\\Foundations of Adversarial Machine Learning Security}
+\author{PCC190 -- Secure Machine Learning\\Prof.\ Rodrigo C.\ P.\ Silva -- DECOM/UFOP}
+\date{\today}
+
+\begin{document}
+\maketitle
+\thispagestyle{fancy}
+\tableofcontents
+
+\section*{Notation}
+\addcontentsline{toc}{section}{Notation}
+
+Throughout the course we use the following conventions. A classifier is a function \(f_{\btheta}: \X \to \Y\) with parameters \(\btheta\), input space \(\X \subseteq \R^d\) and label set \(\Y = \{1,\dots,K\}\). For neural networks we write \(Z(\x) \in \R^K\) for the logits and \(F(\x) = \mathrm{softmax}(Z(\x))\) for the vector of class probabilities, so that \(f(\x) = \argmax_k F_k(\x)\). The training loss on a pair \((\x, y)\) is \(\Loss(\btheta; \x, y)\), typically the cross-entropy \(-\log F_y(\x)\). Data are drawn from a distribution \(\D\) over \(\X \times \Y\). A perturbation is \(\bdelta \in \R^d\), and the perturbed input is \(\xadv = \x + \bdelta\). The \(\ell_p\) ball of radius \(\epsilon\) centered at \(\x\) is
+\[
+\B_p(\x, \epsilon) = \{\xadv \in \X : \|\xadv - \x\|_p \le \epsilon\}.
+\]
+
+\section{Why Machine Learning Needs Its Own Security Analysis}
+
+Classical software security reasons about code: a buffer overflow or an injection exists because some instruction does something the programmer did not intend. Machine learning adds a new kind of artifact whose behavior is not written by anyone. The decision rule of a trained model is induced from data by an optimization procedure, and the only specification the model satisfies is statistical: low expected loss under \(\D\). Nothing in that specification constrains behavior on inputs that are rare, or impossible, under \(\D\), and nothing constrains behavior when \(\D\) itself has been tampered with. This is the root of most of what this course covers.
+
+Three properties make ML systems a distinct security target \citep{barreno2006can,huang2011adversarial,papernot2018sok}:
+
+\begin{enumerate}
+  \item \textbf{Data is part of the program.} Whoever influences the training data influences the learned function. The training set therefore belongs to the trusted computing base, even when it is scraped from the web or contributed by users.
+  \item \textbf{The specification is implicit and average-case.} Accuracy on a test set says nothing about worst-case behavior. An adversary does not sample from \(\D\); they search for the inputs where the model is wrong.
+  \item \textbf{Models leak.} A model is a compressed function of its training data. Its outputs, confidences and gradients can reveal information about that data and about the model itself.
+\end{enumerate}
+
+\subsection{A catalogue of vulnerabilities across the pipeline}
+
+It is useful to walk along a typical ML pipeline and ask, at each stage, what can go wrong when someone is actively trying to make it go wrong.
+
+\paragraph{Data collection and labeling.} Training data often comes from sources the model owner does not control: crowdsourced labels, user feedback, web crawls, third-party datasets. An attacker who can inject or modify a fraction of these samples can degrade the model or implant hidden behavior. This is \emph{data poisoning} \citep{biggio2012poisoning}, studied in Chapter~3.
+
+\paragraph{Training and the supply chain.} Pretrained weights, open-source training code, and outsourced training are all points of trust. A model trained by a third party can contain a \emph{backdoor}: normal behavior on clean inputs, attacker-chosen behavior when a trigger pattern is present \citep{gu2019badnets}. In federated learning, participants submit updates rather than data, and a malicious participant can poison the global model directly through its update.
+
+\paragraph{Deployment and inference.} Once deployed, the model receives inputs from users. An attacker can craft inputs that are classified incorrectly while still looking legitimate to a human or to downstream checks. These are \emph{evasion attacks} and \emph{adversarial examples} \citep{biggio2013evasion,szegedy2014intriguing}, the main subject of this chapter and the next.
+
+\paragraph{Model outputs and APIs.} A prediction API is an oracle. Repeated queries allow an attacker to infer whether a specific record was in the training set (\emph{membership inference}, \citealp{shokri2017membership}), reconstruct representative inputs or sensitive attributes (\emph{model inversion}, \citealp{fredrikson2015model}), or train a functional copy of the model (\emph{model extraction}, \citealp{tramer2016stealing}). In collaborative training, shared gradients can even be inverted back to the training inputs \citep{zhu2019deep}. These are the topics of Chapter~4.
+
+\begin{keybox}[{The three security properties, revisited}]
+It helps to map these vulnerabilities onto the classical CIA triad:
+\begin{itemize}
+  \item \textbf{Integrity}: the model produces outputs the attacker chose (targeted evasion, backdoors, targeted poisoning).
+  \item \textbf{Availability}: the model becomes useless for legitimate users (indiscriminate poisoning, high error rates on clean data).
+  \item \textbf{Confidentiality / privacy}: the model reveals information about its training data or about itself (membership inference, inversion, extraction).
+\end{itemize}
+\end{keybox}
+
+\section{Threat Models}
+
+A security claim without a threat model is meaningless. Saying that a defense \enquote{makes a model robust} only has content once we say robust \emph{against whom}, \emph{doing what}, and \emph{knowing what}. The standard way to structure this, which goes back to \citet{barreno2006can} and was refined by \citet{biggio2018wild}, is to describe the adversary along three axes: goal, knowledge and capability.
+
+\subsection{Adversary goals}
+
+\paragraph{Security violation.} Which property does the attacker want to break: integrity, availability, or confidentiality (see the box above)?
+
+\paragraph{Specificity.} A \emph{targeted} attack aims at a particular outcome, for example forcing an input to be classified as a specific class \(t\), or causing errors only on a specific set of victims. An \emph{untargeted} (or indiscriminate) attack is satisfied with any error.
+
+Formally, for a single input \((\x, y)\), the untargeted goal is \(f(\xadv) \neq y\), while the targeted goal is \(f(\xadv) = t\) for some chosen \(t \neq y\). Targeted attacks are strictly harder: every successful targeted attack is also a successful untargeted one, but not the reverse.
+
+\subsection{Adversary knowledge}
+
+We describe knowledge as the subset of system components the attacker knows: the training data \(\D_{\text{train}}\), the feature representation, the architecture of \(f\), the parameters \(\btheta\), the training algorithm, and any deployed defense. Three settings recur:
+
+\begin{itemize}
+  \item \textbf{White-box.} Full knowledge of the model, including parameters and therefore gradients. This is the setting of choice for \emph{evaluating} a defense, because it gives the strongest attacker.
+  \item \textbf{Gray-box.} Partial knowledge, for instance the architecture and training data distribution but not the weights, or the model but not the preprocessing defense.
+  \item \textbf{Black-box.} Only query access. We further distinguish \emph{score-based} access (the attacker observes \(F(\x)\) or the top-\(k\) scores) from \emph{decision-based} or \emph{label-only} access (the attacker observes only \(f(\x)\)). A \emph{no-box} or transfer setting allows no queries at all to the target.
+\end{itemize}
+
+\begin{warnbox}[Kerckhoffs's principle applies]
+Security should not rely on the secrecy of the model or the defense. If a defense only works because the attacker does not know it exists, it is security through obscurity. Weights leak, architectures are published, and black-box attacks often succeed through transfer from substitute models (Chapter~2). For this reason, defenses must be evaluated against \emph{adaptive} white-box attackers who know the defense \citep{carlini2019evaluating,tramer2020adaptive}.
+\end{warnbox}
+
+\subsection{Adversary capabilities}
+
+Capabilities describe what the attacker can \emph{do}, as opposed to what they know.
+
+\begin{itemize}
+  \item \textbf{Influence on training versus inference.} Can the attacker modify training data (poisoning), the training procedure (supply chain, federated updates), or only test-time inputs (evasion)?
+  \item \textbf{Perturbation budget.} How much can an input be modified? In the image domain this is typically \(\|\bdelta\|_p \le \epsilon\); in other domains it is a set of allowed transformations (synonym substitutions, adding API calls to malware, rotating a physical object).
+  \item \textbf{Fraction of controlled data.} For poisoning, the proportion of training samples the attacker can insert or alter.
+  \item \textbf{Query budget.} For black-box attacks, the number of queries allowed before detection or before the cost becomes prohibitive.
+\end{itemize}
+
+\begin{example}[Writing down a threat model]
+Consider a content moderation classifier exposed through a public API that returns a binary decision. A reasonable threat model for spammers is: goal is untargeted integrity violation on their own posts (\enquote{not spam}); knowledge is black-box, decision-based; capability is to edit their own text with semantics-preserving changes, with a budget of a few hundred queries per post before their account is flagged. Notice how this immediately rules out gradient-based attacks and \(\ell_\infty\) pixel noise as the relevant evaluation, and points instead to decision-based attacks over discrete text transformations.
+\end{example}
+
+\section{Attack Surfaces: Training Time versus Inference Time}
+
+The most important structural distinction in adversarial ML is \emph{when} the attacker acts. The two surfaces are compared in Table~\ref{tab:surfaces}.
+
+\paragraph{Training-time attacks.} The attacker influences the learning process so that the resulting parameters \(\hat\btheta\) serve their goal. Writing the clean training set as \(S\) and the attacker's contribution as \(S_p\), poisoning is naturally a \emph{bilevel} optimization problem:
+\begin{equation}\label{eq:bilevel}
+\max_{S_p \in \mathcal{C}} \; \Loss_{\text{adv}}\big(\hat\btheta(S_p)\big)
+\quad \text{s.t.} \quad
+\hat\btheta(S_p) \in \argmin_{\btheta} \sum_{(\x,y) \in S \cup S_p} \Loss(\btheta; \x, y),
+\end{equation}
+where \(\mathcal{C}\) encodes the attacker's capability (number of points, allowed modifications) and \(\Loss_{\text{adv}}\) encodes the goal (validation error for availability attacks, misclassification of specific targets for integrity attacks). The inner problem is training itself, which makes exact solution expensive; most practical attacks approximate it.
+
+\paragraph{Inference-time attacks.} The model is fixed and the attacker manipulates inputs (evasion) or uses outputs as an information channel (privacy and extraction). The canonical evasion problem is a single-level optimization over the input, introduced formally in Section~\ref{sec:formulation}.
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabularx}{\textwidth}{>{\bfseries}l X X}
+\toprule
+ & Training time & Inference time \\
+\midrule
+Attacker acts on & Training data, labels, model updates, pretrained weights & Test inputs, query interface \\
+Typical goals & Availability loss, targeted misbehavior, backdoors & Misclassification, information leakage, model theft \\
+Representative attacks & Label flipping, gradient-based poisoning, clean-label poisoning, backdoors & Evasion (adversarial examples), membership inference, inversion, extraction \\
+Persistence & Persistent: affects every later prediction & Per-input or per-query \\
+Optimization structure & Bilevel (Eq.~\ref{eq:bilevel}) & Single-level over \(\x\) or over queries \\
+Covered in & Chapter~3 & Chapters~2 and~4 \\
+\bottomrule
+\end{tabularx}
+\caption{Training-time and inference-time attack surfaces.}
+\label{tab:surfaces}
+\end{table}
+
+\begin{remark}
+The boundary is not always sharp. Backdoor attacks are planted at training time but \emph{exploited} at inference time by presenting the trigger. In federated learning, gradient inversion happens during training but is an information leak, not a manipulation of the model. Systems with online learning or feedback loops (recommenders, fraud detectors retrained on recent data) blur the distinction further, since today's inputs are tomorrow's training data.
+\end{remark}
+
+\section{Mathematical Formulation of Adversarial Examples}\label{sec:formulation}
+
+\subsection{The phenomenon}
+
+\citet{szegedy2014intriguing} observed that deep networks with excellent test accuracy could be made to misclassify almost any correctly classified image by adding a perturbation small enough to be invisible. \citet{biggio2013evasion} had independently formulated test-time evasion as an optimization problem for SVMs and shallow networks. The surprise was not that models make mistakes, but that mistakes are \emph{everywhere}, arbitrarily close to natural data points.
+
+\subsection{Two equivalent views}
+
+\begin{definition}[Adversarial example, budget-constrained form]
+Given a classifier \(f\), a correctly classified input \((\x, y)\), a distance \(\|\cdot\|_p\) and a budget \(\epsilon > 0\), an \emph{adversarial example} is any \(\xadv \in \B_p(\x, \epsilon)\) with \(f(\xadv) \neq y\) (untargeted), or \(f(\xadv) = t\) for a chosen \(t \neq y\) (targeted).
+\end{definition}
+
+Since \(f\) is a discrete \(\argmax\), searching directly for such points is hard. We replace the misclassification condition by a continuous surrogate and solve
+\begin{equation}\label{eq:maxloss}
+\xadv = \argmax_{\xadv \in \B_p(\x,\epsilon) \cap \X} \Loss(\btheta; \xadv, y)
+\qquad \text{(untargeted)},
+\end{equation}
+\begin{equation}\label{eq:maxloss-t}
+\xadv = \argmin_{\xadv \in \B_p(\x,\epsilon) \cap \X} \Loss(\btheta; \xadv, t)
+\qquad \text{(targeted)}.
+\end{equation}
+The constraint \(\xadv \in \X\) enforces validity of the input, for example \(\xadv \in [0,1]^d\) for normalized images.
+
+\begin{definition}[Minimum-norm form]
+Alternatively, we can ask for the \emph{smallest} perturbation that changes the decision:
+\begin{equation}\label{eq:minnorm}
+\bdelta^\star(\x) = \argmin_{\bdelta} \|\bdelta\|_p \quad \text{s.t.} \quad f(\x + \bdelta) \neq y,\; \x + \bdelta \in \X.
+\end{equation}
+The quantity \(\rho_p(\x) = \|\bdelta^\star(\x)\|_p\) is the \(\ell_p\) distance from \(\x\) to the decision boundary, sometimes called the \emph{minimal adversarial perturbation} or \emph{robustness radius} at \(\x\).
+\end{definition}
+
+The two forms answer different questions. The budget-constrained form (Eq.~\ref{eq:maxloss}) is used for evaluation at a fixed \(\epsilon\) and for adversarial training. The minimum-norm form (Eq.~\ref{eq:minnorm}) measures how far the boundary is, and is the basis of attacks such as DeepFool \citep{moosavi2016deepfool} and Carlini--Wagner \citep{carlini2017towards}. They are linked by \(\rho_p(\x) \le \epsilon \iff\) an adversarial example exists in \(\B_p(\x,\epsilon)\).
+
+\subsection{Choice of threat norm}
+
+The \(\ell_p\) norms used in practice each model a different kind of change:
+
+\begin{itemize}
+  \item \(\ell_\infty\): \(\|\bdelta\|_\infty = \max_i |\delta_i|\). Every feature may change, but by at most \(\epsilon\). For 8-bit images, \(\epsilon = 8/255\) is a common benchmark value on CIFAR-10.
+  \item \(\ell_2\): Euclidean energy of the perturbation. Allows larger changes on a few features if others are left untouched.
+  \item \(\ell_1\) and \(\ell_0\): sparse perturbations. \(\ell_0\) counts the number of modified features, modeling attacks that change a few pixels or a few fields of a record.
+\end{itemize}
+
+\begin{warnbox}[{\(\ell_p\) balls are a proxy, not the goal}]
+The real constraint is semantic: the perturbed input should be \enquote{the same thing} to a human or should preserve functionality (a malware sample must still run). \(\ell_p\) balls are mathematically convenient approximations of that set. Many perceptually trivial changes (small rotations, translations, color shifts) have large \(\ell_p\) norm, and some small \(\ell_p\) changes are perceptible. Robustness in one norm does not imply robustness in another. See \citet{gilmer2018motivating} for a critique of the \(\ell_p\) game as a model of real threats.
+\end{warnbox}
+
+\subsection{Why do adversarial examples exist? The linearity view}
+
+\citet{goodfellow2015explaining} offered a simple argument. Consider a linear score \(s(\x) = \mathbf{w}^\top \x\) and an \(\ell_\infty\) perturbation of size \(\epsilon\). The worst-case perturbation is \(\bdelta = \epsilon\,\sign(\mathbf{w})\), which changes the score by
+\[
+\mathbf{w}^\top \bdelta = \epsilon \|\mathbf{w}\|_1.
+\]
+If the entries of \(\mathbf{w}\) have average magnitude \(m\), this change is \(\epsilon m d\): it grows \emph{linearly with the dimension} \(d\) while the per-feature change stays fixed at \(\epsilon\). In high dimension, many imperceptible changes add up to a large change in the output.
+
+\begin{example}[Numerical illustration]
+Take \(d = 3072\) (a \(32 \times 32 \times 3\) image), \(\epsilon = 8/255 \approx 0.031\) and weights with \(\|\mathbf{w}\|_1 / d = 0.01\). The score shifts by \(0.031 \times 0.01 \times 3072 \approx 0.96\), comparable to a typical logit margin, from a perturbation that changes each pixel by at most 8 intensity levels.
+\end{example}
+
+Deep networks are piecewise linear (ReLU) or close to linear in large regions, so the same argument applies locally, with \(\mathbf{w}\) replaced by the input gradient \(\nabla_{\x} \Loss\). This view directly motivates the Fast Gradient Sign Method of Chapter~2.
+
+The linearity view is not the whole story. \citet{ilyas2019features} argued that adversarial perturbations exploit \emph{non-robust features}: patterns that are genuinely predictive on \(\D\) but brittle and meaningless to humans. Under this view, models are not buggy; they are doing exactly what empirical risk minimization rewards. Both perspectives agree on the practical consequence: standard training gives no reason for the decision boundary to be far from the data.
+
+\subsection{Adversarial risk}
+
+Standard learning minimizes the risk \(\mathbb{E}_{(\x,y)\sim\D}[\Loss(\btheta;\x,y)]\). The adversarial counterpart replaces the pointwise loss by its worst case over the threat set:
+\begin{equation}\label{eq:advrisk}
+R_{\text{adv}}(\btheta) = \mathbb{E}_{(\x,y)\sim\D}\Big[\max_{\xadv \in \B_p(\x,\epsilon)} \Loss(\btheta;\xadv,y)\Big].
+\end{equation}
+Minimizing Eq.~\eqref{eq:advrisk} over \(\btheta\) yields the min-max (saddle point) formulation of \citet{madry2018towards}, which underlies adversarial training (Chapter~5). The corresponding 0-1 quantity, \emph{robust accuracy} at radius \(\epsilon\), is the fraction of test points for which \emph{no} adversarial example exists in \(\B_p(\x,\epsilon)\). Note that any attack only gives an \emph{upper bound} on robust accuracy; a lower bound requires certification.
+
+\section{A Taxonomy of Adversarial Attacks}
+
+Combining the previous sections, an attack can be located along several independent axes. Table~\ref{tab:taxonomy} summarizes them; \citet{nist2025ai1002} provides an up-to-date standardized terminology.
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabularx}{\textwidth}{>{\bfseries}l X}
+\toprule
+Axis & Values \\
+\midrule
+Phase & Training time (poisoning, backdoors) \(\mid\) inference time (evasion, privacy, extraction) \\
+Violation & Integrity \(\mid\) availability \(\mid\) confidentiality/privacy \\
+Specificity & Targeted \(\mid\) untargeted \\
+Knowledge & White-box \(\mid\) gray-box \(\mid\) black-box (score-based, decision-based) \(\mid\) transfer/no-box \\
+Perturbation model & \(\ell_\infty, \ell_2, \ell_1, \ell_0\) \(\mid\) semantic/functional transformations \(\mid\) physical \\
+Scope & Per-input \(\mid\) universal (one perturbation for many inputs) \\
+Algorithm family & Gradient-based \(\mid\) optimization-based \(\mid\) gradient estimation \(\mid\) random search \(\mid\) boundary walking \(\mid\) transfer \\
+\bottomrule
+\end{tabularx}
+\caption{Axes of the attack taxonomy.}
+\label{tab:taxonomy}
+\end{table}
+
+\paragraph{Evasion attacks by knowledge.} Since Chapter~2 is organized around this axis, it is worth previewing it. In the \emph{white-box} setting the attacker solves Eq.~\eqref{eq:maxloss} or Eq.~\eqref{eq:minnorm} with exact gradients (FGSM, PGD, C\&W). In the \emph{score-based} setting gradients are unavailable but can be estimated from output scores by finite differences or replaced by random search (ZOO, NES, Square Attack). In the \emph{decision-based} setting only the label is observed, and attacks walk along the decision boundary (Boundary Attack, HopSkipJump). Finally, \emph{transfer attacks} craft examples on a surrogate model and rely on the empirical fact that they often fool the target too.
+
+\paragraph{Universal and physical attacks.} Some attacks seek a single perturbation that fools the model on most inputs, or perturbations that survive printing, camera capture and changes in viewpoint \citep{kurakin2017physical,athalye2018eot}. These relax the per-input assumption and tighten the realism constraints; they are discussed in Chapter~7.
+
+\section{Overview of Defense Strategies}
+
+Defenses can be grouped by \emph{what they change} and \emph{what guarantee they offer}. This section is a map; Chapter~5 develops the main families and Chapter~6 the evaluation methodology.
+
+\paragraph{Robust training.} Change the learning objective so the model is trained against the threat. \emph{Adversarial training} approximately minimizes Eq.~\eqref{eq:advrisk} by generating adversarial examples during training \citep{goodfellow2015explaining,madry2018towards}; variants such as TRADES make the accuracy-robustness trade-off explicit \citep{zhang2019trades}. This is the most reliable empirical defense to date, at substantial computational cost and some loss of clean accuracy.
+
+\paragraph{Certified defenses.} Provide a mathematical guarantee that \(f(\xadv) = f(\x)\) for all \(\xadv \in \B_p(\x, r)\), for some certified radius \(r\). Approaches include convex relaxations and bound propagation \citep{wong2018provable} and randomized smoothing \citep{cohen2019certified}. Certificates are valid against \emph{any} attack within the threat model, but they are typically available only for small radii and come with accuracy and computational costs.
+
+\paragraph{Input transformation and preprocessing.} Remove or disrupt perturbations before classification (JPEG compression, denoising, quantization, random resizing). Cheap and model-agnostic, but historically easy to break once the attacker accounts for the transformation.
+
+\paragraph{Detection.} Train a separate component to flag adversarial inputs and reject them. Detectors are themselves models and can be attacked jointly with the classifier; most published detectors have been bypassed by adaptive attacks.
+
+\paragraph{Data-centric defenses against poisoning.} Sanitize training data, use robust statistics or robust aggregation (for federated learning), and inspect models for backdoors.
+
+\paragraph{Privacy defenses.} Differential privacy, output perturbation and restricting the information returned by APIs address the confidentiality attacks of Chapter~4.
+
+\begin{warnbox}[Gradient masking and the false sense of security]
+Many proposed defenses appear robust because they make gradients uninformative (shattered, stochastic, or vanishing gradients), not because the model is correct on adversarial inputs. Defensive distillation \citep{papernot2016distillation} is a classic example that was later broken \citep{carlini2017towards}. \citet{athalye2018obfuscated} showed that most defenses at a major venue relied on such \emph{obfuscated gradients} and could be circumvented with techniques such as BPDA and Expectation over Transformation. Warning signs include: black-box attacks outperforming white-box ones, single-step attacks outperforming iterative ones, and robust accuracy not reaching zero as \(\epsilon\) grows \citep{carlini2019evaluating}.
+\end{warnbox}
+
+\begin{keybox}[Principles for the rest of the course]
+\begin{enumerate}
+  \item State the threat model explicitly before claiming any security property.
+  \item Evaluate against the strongest attacker consistent with the threat model, which includes knowledge of the defense.
+  \item An attack yields an upper bound on robust accuracy; only certification yields a lower bound.
+  \item Robustness to one perturbation model does not carry over to others.
+\end{enumerate}
+\end{keybox}
+
+\section*{Exercises}
+\addcontentsline{toc}{section}{Exercises}
+
+\begin{enumerate}[label=\textbf{\arabic*.}]
+  \item Write a complete threat model (goal, knowledge, capabilities) for: (a) an attacker evading a malware detector deployed on endpoints; (b) a participant in a federated learning consortium of hospitals who wants the global model to misdiagnose a specific rare condition.
+  \item Show that for a linear binary classifier \(f(\x) = \sign(\mathbf{w}^\top \x + b)\), the minimal \(\ell_2\) adversarial perturbation at \(\x\) is \(\bdelta^\star = -\frac{\mathbf{w}^\top \x + b}{\|\mathbf{w}\|_2^2}\mathbf{w}\) (up to an arbitrarily small overshoot). What is the minimal \(\ell_\infty\) perturbation? (Hint: use dual norms.)
+  \item Explain why every successful targeted attack yields a successful untargeted attack, and give an example where untargeted attacks succeed on all inputs but a targeted attack toward a fixed class \(t\) fails on most of them.
+  \item A paper reports that its defense achieves 85\% accuracy under white-box PGD but only 70\% under a transfer attack from an undefended model. What does this suggest, and what experiments would you request as a reviewer?
+\end{enumerate}
+
+\bibliographystyle{apalike}
+\bibliography{references}
+\end{document}

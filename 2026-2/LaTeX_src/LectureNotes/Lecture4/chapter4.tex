@@ -1,0 +1,325 @@
+\documentclass[10pt,a4paper]{extarticle}
+\newcommand{\coursehead}{PCC190 -- Secure Machine Learning}
+\newcommand{\chapterhead}{Chapter 4: Inference and Privacy Attacks}
+\usepackage{parskip}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[english]{babel}
+\usepackage{amsmath, amssymb, amsthm}
+\usepackage{geometry}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{tabularx}
+\usepackage{enumitem}
+\usepackage{microtype}
+\usepackage{csquotes}
+\usepackage{natbib}
+\usepackage{fancyhdr}
+\usepackage[most]{tcolorbox}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{hyperref}
+
+\definecolor{dblue}{RGB}{16, 42, 92}
+\definecolor{dorange}{RGB}{230, 115, 0}
+\definecolor{codebg}{rgb}{0.95,0.95,0.95}
+
+\hypersetup{colorlinks=true, linkcolor=dblue, citecolor=dorange, urlcolor=dblue}
+
+\setlist{nosep}
+\geometry{margin=2cm, headheight=20pt}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\color{dblue}\coursehead}
+\fancyhead[R]{\small\color{dblue}\chapterhead}
+\fancyfoot[C]{\small\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\headrule}{\hbox to\headwidth{\color{dorange}\leaders\hrule height \headrulewidth\hfill}}
+
+\lstset{
+    language=Python,
+    backgroundcolor=\color{codebg},
+    basicstyle=\ttfamily\footnotesize,
+    keywordstyle=\color{dblue}\bfseries,
+    commentstyle=\color{gray},
+    stringstyle=\color{dorange!80!black},
+    showstringspaces=false,
+    frame=single,
+    breaklines=true,
+    inputencoding=utf8
+}
+
+\newtcolorbox{keybox}[1][]{colback=dblue!5, colframe=dblue, fonttitle=\bfseries, title={#1}, breakable}
+\newtcolorbox{warnbox}[1][]{colback=dorange!7, colframe=dorange, fonttitle=\bfseries, title={#1}, breakable}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}[section]
+\newtheorem{example}{Example}[section]
+\newtheorem{remark}{Remark}[section]
+
+% Notation
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\X}{\mathcal{X}}
+\newcommand{\Y}{\mathcal{Y}}
+\newcommand{\D}{\mathcal{D}}
+\newcommand{\Loss}{\mathcal{L}}
+\newcommand{\x}{\mathbf{x}}
+\newcommand{\xadv}{\mathbf{x}'}
+\newcommand{\bdelta}{\boldsymbol{\delta}}
+\newcommand{\btheta}{\boldsymbol{\theta}}
+\newcommand{\B}{\mathcal{B}}
+\newcommand{\Proj}{\Pi}
+\DeclareMathOperator*{\argmax}{arg\,max}
+\DeclareMathOperator*{\argmin}{arg\,min}
+\DeclareMathOperator{\sign}{sign}
+
+\title{Chapter 4\\Model Inference and Privacy Attacks}
+\author{PCC190 -- Secure Machine Learning\\Prof.\ Rodrigo C.\ P.\ Silva -- DECOM/UFOP}
+\date{\today}
+
+\begin{document}
+\maketitle
+\thispagestyle{fancy}
+\tableofcontents
+
+\section*{Setting and notation}
+\addcontentsline{toc}{section}{Setting and notation}
+
+This chapter is about \emph{confidentiality}. The model owner trains \(f_{\hat\btheta}\) on a private dataset \(S\sim\D^n\) and exposes it through an interface: full parameters (white-box), output scores \(F(\x)\), labels \(f(\x)\), or, in federated learning, gradients and updates. The attacker uses that interface to learn something the owner did not intend to reveal:
+\begin{itemize}
+  \item \textbf{membership}: is a given record \(z=(\x,y)\) in \(S\)?
+  \item \textbf{attributes}: what is the value of a hidden feature of a record, given the others?
+  \item \textbf{data}: what do training inputs (or class prototypes) look like?
+  \item \textbf{the model}: its parameters or its functionality.
+\end{itemize}
+We write \(\ell(z) = \Loss(\hat\btheta; z)\) for the loss of the released model on \(z\), and \(\mathrm{TPR}\), \(\mathrm{FPR}\) for the true and false positive rates of a binary inference attack.
+
+\section{Membership Inference Attacks}
+
+\subsection{The game}
+
+\begin{definition}[Membership inference experiment]
+A challenger samples \(S\sim\D^n\) and trains \(\hat\btheta=\mathcal{A}(S)\). It flips a fair bit \(b\). If \(b=1\) it picks \(z\) uniformly from \(S\); if \(b=0\) it samples a fresh \(z\sim\D\). The adversary receives \(z\) and access to \(\hat\btheta\) and outputs a guess \(\hat b\). Its \emph{membership advantage} is \(\mathrm{Adv}=\mathrm{TPR}-\mathrm{FPR}=2\Pr[\hat b=b]-1\) \citep{yeom2018privacy}.
+\end{definition}
+
+Membership is sensitive on its own: knowing that a record was used to train a model for a specific disease reveals that the person has the disease. It is also the standard \emph{measure} of how much a model leaks about individuals, and it is the attack that differential privacy directly bounds (Section~\ref{sec:dp}).
+
+\subsection{Why it works: generalization gap and memorization}
+
+Models fit training data better than unseen data. The simplest attack thresholds the loss \citep{yeom2018privacy}:
+\[
+\hat b = \mathbb{1}\big[\ell(z) < \tau\big].
+\]
+If training loss and test loss distributions differ, this attack has positive advantage; \citet{yeom2018privacy} show that its advantage is closely related to the generalization gap. However, a small \emph{average} gap does not mean low risk: individual outliers and rare examples are memorized even by well-generalizing models, and those are exactly the most sensitive records.
+
+\subsection{Shadow models}
+
+\citet{shokri2017membership} introduced a learned attack. The attacker trains \(k\) \emph{shadow models} on datasets \(S^{(i)}\) drawn from a distribution similar to \(\D\), for which membership is known. For each shadow model and each record they record the output vector \(F^{(i)}(\x)\) with a label \enquote{in} or \enquote{out}, and train an \emph{attack classifier} (one per class) to predict membership from the output vector. At attack time, the attack classifier is applied to the target model's outputs. \citet{salem2019mlleaks} showed that a single shadow model, and even simple features such as the maximum confidence or the entropy of \(F(\x)\), work nearly as well, considerably relaxing the assumptions.
+
+\subsection{Per-example calibration: the likelihood ratio attack}
+
+A single global threshold ignores that some examples are \enquote{easy} (low loss whether or not they were trained on) and others are \enquote{hard}. \citet{carlini2022membership} frame membership inference as a per-example hypothesis test. For a target \(z\), train shadow models with \(z\) included (IN) and excluded (OUT), compute a well-behaved statistic, the logit-scaled confidence
+\[
+\phi(z) = \log\frac{F_y(\x)}{1-F_y(\x)},
+\]
+and fit Gaussians \(\mathcal{N}(\mu_{\text{in}},\sigma^2_{\text{in}})\) and \(\mathcal{N}(\mu_{\text{out}},\sigma^2_{\text{out}})\) to the shadow statistics. The attack (LiRA) uses the likelihood ratio
+\begin{equation}\label{eq:lira}
+\Lambda(z) = \frac{\mathcal{N}\big(\phi_{\text{target}}(z);\mu_{\text{in}},\sigma^2_{\text{in}}\big)}{\mathcal{N}\big(\phi_{\text{target}}(z);\mu_{\text{out}},\sigma^2_{\text{out}}\big)},
+\end{equation}
+which by the Neyman--Pearson lemma is the most powerful test under the Gaussian assumption. An \emph{offline} variant uses only OUT models and a one-sided test, which allows reusing shadow models across targets.
+
+\begin{warnbox}[Report TPR at low FPR, not accuracy or AUC]
+An attack that identifies a few members with near-certainty is a serious privacy breach even if its average accuracy is close to 50\%. Conversely, an attack with 60\% balanced accuracy may never be confident about anyone. \citet{carlini2022membership} argue that membership inference should be evaluated by the TPR at very low FPR (for example \(10^{-3}\)) on a log-log ROC curve. Many earlier attacks that looked strong by accuracy are weak by this metric, and vice versa.
+\end{warnbox}
+
+\subsection{Label-only attacks}
+
+If the API returns only labels, the loss is not observed. \citet{choquette2021label} use robustness as a proxy: training points tend to lie farther from the decision boundary. They estimate this distance by querying augmented versions of \(\x\) (flips, shifts) or by running a decision-based adversarial attack (Chapter~2) and thresholding the perturbation size. Hiding confidence scores is therefore not a defense against membership inference.
+
+\section{Attribute Inference}
+
+Suppose a record \(z=(\x_{\text{known}},s,y)\) where \(s\) is a sensitive attribute (genotype, health status, ethnicity in a census-type dataset) used as a feature. The attacker knows \(\x_{\text{known}}\), possibly \(y\), and has access to the model.
+
+\paragraph{Model inversion for attributes.} \citet{fredrikson2014privacy} studied a model predicting warfarin dosage from demographic and genetic features. Given a patient's demographics and dose, the attacker enumerates candidate values \(s\) and picks the one most consistent with the model:
+\[
+\hat s = \argmax_{s}\;\Pr\big[f(\x_{\text{known}},s)=y\big]\cdot\Pr[s],
+\]
+where \(\Pr[s]\) is the population prior. They found that the model allowed predicting the genotype markedly better than the prior alone.
+
+\paragraph{Distinguishing leakage from inference.} An important subtlety is that if the attacker can predict \(s\) equally well \emph{for people not in the training set}, then the model is just learning a population correlation, not leaking anything about individuals. This is the distinction between \emph{statistical inference} and \emph{privacy leakage}; \citet{yeom2018privacy} formalize attribute advantage as the difference between the attacker's success on members and on non-members.
+
+\paragraph{Overlearning.} Representations learned for one task often encode attributes unrelated to the task. \citet{song2020overlearning} show that a model trained to detect, for example, gender from text or images learns representations from which race or identity can be recovered, even when those attributes were never labeled. Any released embedding or intermediate representation is an attribute inference surface.
+
+\section{Model Inversion and Reconstruction}
+
+\subsection{Class-level inversion}
+
+\citet{fredrikson2015model} reconstruct a representative image of a class (for example, a face associated with a name in a face recognition model) by optimizing the input:
+\[
+\x^\star = \argmin_{\x}\;\big(1-F_c(\x)\big) + \lambda\,\mathcal{R}(\x),
+\]
+with a regularizer \(\mathcal{R}\) (smoothness, total variation). For simple models with few classes, this produces recognizable reconstructions. For deep networks, unregularized optimization gives adversarial noise instead of natural images. \citet{zhang2020secret} address this by searching in the latent space of a generative model trained on public data, \(\x=G(\mathbf{w})\), which keeps reconstructions on the natural image manifold.
+
+\begin{remark}
+Class-level inversion reveals what the model associates with a class, which may or may not be a specific training individual. When a class corresponds to one person, the distinction disappears.
+\end{remark}
+
+\subsection{Gradient inversion in collaborative learning}
+
+In federated learning a client sends \(\mathbf{g}=\nabla_{\btheta}\Loss(\btheta;\x,y)\) computed on its private batch. \citet{zhu2019deep} showed that the data can be reconstructed by optimizing dummy inputs and labels to match the observed gradient:
+\begin{equation}\label{eq:dlg}
+(\x^\star,y^\star) = \argmin_{\x',y'}\;\big\|\nabla_{\btheta}\Loss(\btheta;\x',y')-\mathbf{g}\big\|_2^2.
+\end{equation}
+\citet{geiping2020inverting} replaced the Euclidean distance with cosine similarity, added total-variation regularization, and recovered high-resolution images from ImageNet-scale networks, including from averaged updates over several local steps. Labels can often be recovered analytically from the sign pattern of the last-layer gradient. Factors that make inversion harder: larger batches, more local steps, gradient compression, and noise (DP-SGD); none of these is a guarantee except a formal DP mechanism with a meaningful \(\varepsilon\).
+
+\subsection{Training data extraction from generative models}
+
+Generative models can reproduce training data verbatim. \citet{carlini2021extracting} extracted hundreds of memorized sequences (including personal information) from a large language model by generating many samples and ranking them by a membership-style score, such as the ratio between the model's perplexity and a reference model's perplexity.
+
+\section{Model Stealing: Functionality Extraction}
+
+The attacker wants a model \(\tilde f\) that matches the victim \(f\), either to avoid paying for queries, to have a white-box surrogate for evasion attacks (Chapter~2), or to mount privacy attacks offline.
+
+\paragraph{Goals.} \citet{jagielski2020high} distinguish \emph{accuracy} (the copy performs well on the task) from \emph{fidelity} (the copy agrees with the victim, including on the victim's mistakes). Fidelity is what an attacker needs for transfer attacks and for privacy inference.
+
+\paragraph{Equation solving.} \citet{tramer2016stealing} observed that models returning confidence scores can sometimes be solved for exactly. For binary logistic regression, \(F(\x)=\sigma(\mathbf{w}^\top\x+b)\), so each query gives the linear equation
+\[
+\sigma^{-1}\big(F(\x)\big) = \log\frac{F(\x)}{1-F(\x)} = \mathbf{w}^\top\x+b,
+\]
+and \(d+1\) queries in general position determine \((\mathbf{w},b)\) exactly. They extended the idea to multiclass logistic regression, shallow networks and decision trees. \citet{carlini2020cryptanalytic} pushed exact extraction to deeper ReLU networks by locating the critical points where neurons switch on or off.
+
+\paragraph{Learning-based extraction.} For deep networks the typical approach is knowledge distillation from queries. The attacker selects a transfer set \(\{\x_i\}\), queries the victim to obtain \(F(\x_i)\) or \(f(\x_i)\), and trains \(\tilde f\) to match. \citet{orekondy2019knockoff} showed that using natural images from a different distribution (and an adaptive policy for choosing them) is sufficient to replicate image classifiers with a modest budget. \citet{papernot2017practical}'s Jacobian-based augmentation (Chapter~2) is another query strategy.
+
+\paragraph{Countermeasures and their limits.} Rounding or hiding confidence scores, watermarking, query monitoring and rate limiting raise the cost. Label-only access still allows learning-based extraction with more queries, and monitoring can be evaded by distributing queries across accounts.
+
+\section{Relationship to Differential Privacy}\label{sec:dp}
+
+\subsection{Definition}
+
+\begin{definition}[Differential privacy, \citealp{dwork2006calibrating}]
+A randomized algorithm \(\mathcal{A}\) is \((\varepsilon,\delta)\)-differentially private if for all datasets \(S,S'\) differing in one record and all measurable sets \(O\),
+\[
+\Pr[\mathcal{A}(S)\in O]\le e^{\varepsilon}\Pr[\mathcal{A}(S')\in O]+\delta.
+\]
+\end{definition}
+
+DP is a property of the \emph{training algorithm}, not of the model or of the data. It bounds how much any single record can change the distribution of outputs, and therefore how much any adversary, with any side information and any amount of computation, can learn about that record from the output.
+
+\subsection{DP bounds membership inference}
+
+Consider the membership game with a record that is either in or out of the dataset. Any attack is a hypothesis test between \(\mathcal{A}(S)\) and \(\mathcal{A}(S')\). For \((\varepsilon,\delta)\)-DP, every test satisfies \citep{kairouz2015composition}
+\begin{equation}\label{eq:dptest}
+\mathrm{TPR}\le e^{\varepsilon}\,\mathrm{FPR}+\delta
+\quad\text{and}\quad
+1-\mathrm{FPR}\le e^{\varepsilon}(1-\mathrm{TPR})+\delta.
+\end{equation}
+A consequence for \(\delta=0\) is \(\mathrm{Adv}=\mathrm{TPR}-\mathrm{FPR}\le\frac{e^{\varepsilon}-1}{e^{\varepsilon}+1}\), and the looser but often quoted \(\mathrm{Adv}\le e^{\varepsilon}-1\) \citep{yeom2018privacy}. Eq.~\eqref{eq:dptest} is the more useful form because it directly constrains TPR at low FPR.
+
+\begin{example}
+With \(\varepsilon=1\), \(\delta=0\) and \(\mathrm{FPR}=10^{-3}\), no attack can exceed \(\mathrm{TPR}=e\cdot10^{-3}\approx 2.7\times10^{-3}\). With \(\varepsilon=8\), the bound becomes \(\mathrm{TPR}\le\min(1,\,2981\times10^{-3})=1\): the guarantee says nothing at that FPR.
+\end{example}
+
+\subsection{DP-SGD}
+
+\citet{abadi2016deep} made DP practical for deep learning. Each step:
+\begin{enumerate}
+  \item sample a minibatch \(B\) (Poisson sampling with rate \(q\));
+  \item compute per-example gradients \(\mathbf{g}_i\) and clip them: \(\bar{\mathbf{g}}_i=\mathbf{g}_i/\max(1,\|\mathbf{g}_i\|_2/C)\);
+  \item add Gaussian noise: \(\tilde{\mathbf{g}}=\frac{1}{|B|}\big(\sum_i\bar{\mathbf{g}}_i+\mathcal{N}(0,\sigma^2C^2I)\big)\);
+  \item take the step \(\btheta\leftarrow\btheta-\eta\tilde{\mathbf{g}}\).
+\end{enumerate}
+Clipping bounds each record's influence (sensitivity \(C\)); noise hides it. A privacy accountant (moments accountant or Rényi DP) tracks the total \((\varepsilon,\delta)\) over \(T\) steps, exploiting amplification by subsampling.
+
+\subsection{Theory meets practice}
+
+\begin{itemize}
+  \item \textbf{Utility cost.} At small \(\varepsilon\) (around 1), DP-SGD loses substantial accuracy on vision benchmarks trained from scratch; the gap shrinks with pretraining on public data and larger datasets.
+  \item \textbf{Empirical versus provable leakage.} Practical MIAs on DP-SGD models with large \(\varepsilon\) (say, 8 or more) often show little leakage, suggesting the analysis is loose for realistic attackers \citep{jayaraman2019evaluating}. But this is not evidence of privacy: worst-case auditing with crafted canaries can approach the theoretical bound \citep{jagielski2020auditing,nasr2021adversary}.
+  \item \textbf{Auditing.} Running a strong membership inference attack with inserted canaries yields an empirical \emph{lower bound} on \(\varepsilon\) via Eq.~\eqref{eq:dptest}. If the lower bound exceeds the claimed \(\varepsilon\), the implementation or the analysis is wrong.
+  \item \textbf{Scope.} DP protects individual records, not population statistics. It does not prevent attribute inference that reflects true correlations in \(\D\), nor model extraction.
+\end{itemize}
+
+\section{Hands-On: Implementing Membership Inference}
+
+We use a CIFAR-10 setup. Split the data into a target training set (members), a held-out set (non-members) of the same size, and an auxiliary pool for shadow models.
+
+\subsection{Loss-threshold attack and evaluation}
+
+\begin{lstlisting}
+import numpy as np, torch
+import torch.nn.functional as F
+from sklearn.metrics import roc_curve, auc
+
+@torch.no_grad()
+def per_example_loss(model, X, Y, bs=512):
+    model.eval(); out = []
+    for i in range(0, len(X), bs):
+        out.append(F.cross_entropy(model(X[i:i+bs]), Y[i:i+bs],
+                                   reduction="none").cpu())
+    return torch.cat(out).numpy()
+
+def evaluate_mia(scores, is_member):
+    # higher score = more likely member
+    fpr, tpr, _ = roc_curve(is_member, scores)
+    tpr_at = lambda t: tpr[np.searchsorted(fpr, t, side="right") - 1]
+    return {"auc": auc(fpr, tpr),
+            "tpr@1e-3": tpr_at(1e-3), "tpr@1e-2": tpr_at(1e-2)}
+
+l_in  = per_example_loss(target, X_mem, Y_mem)
+l_out = per_example_loss(target, X_non, Y_non)
+scores = -np.concatenate([l_in, l_out])
+labels = np.concatenate([np.ones_like(l_in), np.zeros_like(l_out)])
+print(evaluate_mia(scores, labels))
+\end{lstlisting}
+
+\subsection{Offline LiRA (OUT shadow models only)}
+
+\begin{lstlisting}
+from scipy.stats import norm
+
+@torch.no_grad()
+def logit_conf(model, X, Y, bs=512):
+    model.eval(); out = []
+    for i in range(0, len(X), bs):
+        p = F.softmax(model(X[i:i+bs]), 1)
+        py = p.gather(1, Y[i:i+bs, None]).squeeze(1).clamp(1e-7, 1 - 1e-7)
+        out.append(torch.log(py / (1 - py)).cpu())
+    return torch.cat(out).numpy()
+
+# shadows: models trained on random halves of the auxiliary pool,
+# none of which contains the candidate records X_cand
+phi_out = np.stack([logit_conf(m, X_cand, Y_cand) for m in shadows])
+mu, sd = phi_out.mean(0), phi_out.std(0) + 1e-6
+phi_t = logit_conf(target, X_cand, Y_cand)
+scores = norm.logcdf(phi_t, mu, sd)     # one-sided: large phi => member
+\end{lstlisting}
+
+\subsection{Suggested experiments}
+
+\begin{enumerate}[label=\textbf{\arabic*.}]
+  \item Train target models for 10, 50 and 200 epochs. Plot train/test accuracy and the loss-threshold attack's AUC and TPR at \(10^{-3}\) FPR. Relate the results to the generalization gap.
+  \item Implement offline LiRA with 4, 16 and 64 shadow models. Plot log-log ROC curves against the loss-threshold attack.
+  \item Identify the 20 records with the highest LiRA score. What do they have in common (outliers, mislabeled, rare classes)?
+  \item Train with DP-SGD (Opacus) at \(\varepsilon\in\{1,4,8,\infty\}\). Plot test accuracy and TPR at low FPR, and compare the empirical TPR with the bound of Eq.~\eqref{eq:dptest}.
+  \item Implement a label-only attack based on the number of augmented views that are correctly classified, and compare it with the score-based attacks.
+\end{enumerate}
+
+\section*{Exercises}
+\addcontentsline{toc}{section}{Exercises}
+
+\begin{enumerate}[label=\textbf{\arabic*.}]
+  \item Show that \(\mathrm{Adv}=2\Pr[\hat b=b]-1=\mathrm{TPR}-\mathrm{FPR}\) in the balanced membership game.
+  \item Starting from Eq.~\eqref{eq:dptest} with \(\delta=0\), derive the bound \(\mathrm{Adv}\le(e^{\varepsilon}-1)/(e^{\varepsilon}+1)\).
+  \item Show that for binary logistic regression with confidence outputs, \(d+1\) queries suffice for exact extraction. What happens if the API rounds probabilities to two decimals?
+  \item A hospital reports that its model, trained without DP, has a 1\% generalization gap and therefore poses no privacy risk. Write a short, technically precise rebuttal.
+  \item Explain why an attribute inference attack that succeeds equally well on members and non-members does not indicate a privacy violation of the training data, but may still be a harm.
+\end{enumerate}
+
+\bibliographystyle{apalike}
+\bibliography{references}
+\end{document}

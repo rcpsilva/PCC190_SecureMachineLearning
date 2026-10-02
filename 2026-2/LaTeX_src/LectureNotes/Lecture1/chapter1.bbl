@@ -1,0 +1,143 @@
+\begin{thebibliography}{}
+
+\bibitem[Athalye et~al., 2018a]{athalye2018obfuscated}
+Athalye, A., Carlini, N., and Wagner, D. (2018a).
+\newblock Obfuscated gradients give a false sense of security: Circumventing defenses to adversarial examples.
+\newblock In {\em Proceedings of the 35th International Conference on Machine Learning (ICML)}, pages 274--283.
+
+\bibitem[Athalye et~al., 2018b]{athalye2018eot}
+Athalye, A., Engstrom, L., Ilyas, A., and Kwok, K. (2018b).
+\newblock Synthesizing robust adversarial examples.
+\newblock In {\em Proceedings of the 35th International Conference on Machine Learning (ICML)}, pages 284--293.
+
+\bibitem[Barreno et~al., 2006]{barreno2006can}
+Barreno, M., Nelson, B., Sears, R., Joseph, A.~D., and Tygar, J.~D. (2006).
+\newblock Can machine learning be secure?
+\newblock In {\em Proceedings of the ACM Symposium on Information, Computer and Communications Security (ASIACCS)}, pages 16--25.
+
+\bibitem[Biggio et~al., 2013]{biggio2013evasion}
+Biggio, B., Corona, I., Maiorca, D., Nelson, B., {\v{S}}rndi{\'c}, N., Laskov, P., Giacinto, G., and Roli, F. (2013).
+\newblock Evasion attacks against machine learning at test time.
+\newblock In {\em Machine Learning and Knowledge Discovery in Databases (ECML PKDD)}, pages 387--402.
+
+\bibitem[Biggio et~al., 2012]{biggio2012poisoning}
+Biggio, B., Nelson, B., and Laskov, P. (2012).
+\newblock Poisoning attacks against support vector machines.
+\newblock In {\em Proceedings of the 29th International Conference on Machine Learning (ICML)}.
+
+\bibitem[Biggio and Roli, 2018]{biggio2018wild}
+Biggio, B. and Roli, F. (2018).
+\newblock Wild patterns: Ten years after the rise of adversarial machine learning.
+\newblock {\em Pattern Recognition}, 84:317--331.
+
+\bibitem[Carlini et~al., 2019]{carlini2019evaluating}
+Carlini, N., Athalye, A., Papernot, N., Brendel, W., Rauber, J., Tsipras, D., Goodfellow, I., Madry, A., and Kurakin, A. (2019).
+\newblock On evaluating adversarial robustness.
+\newblock {\em arXiv preprint arXiv:1902.06705}.
+
+\bibitem[Carlini and Wagner, 2017]{carlini2017towards}
+Carlini, N. and Wagner, D. (2017).
+\newblock Towards evaluating the robustness of neural networks.
+\newblock In {\em IEEE Symposium on Security and Privacy (S\&P)}, pages 39--57.
+
+\bibitem[Cohen et~al., 2019]{cohen2019certified}
+Cohen, J., Rosenfeld, E., and Kolter, J.~Z. (2019).
+\newblock Certified adversarial robustness via randomized smoothing.
+\newblock In {\em Proceedings of the 36th International Conference on Machine Learning (ICML)}, pages 1310--1320.
+
+\bibitem[Fredrikson et~al., 2015]{fredrikson2015model}
+Fredrikson, M., Jha, S., and Ristenpart, T. (2015).
+\newblock Model inversion attacks that exploit confidence information and basic countermeasures.
+\newblock In {\em Proceedings of the 22nd ACM SIGSAC Conference on Computer and Communications Security (CCS)}, pages 1322--1333.
+
+\bibitem[Gilmer et~al., 2018]{gilmer2018motivating}
+Gilmer, J., Adams, R.~P., Goodfellow, I., Andersen, D., and Dahl, G.~E. (2018).
+\newblock Motivating the rules of the game for adversarial example research.
+\newblock {\em arXiv preprint arXiv:1807.06732}.
+
+\bibitem[Goodfellow et~al., 2015]{goodfellow2015explaining}
+Goodfellow, I.~J., Shlens, J., and Szegedy, C. (2015).
+\newblock Explaining and harnessing adversarial examples.
+\newblock In {\em International Conference on Learning Representations (ICLR)}.
+
+\bibitem[Gu et~al., 2019]{gu2019badnets}
+Gu, T., Liu, K., Dolan-Gavitt, B., and Garg, S. (2019).
+\newblock {BadNets}: Evaluating backdooring attacks on deep neural networks.
+\newblock {\em IEEE Access}, 7:47230--47244.
+
+\bibitem[Huang et~al., 2011]{huang2011adversarial}
+Huang, L., Joseph, A.~D., Nelson, B., Rubinstein, B. I.~P., and Tygar, J.~D. (2011).
+\newblock Adversarial machine learning.
+\newblock In {\em Proceedings of the 4th ACM Workshop on Security and Artificial Intelligence (AISec)}, pages 43--58.
+
+\bibitem[Ilyas et~al., 2019]{ilyas2019features}
+Ilyas, A., Santurkar, S., Tsipras, D., Engstrom, L., Tran, B., and Madry, A. (2019).
+\newblock Adversarial examples are not bugs, they are features.
+\newblock In {\em Advances in Neural Information Processing Systems (NeurIPS)}.
+
+\bibitem[Kurakin et~al., 2017]{kurakin2017physical}
+Kurakin, A., Goodfellow, I., and Bengio, S. (2017).
+\newblock Adversarial examples in the physical world.
+\newblock In {\em ICLR Workshop Track}.
+
+\bibitem[Madry et~al., 2018]{madry2018towards}
+Madry, A., Makelov, A., Schmidt, L., Tsipras, D., and Vladu, A. (2018).
+\newblock Towards deep learning models resistant to adversarial attacks.
+\newblock In {\em International Conference on Learning Representations (ICLR)}.
+
+\bibitem[Moosavi-Dezfooli et~al., 2016]{moosavi2016deepfool}
+Moosavi-Dezfooli, S.-M., Fawzi, A., and Frossard, P. (2016).
+\newblock {DeepFool}: A simple and accurate method to fool deep neural networks.
+\newblock In {\em IEEE Conference on Computer Vision and Pattern Recognition (CVPR)}, pages 2574--2582.
+
+\bibitem[Papernot et~al., 2018]{papernot2018sok}
+Papernot, N., McDaniel, P., Sinha, A., and Wellman, M.~P. (2018).
+\newblock {SoK}: Security and privacy in machine learning.
+\newblock In {\em IEEE European Symposium on Security and Privacy (EuroS\&P)}, pages 399--414.
+
+\bibitem[Papernot et~al., 2016]{papernot2016distillation}
+Papernot, N., McDaniel, P., Wu, X., Jha, S., and Swami, A. (2016).
+\newblock Distillation as a defense to adversarial perturbations against deep neural networks.
+\newblock In {\em IEEE Symposium on Security and Privacy (S\&P)}, pages 582--597.
+
+\bibitem[Shokri et~al., 2017]{shokri2017membership}
+Shokri, R., Stronati, M., Song, C., and Shmatikov, V. (2017).
+\newblock Membership inference attacks against machine learning models.
+\newblock In {\em IEEE Symposium on Security and Privacy (S\&P)}, pages 3--18.
+
+\bibitem[Szegedy et~al., 2014]{szegedy2014intriguing}
+Szegedy, C., Zaremba, W., Sutskever, I., Bruna, J., Erhan, D., Goodfellow, I., and Fergus, R. (2014).
+\newblock Intriguing properties of neural networks.
+\newblock In {\em International Conference on Learning Representations (ICLR)}.
+
+\bibitem[Tram{\`e}r et~al., 2020]{tramer2020adaptive}
+Tram{\`e}r, F., Carlini, N., Brendel, W., and Madry, A. (2020).
+\newblock On adaptive attacks to adversarial example defenses.
+\newblock In {\em Advances in Neural Information Processing Systems (NeurIPS)}.
+
+\bibitem[Tram{\`e}r et~al., 2016]{tramer2016stealing}
+Tram{\`e}r, F., Zhang, F., Juels, A., Reiter, M.~K., and Ristenpart, T. (2016).
+\newblock Stealing machine learning models via prediction {APIs}.
+\newblock In {\em 25th USENIX Security Symposium}, pages 601--618.
+
+\bibitem[Vassilev et~al., 2025]{nist2025ai1002}
+Vassilev, A., Oprea, A., Fordyce, A., Anderson, H., Davies, X., and Hamin, M. (2025).
+\newblock Adversarial machine learning: A taxonomy and terminology of attacks and mitigations.
+\newblock Technical Report NIST AI 100-2e2025, National Institute of Standards and Technology.
+
+\bibitem[Wong and Kolter, 2018]{wong2018provable}
+Wong, E. and Kolter, J.~Z. (2018).
+\newblock Provable defenses against adversarial examples via the convex outer adversarial polytope.
+\newblock In {\em Proceedings of the 35th International Conference on Machine Learning (ICML)}, pages 5286--5295.
+
+\bibitem[Zhang et~al., 2019]{zhang2019trades}
+Zhang, H., Yu, Y., Jiao, J., Xing, E., El~Ghaoui, L., and Jordan, M. (2019).
+\newblock Theoretically principled trade-off between robustness and accuracy.
+\newblock In {\em Proceedings of the 36th International Conference on Machine Learning (ICML)}, pages 7472--7482.
+
+\bibitem[Zhu et~al., 2019]{zhu2019deep}
+Zhu, L., Liu, Z., and Han, S. (2019).
+\newblock Deep leakage from gradients.
+\newblock In {\em Advances in Neural Information Processing Systems (NeurIPS)}.
+
+\end{thebibliography}

@@ -1,0 +1,332 @@
+\documentclass[10pt,a4paper]{extarticle}
+\newcommand{\coursehead}{PCC190 -- Secure Machine Learning}
+\newcommand{\chapterhead}{Chapter 3: Poisoning and Backdoors}
+\usepackage{parskip}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[english]{babel}
+\usepackage{amsmath, amssymb, amsthm}
+\usepackage{geometry}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{tabularx}
+\usepackage{enumitem}
+\usepackage{microtype}
+\usepackage{csquotes}
+\usepackage{natbib}
+\usepackage{fancyhdr}
+\usepackage[most]{tcolorbox}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{hyperref}
+
+\definecolor{dblue}{RGB}{16, 42, 92}
+\definecolor{dorange}{RGB}{230, 115, 0}
+\definecolor{codebg}{rgb}{0.95,0.95,0.95}
+
+\hypersetup{colorlinks=true, linkcolor=dblue, citecolor=dorange, urlcolor=dblue}
+
+\setlist{nosep}
+\geometry{margin=2cm, headheight=20pt}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\color{dblue}\coursehead}
+\fancyhead[R]{\small\color{dblue}\chapterhead}
+\fancyfoot[C]{\small\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\headrule}{\hbox to\headwidth{\color{dorange}\leaders\hrule height \headrulewidth\hfill}}
+
+\lstset{
+    language=Python,
+    backgroundcolor=\color{codebg},
+    basicstyle=\ttfamily\footnotesize,
+    keywordstyle=\color{dblue}\bfseries,
+    commentstyle=\color{gray},
+    stringstyle=\color{dorange!80!black},
+    showstringspaces=false,
+    frame=single,
+    breaklines=true,
+    inputencoding=utf8
+}
+
+\newtcolorbox{keybox}[1][]{colback=dblue!5, colframe=dblue, fonttitle=\bfseries, title={#1}, breakable}
+\newtcolorbox{warnbox}[1][]{colback=dorange!7, colframe=dorange, fonttitle=\bfseries, title={#1}, breakable}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}[section]
+\newtheorem{example}{Example}[section]
+\newtheorem{remark}{Remark}[section]
+
+% Notation
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\X}{\mathcal{X}}
+\newcommand{\Y}{\mathcal{Y}}
+\newcommand{\D}{\mathcal{D}}
+\newcommand{\Loss}{\mathcal{L}}
+\newcommand{\x}{\mathbf{x}}
+\newcommand{\xadv}{\mathbf{x}'}
+\newcommand{\bdelta}{\boldsymbol{\delta}}
+\newcommand{\btheta}{\boldsymbol{\theta}}
+\newcommand{\B}{\mathcal{B}}
+\newcommand{\Proj}{\Pi}
+\DeclareMathOperator*{\argmax}{arg\,max}
+\DeclareMathOperator*{\argmin}{arg\,min}
+\DeclareMathOperator{\sign}{sign}
+
+\title{Chapter 3\\Data Poisoning and Backdoor Attacks}
+\author{PCC190 -- Secure Machine Learning\\Prof.\ Rodrigo C.\ P.\ Silva -- DECOM/UFOP}
+\date{\today}
+
+\begin{document}
+\maketitle
+\thispagestyle{fancy}
+\tableofcontents
+
+\section*{Setting and notation}
+\addcontentsline{toc}{section}{Setting and notation}
+
+Chapters~1 and~2 assumed a fixed model and an attacker acting on test inputs. Here the attacker acts \emph{before} the model exists. Let \(S = \{(\x_i, y_i)\}_{i=1}^{n}\) be the clean training set and \(S_p = \{(\x^p_j, y^p_j)\}_{j=1}^{m}\) the \emph{poison set}, with \emph{poisoning rate} \(\gamma = m/(n+m)\). Training returns
+\[
+\hat\btheta(S_p) \in \argmin_{\btheta}\; \frac{1}{n+m}\sum_{(\x,y)\in S\cup S_p}\Loss(\btheta;\x,y).
+\]
+The general poisoning problem (Chapter~1, Eq.~(1)) is the bilevel program
+\begin{equation}\label{eq:bilevel}
+\max_{S_p\in\mathcal{C}}\; \Loss_{\text{adv}}\big(\hat\btheta(S_p)\big)
+\quad\text{s.t.}\quad \hat\btheta(S_p)\in\argmin_{\btheta}\sum_{(\x,y)\in S\cup S_p}\Loss(\btheta;\x,y),
+\end{equation}
+where \(\mathcal{C}\) encodes the attacker's capability and \(\Loss_{\text{adv}}\) the goal. In some settings the attacker modifies existing samples instead of adding new ones; the formulation is the same with \(S\) partially replaced. We write \(\mathbf{h}_{\btheta}(\x)\) for the penultimate-layer representation (feature extractor) of a network.
+
+\section{Poisoning Strategies: Availability versus Integrity}
+
+\paragraph{Availability (indiscriminate) attacks.} The goal is to raise the error on clean data, making the model useless. The attacker's objective is the loss on a validation set,
+\[
+\Loss_{\text{adv}}(\btheta) = \sum_{(\x,y)\in S_{\text{val}}}\Loss(\btheta;\x,y).
+\]
+ These attacks are loud: a drop in validation accuracy is visible to the defender, who can stop deployment. They are most effective against convex or low-capacity learners (SVMs, linear and logistic regression), where a few well-placed points can move the decision boundary significantly \citep{biggio2012poisoning,jagielski2018manipulating}. For large deep networks trained on large datasets, indiscriminate poisoning at small \(\gamma\) has proven much harder.
+
+\paragraph{Integrity attacks.} The goal is to cause specific failures while keeping clean accuracy intact, so the poisoned model passes validation. Two subtypes:
+\begin{itemize}
+  \item \emph{Targeted poisoning}: a particular test input \(\x_t\) (or a small set) must be classified as an attacker-chosen class \(y_{\text{adv}}\). Then \(\Loss_{\text{adv}}(\btheta) = -\Loss(\btheta;\x_t,y_{\text{adv}})\) (we maximize \(\Loss_{\text{adv}}\)).
+  \item \emph{Backdoor poisoning}: any input carrying a trigger pattern must be classified as \(y_{\text{adv}}\), while trigger-free inputs behave normally.
+\end{itemize}
+
+\begin{keybox}[Comparing the two goals]
+\begin{tabularx}{\linewidth}{lXX}
+ & Availability & Integrity (targeted / backdoor) \\
+\hline
+Goal & High clean error & Specific errors, clean accuracy preserved \\
+Stealth & Low (visible on validation) & High \\
+Typical \(\gamma\) & Tens of percent for deep nets & From a single point to about 1\% \\
+Main victims & Convex/shallow learners & Deep networks, transfer learning, FL \\
+\end{tabularx}
+\end{keybox}
+
+\subsection{Label flipping}
+
+The simplest capability is changing labels only. An attacker with budget \(m\) chooses which labels to flip. Random flipping is surprisingly weak because learners are trained to tolerate label noise. Adversarial label flipping \citep{xiao2012labelflip} chooses flips that maximize the validation loss after retraining; for SVMs this can be approximated by flipping the points closest to the margin or those with largest influence on the solution.
+
+\subsection{Gradient-based poisoning}
+
+When the attacker can craft feature values, Eq.~\eqref{eq:bilevel} can be attacked with gradient ascent on the poison points. The chain rule gives
+\begin{equation}\label{eq:hypergrad}
+\nabla_{\x^p}\Loss_{\text{adv}} = \big(\nabla_{\x^p}\hat\btheta\big)^{\!\top}\nabla_{\btheta}\Loss_{\text{adv}}(\hat\btheta).
+\end{equation}
+The difficult term is \(\nabla_{\x^p}\hat\btheta\), the sensitivity of the learned parameters to a training point. Three ways to obtain it:
+\begin{enumerate}
+  \item \textbf{Implicit differentiation.} If \(\hat\btheta\) satisfies the first-order condition \(\nabla_{\btheta}\mathcal{J}(\hat\btheta, \x^p) = 0\) of the training objective \(\mathcal{J}\), differentiating it gives
+  \[
+  \nabla_{\x^p}\hat\btheta = -H^{-1}\,\nabla^2_{\btheta\,\x^p}\mathcal{J},\qquad H = \nabla^2_{\btheta}\mathcal{J}(\hat\btheta).
+  \]
+  This is exact for convex problems \citep{biggio2012poisoning,jagielski2018manipulating}.
+  \item \textbf{Back-gradient (unrolling).} Unroll \(T\) steps of the training algorithm and backpropagate through them \citep{munoz2017backgradient}. Memory scales with \(T\), so in practice only a few steps are unrolled.
+  \item \textbf{Approximations.} Influence functions (Section~\ref{sec:impact}) and meta-learning schemes such as MetaPoison \citep{huang2020metapoison}, which unroll a few steps and average over several training stages.
+\end{enumerate}
+The same structure reappears in clean-label attacks below.
+
+\section{Targeted Data Poisoning}
+
+The attacker wants one specific test point \(\x_t\), with true label \(y_t\), to be predicted as \(y_{\text{adv}}\). The capability is often restricted to perturbing \(m\) \emph{base} images \(\mathbf{b}_j\) from class \(y_{\text{adv}}\) within an \(\ell_\infty\) ball, keeping their labels.
+
+\paragraph{Bilevel targeted objective.}
+\[
+\min_{\{\bdelta_j\}:\|\bdelta_j\|_\infty\le\epsilon}\;\Loss\big(\hat\btheta;\x_t,y_{\text{adv}}\big)
+\quad\text{s.t.}\quad \hat\btheta\in\argmin_{\btheta}\Big[\sum_{S}\Loss(\btheta;\x,y)+\sum_{j}\Loss(\btheta;\mathbf{b}_j+\bdelta_j,y_{\text{adv}})\Big].
+\]
+
+\paragraph{Gradient matching.} \citet{geiping2021witches} avoid the bilevel problem with a first-order argument: if the poisoned training gradient points in the same direction as the gradient that would make \(\x_t\) classified as \(y_{\text{adv}}\), then ordinary training steps will move the model toward the attacker's goal. They maximize the cosine similarity
+\begin{equation}\label{eq:gradmatch}
+\max_{\{\bdelta_j\}}\;\cos\Big(\nabla_{\btheta}\Loss(\btheta;\x_t,y_{\text{adv}}),\; \sum_{j}\nabla_{\btheta}\Loss(\btheta;\mathbf{b}_j+\bdelta_j,y_{\text{adv}})\Big)
+\end{equation}
+evaluated at a model pretrained on clean data, with restarts and differentiable augmentation for robustness. This scales to ImageNet-sized training from scratch with poisoning rates below 0.1\%.
+
+\paragraph{Why targeted attacks are hard to detect.} Only one test point is affected, so clean validation accuracy is unchanged, and the poisons themselves carry correct labels (see Section~\ref{sec:cleanlabel}).
+
+\section{Backdoor Attack Mechanisms and Trigger Design}
+
+A backdoor attack implants a hidden mapping from a \emph{trigger} to a target label. Define a trigger application function \(T:\X\to\X\). The attacker wants
+\[
+f_{\hat\btheta}(\x)\approx y \;\text{ on clean } (\x,y)\sim\D,
+\qquad
+f_{\hat\btheta}(T(\x)) = y_{\text{adv}} \;\text{ for most } \x.
+\]
+
+\paragraph{BadNets.} \citet{gu2019badnets} stamp a small patch \(\mathbf{p}\) at a fixed location using a binary mask \(\mathbf{M}\):
+\[
+T(\x) = (\mathbf{1}-\mathbf{M})\odot\x + \mathbf{M}\odot\mathbf{p},
+\]
+and add pairs \((T(\x_i), y_{\text{adv}})\) to the training set. A few hundred poisoned examples typically suffice for near-perfect attack success with negligible loss of clean accuracy. The same paper showed that backdoors survive transfer learning, which makes outsourced and pretrained models a supply-chain risk.
+
+\paragraph{Blended and invisible triggers.} \citet{chen2017targeted} blend a full-image pattern \(\mathbf{k}\) with weight \(\lambda\), \(T(\x)=(1-\lambda)\x+\lambda\mathbf{k}\), which can be nearly invisible for small \(\lambda\). Other designs use imperceptible additive noise, warping, or physical objects (glasses, stickers) as triggers.
+
+\paragraph{Model-level trojans.} \citet{liu2018trojaning} do not need the training data: they reverse-engineer a trigger that strongly activates selected internal neurons and then retrain the model on synthesized inputs to associate that trigger with the target.
+
+\paragraph{Backdoors in federated learning.} A participant can train locally on backdoored data and scale up its update so that it survives averaging (\emph{model replacement}, \citealp{bagdasaryan2020backdoor}). The server never sees the data, so data-level defenses do not apply.
+
+\paragraph{Design dimensions.} Triggers trade off along: visibility to humans; location dependence (fixed versus anywhere); sample specificity (one trigger for all inputs versus input-dependent triggers); and robustness to transformations and fine-tuning. Each dimension also determines which defenses apply (Chapter~5).
+
+\begin{keybox}[Evaluation metrics for backdoors]
+\begin{itemize}
+  \item \textbf{Clean accuracy (CA)}: accuracy on clean test data; should be close to that of an unpoisoned model.
+  \item \textbf{Attack success rate (ASR)}: fraction of triggered test inputs whose true class is not \(y_{\text{adv}}\) that are classified as \(y_{\text{adv}}\).
+  \item \textbf{Poisoning rate} \(\gamma\) and trigger visibility as the cost.
+\end{itemize}
+\end{keybox}
+
+\section{Clean-Label Poisoning}\label{sec:cleanlabel}
+
+In many pipelines the attacker can contribute data but cannot choose labels: a human or an automated labeler inspects every sample. Clean-label attacks produce poisons that look correctly labeled to an inspector.
+
+\paragraph{Feature collision (Poison Frogs).} \citet{shafahi2018poison} target transfer learning, where only the last layer is retrained on top of a fixed feature extractor \(\mathbf{h}\). Choose a base \(\mathbf{b}\) from the target class \(y_{\text{adv}}\) and craft
+\begin{equation}\label{eq:collision}
+\x^p = \argmin_{\x}\;\|\mathbf{h}(\x)-\mathbf{h}(\x_t)\|_2^2 + \beta\,\|\x-\mathbf{b}\|_2^2.
+\end{equation}
+The poison looks like \(\mathbf{b}\) and is correctly labeled \(y_{\text{adv}}\), but in feature space it sits on top of \(\x_t\). When the last layer is fitted, the decision region of \(y_{\text{adv}}\) expands to include \(\x_t\). A single poison can succeed in the linear-probe setting; end-to-end training requires more poisons and tricks such as watermarking the base with the target.
+
+\paragraph{Convex polytope and gradient-based variants.} When the feature extractor is unknown, colliding with one point fails to transfer. \citet{zhu2019transferable} surround \(\mathbf{h}(\x_t)\) by a convex polytope of poisons across an ensemble of surrogate extractors. Gradient matching (Eq.~\ref{eq:gradmatch}) and MetaPoison \citep{huang2020metapoison} are also clean-label and work for training from scratch.
+
+\paragraph{Clean-label backdoors.} A naive clean-label backdoor (adding the trigger to correctly labeled images of \(y_{\text{adv}}\)) is weak: the network can classify those images from their natural features and has no reason to learn the trigger. \citet{turner2019label} make the natural features harder to use, by adversarially perturbing or interpolating the poisoned images before adding the trigger, so the trigger becomes the easiest signal to learn. \citet{saha2020hidden} hide the trigger entirely in training: poisons are crafted by feature collision with \emph{triggered} source images, while the trigger appears only at test time.
+
+\section{Analyzing the Impact of Poisoning}\label{sec:impact}
+
+\subsection{Influence functions}
+
+How much does a single training point change a prediction? \citet{koh2017influence} use the classical influence function: upweighting a training point \(z\) by a small \(\varepsilon\) changes the parameters by
+\[
+\frac{d\hat\btheta_{\varepsilon}}{d\varepsilon}\Big|_{\varepsilon=0} = -H^{-1}\nabla_{\btheta}\Loss(\hat\btheta;z),
+\]
+and the test loss on \(z_{\text{test}}\) by
+\begin{equation}\label{eq:influence}
+\mathcal{I}(z,z_{\text{test}}) = -\nabla_{\btheta}\Loss(\hat\btheta;z_{\text{test}})^{\top}H^{-1}\nabla_{\btheta}\Loss(\hat\btheta;z).
+\end{equation}
+Points with large \(|\mathcal{I}|\) are the ones an attacker would like to modify and the ones a defender should inspect. Influence approximations are accurate for convex models and degrade for deep networks, but remain useful for ranking.
+
+\subsection{Geometric and statistical effects}
+
+\begin{itemize}
+  \item \textbf{Capacity matters.} Low-capacity models must compromise between clean and poisoned points, so poisoning hurts availability. High-capacity models can memorize the poisons with little effect elsewhere, which favors integrity attacks.
+  \item \textbf{Poisoning rate.} Backdoor ASR typically rises sharply beyond a threshold rate and then saturates. Indiscriminate damage grows roughly with \(\gamma\) in convex models.
+  \item \textbf{Representations.} Backdoored samples often form a separate cluster in the penultimate-layer representation of the target class and leave a strong signal along the top singular direction of the class covariance \citep{tran2018spectral}. This is a key observation for defenses.
+  \item \textbf{Training dynamics.} Poisons are often learned either very early (backdoor triggers are easy features) or memorized late, which motivates loss-based filtering.
+\end{itemize}
+
+\subsection{Upper bounds on damage}
+
+For convex learners with a data sanitization step, \citet{steinhardt2017certified} derive an upper bound on the worst-case loss an attacker can induce with \(\gamma\) poisoned points by solving a minimax problem over the feasible poison set. The result is a dataset-specific certificate: some datasets are intrinsically resilient, others are vulnerable even to small \(\gamma\).
+
+\section{Hands-On: Crafting Data Poisoning Attacks}
+
+The code below assumes PyTorch, CIFAR-10 tensors in \([0,1]\), and a standard training routine \texttt{train(model, dataset)}.
+
+\subsection{BadNets backdoor}
+
+\begin{lstlisting}
+import torch
+
+def add_trigger(x, size=3, value=1.0):
+    # white square in the bottom-right corner
+    x = x.clone()
+    x[..., -size:, -size:] = value
+    return x
+
+def poison_dataset(X, Y, target, rate, seed=0):
+    g = torch.Generator().manual_seed(seed)
+    idx = torch.nonzero(Y != target).squeeze(1)
+    idx = idx[torch.randperm(len(idx), generator=g)[: int(rate * len(X))]]
+    Xp, Yp = X.clone(), Y.clone()
+    Xp[idx] = add_trigger(X[idx])
+    Yp[idx] = target
+    return Xp, Yp, idx
+
+@torch.no_grad()
+def evaluate_backdoor(model, X, Y, target):
+    model.eval()
+    ca = (model(X).argmax(1) == Y).float().mean()
+    mask = Y != target
+    asr = (model(add_trigger(X[mask])).argmax(1) == target).float().mean()
+    return ca.item(), asr.item()
+\end{lstlisting}
+
+\subsection{Feature-collision clean-label poison}
+
+\begin{lstlisting}
+def feature_collision(feat, x_target, x_base, beta=0.1, steps=500, lr=0.01):
+    # feat: frozen feature extractor h(.)
+    with torch.no_grad():
+        ft = feat(x_target)
+    x = x_base.clone().requires_grad_(True)
+    opt = torch.optim.Adam([x], lr=lr)
+    for _ in range(steps):
+        loss = ((feat(x) - ft) ** 2).sum() + beta * ((x - x_base) ** 2).sum()
+        opt.zero_grad(); loss.backward(); opt.step()
+        x.data.clamp_(0, 1)
+    return x.detach()   # keeps the base's (correct) label
+\end{lstlisting}
+
+\subsection{Gradient-matching poison (one step of crafting)}
+
+\begin{lstlisting}
+import torch.nn.functional as F
+
+def flat_grad(loss, params):
+    g = torch.autograd.grad(loss, params, create_graph=True)
+    return torch.cat([gi.flatten() for gi in g])
+
+def gm_step(model, x_t, y_adv, xb, yb, delta, eps, lr):
+    params = [p for p in model.parameters() if p.requires_grad]
+    g_t = flat_grad(F.cross_entropy(model(x_t), y_adv), params).detach()
+    delta.requires_grad_(True)
+    g_p = flat_grad(F.cross_entropy(model(xb + delta), yb), params)
+    loss = 1 - F.cosine_similarity(g_t, g_p, dim=0)
+    grad, = torch.autograd.grad(loss, delta)
+    delta = (delta - lr * grad.sign()).clamp(-eps, eps)
+    return ((xb + delta).clamp(0, 1) - xb).detach()
+\end{lstlisting}
+
+\subsection{Suggested experiments}
+
+\begin{enumerate}[label=\textbf{\arabic*.}]
+  \item Train ResNet-18 on CIFAR-10 with BadNets at \(\gamma\in\{0.1,0.5,1,5\}\%\). Plot CA and ASR versus \(\gamma\). Repeat with the trigger at a random location.
+  \item Compare BadNets with a blended trigger (\(\lambda\in\{0.05,0.1,0.2\}\)) in terms of ASR and visual detectability.
+  \item In the linear-probe setting (frozen pretrained extractor), attack one target image with feature collision using 1, 5 and 10 poisons. Then fine-tune end to end and report what changes.
+  \item Visualize the penultimate-layer features of the target class with PCA for a backdoored model. Can you separate poisoned from clean samples?
+  \item On logistic regression, compute influence scores (Eq.~\ref{eq:influence}) for all training points relative to a chosen test point, flip the labels of the top-\(m\) points and compare with random flips.
+\end{enumerate}
+
+\section*{Exercises}
+\addcontentsline{toc}{section}{Exercises}
+
+\begin{enumerate}[label=\textbf{\arabic*.}]
+  \item Derive \(\nabla_{\x^p}\hat\btheta\) for ridge regression, \(\hat\btheta=\argmin\sum_i(\btheta^\top\x_i-y_i)^2+\lambda\|\btheta\|^2\), with one poison point \((\x^p,y^p)\). Use it to write one step of gradient-based poisoning.
+  \item Explain why a clean-label backdoor that only adds the trigger to natural images of the target class tends to fail, and why adversarially perturbing those images first helps.
+  \item A backdoored model has 94\% clean accuracy and 99\% ASR, and the poisoning rate was 0.5\%. A defender evaluates only on a held-out clean test set. What will they observe? Propose one data-level and one model-level check.
+  \item Discuss why availability attacks are effective against SVMs but hard against large deep networks trained with heavy data augmentation.
+\end{enumerate}
+
+\bibliographystyle{apalike}
+\bibliography{references}
+\end{document}

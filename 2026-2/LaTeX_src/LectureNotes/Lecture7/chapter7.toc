@@ -1,0 +1,33 @@
+\babel@toc {english}{}\relax 
+\contentsline {section}{From \(\ell _p\) balls to real constraints}{1}{section*.2}%
+\contentsline {section}{\numberline {1}Adversarial Attacks on Computer Vision Models}{1}{section.1}%
+\contentsline {subsection}{\numberline {1.1}Beyond classification}{1}{subsection.1.1}%
+\contentsline {paragraph}{Object detection and segmentation.}{1}{section*.3}%
+\contentsline {paragraph}{Universal perturbations.}{2}{section*.4}%
+\contentsline {paragraph}{Non-\(\ell _p\) perturbations.}{2}{section*.5}%
+\contentsline {subsection}{\numberline {1.2}Patch attacks}{2}{subsection.1.2}%
+\contentsline {section}{\numberline {2}Generating Adversarial Text for NLP Models}{2}{section.2}%
+\contentsline {subsection}{\numberline {2.1}What makes text different}{2}{subsection.2.1}%
+\contentsline {subsection}{\numberline {2.2}Anatomy of a text attack}{2}{subsection.2.2}%
+\contentsline {paragraph}{TextFooler as an example.}{2}{section*.6}%
+\contentsline {paragraph}{Gradient-guided token search.}{2}{section*.7}%
+\contentsline {subsection}{\numberline {2.3}Large language models}{3}{subsection.2.3}%
+\contentsline {section}{\numberline {3}Attacks on Reinforcement Learning Agents}{3}{section.3}%
+\contentsline {paragraph}{Observation perturbations.}{3}{section*.8}%
+\contentsline {paragraph}{Adversarial policies.}{3}{section*.9}%
+\contentsline {paragraph}{Other channels.}{3}{section*.10}%
+\contentsline {section}{\numberline {4}Physical Adversarial Attacks}{3}{section.4}%
+\contentsline {paragraph}{Expectation over Transformation.}{3}{section*.11}%
+\contentsline {paragraph}{Printability and smoothness.}{3}{section*.12}%
+\contentsline {paragraph}{Localized artifacts.}{4}{section*.13}%
+\contentsline {paragraph}{Evaluation.}{4}{section*.14}%
+\contentsline {section}{\numberline {5}Domain-Specific Attack Considerations}{4}{section.5}%
+\contentsline {paragraph}{Malware detection.}{4}{section*.15}%
+\contentsline {paragraph}{Tabular data.}{4}{section*.16}%
+\contentsline {paragraph}{Medical imaging.}{4}{section*.17}%
+\contentsline {paragraph}{Graphs.}{4}{section*.18}%
+\contentsline {section}{\numberline {6}Practice: Generating Adversarial Text}{4}{section.6}%
+\contentsline {subsection}{\numberline {6.1}Using TextAttack}{4}{subsection.6.1}%
+\contentsline {subsection}{\numberline {6.2}A minimal greedy synonym attack from scratch}{5}{subsection.6.2}%
+\contentsline {subsection}{\numberline {6.3}Suggested experiments}{5}{subsection.6.3}%
+\contentsline {section}{Exercises}{5}{section*.19}%

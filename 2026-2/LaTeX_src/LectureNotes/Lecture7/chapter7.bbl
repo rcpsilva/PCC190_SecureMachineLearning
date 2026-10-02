@@ -1,0 +1,158 @@
+\begin{thebibliography}{}
+
+\bibitem[Alzantot et~al., 2018]{alzantot2018generating}
+Alzantot, M., Sharma, Y., Elgohary, A., Ho, B.-J., Srivastava, M., and Chang, K.-W. (2018).
+\newblock Generating natural language adversarial examples.
+\newblock In {\em Proceedings of the 2018 Conference on Empirical Methods in Natural Language Processing (EMNLP)}, pages 2890--2896.
+
+\bibitem[Athalye et~al., 2018]{athalye2018eot}
+Athalye, A., Engstrom, L., Ilyas, A., and Kwok, K. (2018).
+\newblock Synthesizing robust adversarial examples.
+\newblock In {\em Proceedings of the 35th International Conference on Machine Learning (ICML)}, pages 284--293.
+
+\bibitem[Ballet et~al., 2019]{ballet2019imperceptible}
+Ballet, V., Renard, X., Aigrain, J., Laugel, T., Frossard, P., and Detyniecki, M. (2019).
+\newblock Imperceptible adversarial attacks on tabular data.
+\newblock {\em arXiv preprint arXiv:1911.03274}.
+
+\bibitem[Brown et~al., 2017]{brown2017patch}
+Brown, T.~B., Man{\'e}, D., Roy, A., Abadi, M., and Gilmer, J. (2017).
+\newblock Adversarial patch.
+\newblock {\em arXiv preprint arXiv:1712.09665}.
+
+\bibitem[Carlini and Wagner, 2018]{carlini2018audio}
+Carlini, N. and Wagner, D. (2018).
+\newblock Audio adversarial examples: Targeted attacks on speech-to-text.
+\newblock In {\em IEEE Security and Privacy Workshops (SPW)}, pages 1--7.
+
+\bibitem[Ebrahimi et~al., 2018]{ebrahimi2018hotflip}
+Ebrahimi, J., Rao, A., Lowd, D., and Dou, D. (2018).
+\newblock {HotFlip}: White-box adversarial examples for text classification.
+\newblock In {\em Proceedings of the 56th Annual Meeting of the Association for Computational Linguistics (ACL)}, pages 31--36.
+
+\bibitem[Engstrom et~al., 2019]{engstrom2019spatial}
+Engstrom, L., Tran, B., Tsipras, D., Schmidt, L., and Madry, A. (2019).
+\newblock Exploring the landscape of spatial robustness.
+\newblock In {\em Proceedings of the 36th International Conference on Machine Learning (ICML)}, pages 1802--1811.
+
+\bibitem[Eykholt et~al., 2018]{eykholt2018robust}
+Eykholt, K., Evtimov, I., Fernandes, E., Li, B., Rahmati, A., Xiao, C., Prakash, A., Kohno, T., and Song, D. (2018).
+\newblock Robust physical-world attacks on deep learning visual classification.
+\newblock In {\em IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)}, pages 1625--1634.
+
+\bibitem[Finlayson et~al., 2019]{finlayson2019medical}
+Finlayson, S.~G., Bowers, J.~D., Ito, J., Zittrain, J.~L., Beam, A.~L., and Kohane, I.~S. (2019).
+\newblock Adversarial attacks on medical machine learning.
+\newblock {\em Science}, 363(6433):1287--1289.
+
+\bibitem[Gleave et~al., 2020]{gleave2020adversarial}
+Gleave, A., Dennis, M., Wild, C., Kant, N., Levine, S., and Russell, S. (2020).
+\newblock Adversarial policies: Attacking deep reinforcement learning.
+\newblock In {\em International Conference on Learning Representations (ICLR)}.
+
+\bibitem[Greshake et~al., 2023]{greshake2023indirect}
+Greshake, K., Abdelnabi, S., Mishra, S., Endres, C., Holz, T., and Fritz, M. (2023).
+\newblock Not what you've signed up for: Compromising real-world {LLM}-integrated applications with indirect prompt injection.
+\newblock In {\em Proceedings of the 16th ACM Workshop on Artificial Intelligence and Security (AISec)}, pages 79--90.
+
+\bibitem[Grosse et~al., 2017]{grosse2017malware}
+Grosse, K., Papernot, N., Manoharan, P., Backes, M., and McDaniel, P. (2017).
+\newblock Adversarial examples for malware detection.
+\newblock In {\em European Symposium on Research in Computer Security (ESORICS)}, pages 62--79.
+
+\bibitem[Huang et~al., 2017]{huang2017adversarial}
+Huang, S., Papernot, N., Goodfellow, I., Duan, Y., and Abbeel, P. (2017).
+\newblock Adversarial attacks on neural network policies.
+\newblock {\em arXiv preprint arXiv:1702.02284}.
+
+\bibitem[Jia and Liang, 2017]{jia2017adversarial}
+Jia, R. and Liang, P. (2017).
+\newblock Adversarial examples for evaluating reading comprehension systems.
+\newblock In {\em Proceedings of the 2017 Conference on Empirical Methods in Natural Language Processing (EMNLP)}, pages 2021--2031.
+
+\bibitem[Jin et~al., 2020]{jin2020textfooler}
+Jin, D., Jin, Z., Zhou, J.~T., and Szolovits, P. (2020).
+\newblock Is {BERT} really robust? {A} strong baseline for natural language attack on text classification and entailment.
+\newblock In {\em Proceedings of the AAAI Conference on Artificial Intelligence}, pages 8018--8025.
+
+\bibitem[Laidlaw et~al., 2021]{laidlaw2021perceptual}
+Laidlaw, C., Singla, S., and Feizi, S. (2021).
+\newblock Perceptual adversarial robustness: Defense against unseen threat models.
+\newblock In {\em International Conference on Learning Representations (ICLR)}.
+
+\bibitem[Li et~al., 2019]{li2019textbugger}
+Li, J., Ji, S., Du, T., Li, B., and Wang, T. (2019).
+\newblock {TextBugger}: Generating adversarial text against real-world applications.
+\newblock In {\em Network and Distributed System Security Symposium (NDSS)}.
+
+\bibitem[Li et~al., 2020]{li2020bertattack}
+Li, L., Ma, R., Guo, Q., Xue, X., and Qiu, X. (2020).
+\newblock {BERT-ATTACK}: Adversarial attack against {BERT} using {BERT}.
+\newblock In {\em Proceedings of the 2020 Conference on Empirical Methods in Natural Language Processing (EMNLP)}, pages 6193--6202.
+
+\bibitem[Lin et~al., 2017]{lin2017tactics}
+Lin, Y.-C., Hong, Z.-W., Liao, Y.-H., Shih, M.-L., Liu, M.-Y., and Sun, M. (2017).
+\newblock Tactics of adversarial attack on deep reinforcement learning agents.
+\newblock In {\em Proceedings of the 26th International Joint Conference on Artificial Intelligence (IJCAI)}, pages 3756--3762.
+
+\bibitem[Moosavi-Dezfooli et~al., 2017]{moosavi2017universal}
+Moosavi-Dezfooli, S.-M., Fawzi, A., Fawzi, O., and Frossard, P. (2017).
+\newblock Universal adversarial perturbations.
+\newblock In {\em IEEE Conference on Computer Vision and Pattern Recognition (CVPR)}, pages 1765--1773.
+
+\bibitem[Morris et~al., 2020a]{morris2020reevaluating}
+Morris, J., Lifland, E., Lanchantin, J., Ji, Y., and Qi, Y. (2020a).
+\newblock Reevaluating adversarial examples in natural language.
+\newblock In {\em Findings of the Association for Computational Linguistics: EMNLP 2020}, pages 3829--3839.
+
+\bibitem[Morris et~al., 2020b]{morris2020textattack}
+Morris, J., Lifland, E., Yoo, J.~Y., Grigsby, J., Jin, D., and Qi, Y. (2020b).
+\newblock {TextAttack}: A framework for adversarial attacks, data augmentation, and adversarial training in {NLP}.
+\newblock In {\em Proceedings of the 2020 Conference on Empirical Methods in Natural Language Processing: System Demonstrations}, pages 119--126.
+
+\bibitem[Pierazzi et~al., 2020]{pierazzi2020problemspace}
+Pierazzi, F., Pendlebury, F., Cortellazzi, J., and Cavallaro, L. (2020).
+\newblock Intriguing properties of adversarial {ML} attacks in the problem space.
+\newblock In {\em IEEE Symposium on Security and Privacy (S\&P)}, pages 1332--1349.
+
+\bibitem[Pinto et~al., 2017]{pinto2017rarl}
+Pinto, L., Davidson, J., Sukthankar, R., and Gupta, A. (2017).
+\newblock Robust adversarial reinforcement learning.
+\newblock In {\em Proceedings of the 34th International Conference on Machine Learning (ICML)}, pages 2817--2826.
+
+\bibitem[Sharif et~al., 2016]{sharif2016accessorize}
+Sharif, M., Bhagavatula, S., Bauer, L., and Reiter, M.~K. (2016).
+\newblock Accessorize to a crime: Real and stealthy attacks on state-of-the-art face recognition.
+\newblock In {\em Proceedings of the ACM SIGSAC Conference on Computer and Communications Security (CCS)}, pages 1528--1540.
+
+\bibitem[Thys et~al., 2019]{thys2019fooling}
+Thys, S., Van~Ranst, W., and Goedem{\'e}, T. (2019).
+\newblock Fooling automated surveillance cameras: Adversarial patches to attack person detection.
+\newblock In {\em IEEE/CVF Conference on Computer Vision and Pattern Recognition Workshops (CVPRW)}.
+
+\bibitem[Wallace et~al., 2019]{wallace2019universal}
+Wallace, E., Feng, S., Kandpal, N., Gardner, M., and Singh, S. (2019).
+\newblock Universal adversarial triggers for attacking and analyzing {NLP}.
+\newblock In {\em Proceedings of the 2019 Conference on Empirical Methods in Natural Language Processing (EMNLP-IJCNLP)}, pages 2153--2162.
+
+\bibitem[Xie et~al., 2017]{xie2017dag}
+Xie, C., Wang, J., Zhang, Z., Zhou, Y., Xie, L., and Yuille, A. (2017).
+\newblock Adversarial examples for semantic segmentation and object detection.
+\newblock In {\em IEEE International Conference on Computer Vision (ICCV)}, pages 1369--1378.
+
+\bibitem[Zhang et~al., 2020]{zhang2020sadqn}
+Zhang, H., Chen, H., Xiao, C., Li, B., Liu, M., Boning, D., and Hsieh, C.-J. (2020).
+\newblock Robust deep reinforcement learning against adversarial perturbations on state observations.
+\newblock In {\em Advances in Neural Information Processing Systems (NeurIPS)}.
+
+\bibitem[Zou et~al., 2023]{zou2023universal}
+Zou, A., Wang, Z., Carlini, N., Nasr, M., Kolter, J.~Z., and Fredrikson, M. (2023).
+\newblock Universal and transferable adversarial attacks on aligned language models.
+\newblock {\em arXiv preprint arXiv:2307.15043}.
+
+\bibitem[Z{\"u}gner et~al., 2018]{zugner2018nettack}
+Z{\"u}gner, D., Akbarnejad, A., and G{\"u}nnemann, S. (2018).
+\newblock Adversarial attacks on neural networks for graph data.
+\newblock In {\em Proceedings of the 24th ACM SIGKDD International Conference on Knowledge Discovery \& Data Mining (KDD)}, pages 2847--2856.
+
+\end{thebibliography}

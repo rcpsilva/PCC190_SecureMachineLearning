@@ -1,0 +1,294 @@
+\documentclass[10pt,a4paper]{extarticle}
+\newcommand{\coursehead}{PCC190 -- Secure Machine Learning}
+\newcommand{\chapterhead}{Chapter 7: Domain-Specific Attacks}
+\usepackage{parskip}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[english]{babel}
+\usepackage{amsmath, amssymb, amsthm}
+\usepackage{geometry}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{tabularx}
+\usepackage{enumitem}
+\usepackage{microtype}
+\usepackage{csquotes}
+\usepackage{natbib}
+\usepackage{fancyhdr}
+\usepackage[most]{tcolorbox}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{hyperref}
+
+\definecolor{dblue}{RGB}{16, 42, 92}
+\definecolor{dorange}{RGB}{230, 115, 0}
+\definecolor{codebg}{rgb}{0.95,0.95,0.95}
+
+\hypersetup{colorlinks=true, linkcolor=dblue, citecolor=dorange, urlcolor=dblue}
+
+\setlist{nosep}
+\geometry{margin=2cm, headheight=20pt}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\color{dblue}\coursehead}
+\fancyhead[R]{\small\color{dblue}\chapterhead}
+\fancyfoot[C]{\small\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\headrule}{\hbox to\headwidth{\color{dorange}\leaders\hrule height \headrulewidth\hfill}}
+
+\lstset{
+    language=Python,
+    backgroundcolor=\color{codebg},
+    basicstyle=\ttfamily\footnotesize,
+    keywordstyle=\color{dblue}\bfseries,
+    commentstyle=\color{gray},
+    stringstyle=\color{dorange!80!black},
+    showstringspaces=false,
+    frame=single,
+    breaklines=true,
+    inputencoding=utf8
+}
+
+\newtcolorbox{keybox}[1][]{colback=dblue!5, colframe=dblue, fonttitle=\bfseries, title={#1}, breakable}
+\newtcolorbox{warnbox}[1][]{colback=dorange!7, colframe=dorange, fonttitle=\bfseries, title={#1}, breakable}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}[section]
+\newtheorem{example}{Example}[section]
+\newtheorem{remark}{Remark}[section]
+
+% Notation
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\X}{\mathcal{X}}
+\newcommand{\Y}{\mathcal{Y}}
+\newcommand{\D}{\mathcal{D}}
+\newcommand{\Loss}{\mathcal{L}}
+\newcommand{\x}{\mathbf{x}}
+\newcommand{\xadv}{\mathbf{x}'}
+\newcommand{\bdelta}{\boldsymbol{\delta}}
+\newcommand{\btheta}{\boldsymbol{\theta}}
+\newcommand{\B}{\mathcal{B}}
+\newcommand{\Proj}{\Pi}
+\DeclareMathOperator*{\argmax}{arg\,max}
+\DeclareMathOperator*{\argmin}{arg\,min}
+\DeclareMathOperator{\sign}{sign}
+
+\title{Chapter 7\\Adversarial Examples in Specific Domains}
+\author{PCC190 -- Secure Machine Learning\\Prof.\ Rodrigo C.\ P.\ Silva -- DECOM/UFOP}
+\date{\today}
+
+\begin{document}
+\maketitle
+\thispagestyle{fancy}
+\tableofcontents
+
+\section*{From \(\ell_p\) balls to real constraints}
+\addcontentsline{toc}{section}{From \(\ell_p\) balls to real constraints}
+
+The previous chapters used a continuous input space and an \(\ell_p\) threat set. Outside image classification benchmarks both assumptions break. Text is discrete; an agent's inputs depend on its own past actions; a physical object is seen through a camera under changing conditions; a malware binary must still execute. The general problem is
+\begin{equation}\label{eq:general}
+\max_{\xadv\in\mathcal{T}(\x)}\;\Loss(f(\xadv),y)\qquad\text{or}\qquad \text{find } \xadv\in\mathcal{T}(\x)\text{ with } f(\xadv)\neq y,
+\end{equation}
+where \(\mathcal{T}(\x)\) is the set of \emph{admissible transformations} of \(\x\): those that preserve its meaning, label, or function. The domain dictates \(\mathcal{T}\), and \(\mathcal{T}\) dictates which optimization methods are applicable. \citet{pierazzi2020problemspace} call this the distinction between the \emph{feature space}, where the model operates, and the \emph{problem space}, where real objects live.
+
+\section{Adversarial Attacks on Computer Vision Models}
+
+\subsection{Beyond classification}
+
+\paragraph{Object detection and segmentation.} A detector outputs many predictions per image (boxes, classes, scores). Attacks define losses over the set of proposals: to make an object disappear, push all proposals overlapping it toward background; to create a false object, raise a target class score in a chosen region. Dense Adversary Generation \citep{xie2017dag} optimizes the sum of per-proposal (or per-pixel, for segmentation) target losses over the set of still-correct predictions, removing them from the set as they flip.
+
+\paragraph{Universal perturbations.} \citet{moosavi2017universal} find a single \(\bdelta\) with \(\|\bdelta\|_p\le\epsilon\) that fools the model on most inputs from \(\D\), by iterating over training images and accumulating minimal perturbations (DeepFool steps) projected back onto the ball. Their existence suggests that decision boundaries near natural images share common normal directions.
+
+\paragraph{Non-\(\ell_p\) perturbations.} Rotations and translations \citep{engstrom2019spatial}, color and texture changes, and perceptual-metric-bounded perturbations \citep{laidlaw2021perceptual} model changes that humans ignore but \(\ell_p\) does not capture. A grid search over a few rotation angles and shifts already fools many standard and \(\ell_p\)-robust models.
+
+\subsection{Patch attacks}
+
+A patch attack replaces a region of the image instead of adding small noise everywhere. With a mask \(\mathbf{M}\) placed by a location transform \(A\):
+\[
+\xadv=(\mathbf{1}-A(\mathbf{M}))\odot\x+A(\mathbf{M})\odot A(\mathbf{p}).
+\]
+The patch \(\mathbf{p}\) is unconstrained in value but limited in area, so it is visible. \citet{brown2017patch} trained \emph{universal}, location-independent patches that make classifiers output a target class, using expectation over locations, scales and rotations. Patches bridge the digital and physical settings (Section~\ref{sec:physical}).
+
+\section{Generating Adversarial Text for NLP Models}
+
+\subsection{What makes text different}
+
+\begin{itemize}
+  \item \textbf{Discreteness.} Inputs are token sequences; gradients with respect to embeddings do not correspond to valid tokens.
+  \item \textbf{Perceptibility.} Any change is visible. The constraint is not invisibility but \emph{preservation of meaning and fluency}, and a small edit (\enquote{not}) can flip the true label.
+  \item \textbf{Evaluation.} Whether an example is valid requires human or model judgment of semantics and grammar.
+\end{itemize}
+
+\subsection{Anatomy of a text attack}
+
+\citet{morris2020textattack} decompose every text attack into four components:
+\begin{enumerate}
+  \item \textbf{Goal function}: untargeted classification, targeted classification, or a sequence-level goal (change a translation, inject a phrase).
+  \item \textbf{Transformation}: how candidates are generated from the current text. Character level (typos, homoglyphs, swaps; \citealp{li2019textbugger}), word level (synonyms from counter-fitted embeddings or WordNet; masked-language-model suggestions, \citealp{li2020bertattack}), sentence level (paraphrase, distractor sentences, \citealp{jia2017adversarial}).
+  \item \textbf{Constraints}: limits that keep the example valid: maximum fraction of words changed, part-of-speech consistency, minimum sentence-encoder similarity, grammaticality checks, no edits to stopwords.
+  \item \textbf{Search method}: greedy with word importance ranking, beam search, genetic algorithms \citep{alzantot2018generating}, or gradient-guided search.
+\end{enumerate}
+
+\paragraph{TextFooler as an example.} \citet{jin2020textfooler}:
+\begin{enumerate}
+  \item rank words by importance: the drop in the true-class score when the word is deleted;
+  \item for each word in order, gather the nearest synonyms in a counter-fitted embedding space, keep those with the same part of speech and with sentence-encoder similarity above a threshold;
+  \item replace the word with the candidate that most reduces the true-class score; stop as soon as the label flips.
+\end{enumerate}
+
+\paragraph{Gradient-guided token search.} HotFlip \citep{ebrahimi2018hotflip} uses the first-order approximation of the loss change when swapping token \(a\) for token \(b\) at position \(i\):
+\[
+\Delta\Loss_{i,a\to b}\approx(\mathbf{e}_b-\mathbf{e}_a)^\top\nabla_{\mathbf{e}_i}\Loss,
+\]
+where \(\mathbf{e}\) are embeddings. Ranking all \((i,b)\) by this quantity costs one backward pass. \citet{wallace2019universal} use the same approximation to find \emph{universal triggers}: short token sequences that, prepended to any input, push the model toward a target behavior.
+
+\subsection{Large language models}
+
+Aligned LLMs are attacked with the same tools at larger scale. Greedy Coordinate Gradient \citep{zou2023universal} combines HotFlip-style gradient ranking with exhaustive evaluation of a sampled candidate set to optimize an adversarial suffix that makes the model begin its answer with an attacker-chosen string; suffixes found on open models partly transfer to closed ones. A distinct threat is \emph{indirect prompt injection} \citep{greshake2023indirect}: instructions embedded in retrieved documents, web pages or tool outputs that the model treats as commands. Here the \enquote{perturbation} is any text the attacker can place in the model's context, and the goal is to hijack actions rather than to flip a label.
+
+\begin{warnbox}[Validity of adversarial text]
+\citet{morris2020reevaluating} found that many examples produced by popular word-substitution attacks did not preserve meaning or were ungrammatical when judged by humans; tightening constraints to human-acceptable levels reduced attack success substantially. Always inspect examples and report the constraints used.
+\end{warnbox}
+
+\section{Attacks on Reinforcement Learning Agents}
+
+An agent with policy \(\pi(a\mid s)\) interacts with an MDP. The attacker can act on several channels:
+
+\paragraph{Observation perturbations.} The attacker perturbs the agent's observation \(s_t\) to \(\tilde s_t\in\B_p(s_t,\epsilon)\), while the true state is unchanged. \citet{huang2017adversarial} applied FGSM to Atari policies, treating the policy's preferred action as the label, and showed large drops in reward. Two refinements matter:
+\begin{itemize}
+  \item \emph{Timing}: attack only at critical states, for example when the gap between the most and least preferred action probabilities is large (strategically-timed attack, \citealp{lin2017tactics}), which reaches similar damage with far fewer perturbed steps.
+  \item \emph{Planning}: lure the agent to a target state by predicting future states and choosing perturbations that steer it there \citep{lin2017tactics}.
+\end{itemize}
+\citet{zhang2020sadqn} formalize this as a state-adversarial MDP and show that the optimal adversary can be found by solving another MDP, and that robust training must regularize the policy's sensitivity to observation perturbations.
+
+\paragraph{Adversarial policies.} In multi-agent environments, the attacker controls another agent and cannot touch the victim's inputs directly. \citet{gleave2020adversarial} trained opponent policies with standard RL that defeat strong victims in simulated competitive games by producing unusual, seemingly random behavior that pushes the victim's observations off-distribution. Nothing about the attack is small or imperceptible; it is natural within the environment.
+
+\paragraph{Other channels.} Perturbing rewards during training (a form of poisoning), perturbing dynamics (robust adversarial RL trains against an adversary applying forces, \citealp{pinto2017rarl}), and backdooring policies with triggers in the observation.
+
+\section{Physical Adversarial Attacks}\label{sec:physical}
+
+A physical attack must survive the pipeline: fabrication (printing, 3D printing), viewing conditions (distance, angle, lighting), camera capture (noise, blur, compression) and preprocessing. Three ideas make this possible.
+
+\paragraph{Expectation over Transformation.} Optimize the expected loss over a distribution \(\mathcal{T}\) of physical transformations \citep{athalye2018eot}:
+\[
+\max_{\xadv}\;\mathbb{E}_{t\sim\mathcal{T}}\big[\Loss(f(t(\xadv)),y)\big]-\lambda\,\mathbb{E}_{t\sim\mathcal{T}}\big[d(t(\xadv),t(\x))\big].
+\]
+With \(\mathcal{T}\) covering rotation, scale, translation, lighting and noise (and, for 3D objects, rendering from different viewpoints), the result is robust enough to be printed or 3D-printed and still fool a classifier from many angles.
+
+\paragraph{Printability and smoothness.} A non-printability score penalizes colors the printer cannot reproduce, and total variation encourages smooth patterns that survive camera blur \citep{sharif2016accessorize}.
+
+\paragraph{Localized artifacts.} Restricting the perturbation to an object the attacker can plausibly wear or attach: eyeglass frames that cause face recognition to misidentify or impersonate \citep{sharif2016accessorize}; black-and-white stickers on stop signs (RP\(_2\)), optimized with masks and real photographs under varying conditions \citep{eykholt2018robust}; printed patches that hide people from detectors \citep{thys2019fooling}. Over-the-air audio attacks face analogous constraints from room acoustics, although \citet{carlini2018audio} demonstrated their targeted speech-to-text attack digitally.
+
+\paragraph{Evaluation.} Physical results should be reported over many captured frames, distances and angles, as the fraction of frames fooled, and compared with a control artifact (random pattern of the same size and location).
+
+\section{Domain-Specific Attack Considerations}
+
+\paragraph{Malware detection.} Features (API calls, permissions, byte n-grams) are extracted from programs. Modifications must keep the program functional and plausible. Typical constraints allow adding features (dead code, unused permissions, padding bytes, new sections) but not removing those required for malicious behavior \citep{grosse2017malware}. A feature-space adversarial example may not correspond to any program; problem-space attacks \citep{pierazzi2020problemspace} work with transplanted code gadgets, which must preserve semantics, be robust to preprocessing, and remain plausible to analysts. The attacker's capability set is \emph{asymmetric} and discrete.
+
+\paragraph{Tabular data.} Features are mixed (categorical, ordinal, continuous), have domain ranges and dependencies (age vs.\ years of employment), and some are immutable or costly to change (in credit scoring, an applicant can change the requested amount but not their history). \(\ell_p\) distance on normalized features is a poor proxy for perceptibility or cost; attacks weight features by importance and plausibility \citep{ballet2019imperceptible} and project onto feasibility constraints. Explainability methods often serve as attack guides here.
+
+\paragraph{Medical imaging.} Perturbations can be invisible and incentives exist (insurance reimbursement, clinical trial outcomes); \citet{finlayson2019medical} discuss these scenarios. Standardized acquisition pipelines may make digital attacks easier to deliver than in natural images.
+
+\paragraph{Graphs.} In node classification, the attacker can add or remove edges or modify node features. Perturbations are discrete and their effect propagates through message passing; Nettack \citep{zugner2018nettack} perturbs the graph structure and features while preserving degree distribution statistics so the attack is less noticeable.
+
+\begin{keybox}[Questions to ask in any new domain]
+\begin{enumerate}
+  \item What is the problem space, and what transformations preserve label, meaning or function?
+  \item Can the attacker act on the raw object, the features, or only the environment?
+  \item Is the search space continuous, discrete, or mixed, and which optimizer fits it?
+  \item What does a defender or human reviewer see, and what would look suspicious?
+  \item What is the cost of each modification, and what is the attacker's budget?
+\end{enumerate}
+\end{keybox}
+
+\section{Practice: Generating Adversarial Text}
+
+\subsection{Using TextAttack}
+
+\begin{lstlisting}
+# pip install textattack transformers
+import transformers, textattack
+from textattack.models.wrappers import HuggingFaceModelWrapper
+from textattack.attack_recipes import TextFoolerJin2019
+from textattack.datasets import HuggingFaceDataset
+from textattack import Attacker, AttackArgs
+
+name = "textattack/bert-base-uncased-imdb"
+model = transformers.AutoModelForSequenceClassification.from_pretrained(name)
+tok = transformers.AutoTokenizer.from_pretrained(name)
+wrapper = HuggingFaceModelWrapper(model, tok)
+
+attack = TextFoolerJin2019.build(wrapper)
+dataset = HuggingFaceDataset("imdb", split="test")
+args = AttackArgs(num_examples=100, log_to_csv="textfooler_imdb.csv",
+                  disable_stdout=True, random_seed=0)
+Attacker(attack, dataset, args).attack_dataset()
+\end{lstlisting}
+
+TextAttack prints success rate, average perturbed word percentage and average number of queries. Other recipes (\texttt{BAEGarg2019}, \texttt{BERTAttackLi2020}, \texttt{DeepWordBugGao2018}, \texttt{PWWSRen2019}) can be swapped in for comparison.
+
+\subsection{A minimal greedy synonym attack from scratch}
+
+\begin{lstlisting}
+import torch
+
+@torch.no_grad()
+def prob_true(model, tok, texts, y):
+    enc = tok(texts, return_tensors="pt", padding=True, truncation=True)
+    return torch.softmax(model(**enc).logits, -1)[:, y]
+
+def greedy_synonym_attack(model, tok, text, y, synonyms, max_frac=0.2):
+    # synonyms: dict word -> list of candidate replacements
+    words = text.split()
+    base = prob_true(model, tok, [text], y).item()
+    # 1) importance = drop in p(y) when the word is removed
+    deleted = [" ".join(words[:i] + words[i+1:]) for i in range(len(words))]
+    imp = base - prob_true(model, tok, deleted, y)
+    order = imp.argsort(descending=True).tolist()
+    changed, budget = 0, int(max_frac * len(words))
+    for i in order:
+        cands = synonyms.get(words[i].lower(), [])
+        if not cands or changed >= budget:
+            continue
+        trials = [" ".join(words[:i] + [c] + words[i+1:]) for c in cands]
+        p = prob_true(model, tok, trials, y)
+        j = p.argmin().item()
+        if p[j] < prob_true(model, tok, [" ".join(words)], y).item():
+            words[i] = cands[j]; changed += 1
+        enc = tok([" ".join(words)], return_tensors="pt")
+        if model(**enc).logits.argmax(-1).item() != y:
+            return " ".join(words), changed
+    return None, changed   # attack failed within budget
+\end{lstlisting}
+
+The synonym dictionary can be built from WordNet or from nearest neighbors in counter-fitted word vectors. As written, the attack has no semantic or grammatical constraints; adding a sentence-encoder similarity check is Experiment~2.
+
+\subsection{Suggested experiments}
+
+\begin{enumerate}[label=\textbf{\arabic*.}]
+  \item Run TextFooler, BAE and DeepWordBug on 200 IMDB or SST-2 examples against a fine-tuned BERT. Compare success rate, perturbed-word percentage and queries.
+  \item Add a constraint to the greedy attack: cosine similarity of Universal Sentence Encoder (or any sentence-embedding model) embeddings above a threshold, trying 0.7, 0.8 and 0.9. How does success change?
+  \item Manually label 30 successful examples from each attack as \emph{valid} (meaning and label preserved, fluent) or not. Report the corrected success rate.
+  \item Train with adversarial data augmentation (TextAttack's \texttt{augment} or adversarial training) and re-evaluate. Does robustness transfer across attack recipes?
+  \item (Vision) Train a universal adversarial patch on ImageNet with EOT over scale and location, print it, and measure the fraction of frames fooled on a phone camera feed.
+\end{enumerate}
+
+\section*{Exercises}
+\addcontentsline{toc}{section}{Exercises}
+
+\begin{enumerate}[label=\textbf{\arabic*.}]
+  \item Derive the HotFlip first-order approximation and explain why it can be inaccurate for multi-token edits.
+  \item For a malware detector over binary features \(\x\in\{0,1\}^d\) where the attacker can only set bits from 0 to 1, write the evasion problem for a linear model \(f(\x)=\sign(\mathbf{w}^\top\x+b)\) and give its optimal solution with a budget of \(k\) bit flips.
+  \item Explain why an observation-perturbation attack on an RL agent can achieve large reward loss by perturbing only a few time steps, and how you would choose those steps.
+  \item Write the EOT objective for a sticker attack on a traffic sign classifier, specifying the mask, the transformation distribution and the printability term.
+  \item Discuss whether \(\ell_p\) robustness is a meaningful goal for tabular credit-scoring models. Propose a better-suited threat model.
+\end{enumerate}
+
+\bibliographystyle{apalike}
+\bibliography{references}
+\end{document}

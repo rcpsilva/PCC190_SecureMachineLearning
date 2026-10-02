@@ -1,0 +1,34 @@
+\babel@toc {english}{}\relax 
+\contentsline {section}{Notation}{1}{section*.2}%
+\contentsline {section}{\numberline {1}Why Machine Learning Needs Its Own Security Analysis}{1}{section.1}%
+\contentsline {subsection}{\numberline {1.1}A catalogue of vulnerabilities across the pipeline}{2}{subsection.1.1}%
+\contentsline {paragraph}{Data collection and labeling.}{2}{section*.3}%
+\contentsline {paragraph}{Training and the supply chain.}{2}{section*.4}%
+\contentsline {paragraph}{Deployment and inference.}{2}{section*.5}%
+\contentsline {paragraph}{Model outputs and APIs.}{2}{section*.6}%
+\contentsline {section}{\numberline {2}Threat Models}{2}{section.2}%
+\contentsline {subsection}{\numberline {2.1}Adversary goals}{2}{subsection.2.1}%
+\contentsline {paragraph}{Security violation.}{2}{section*.7}%
+\contentsline {paragraph}{Specificity.}{3}{section*.8}%
+\contentsline {subsection}{\numberline {2.2}Adversary knowledge}{3}{subsection.2.2}%
+\contentsline {subsection}{\numberline {2.3}Adversary capabilities}{3}{subsection.2.3}%
+\contentsline {section}{\numberline {3}Attack Surfaces: Training Time versus Inference Time}{3}{section.3}%
+\contentsline {paragraph}{Training-time attacks.}{3}{section*.9}%
+\contentsline {paragraph}{Inference-time attacks.}{4}{section*.10}%
+\contentsline {section}{\numberline {4}Mathematical Formulation of Adversarial Examples}{4}{section.4}%
+\contentsline {subsection}{\numberline {4.1}The phenomenon}{4}{subsection.4.1}%
+\contentsline {subsection}{\numberline {4.2}Two equivalent views}{4}{subsection.4.2}%
+\contentsline {subsection}{\numberline {4.3}Choice of threat norm}{5}{subsection.4.3}%
+\contentsline {subsection}{\numberline {4.4}Why do adversarial examples exist? The linearity view}{5}{subsection.4.4}%
+\contentsline {subsection}{\numberline {4.5}Adversarial risk}{5}{subsection.4.5}%
+\contentsline {section}{\numberline {5}A Taxonomy of Adversarial Attacks}{5}{section.5}%
+\contentsline {paragraph}{Evasion attacks by knowledge.}{6}{section*.11}%
+\contentsline {paragraph}{Universal and physical attacks.}{6}{section*.12}%
+\contentsline {section}{\numberline {6}Overview of Defense Strategies}{6}{section.6}%
+\contentsline {paragraph}{Robust training.}{6}{section*.13}%
+\contentsline {paragraph}{Certified defenses.}{6}{section*.14}%
+\contentsline {paragraph}{Input transformation and preprocessing.}{6}{section*.15}%
+\contentsline {paragraph}{Detection.}{6}{section*.16}%
+\contentsline {paragraph}{Data-centric defenses against poisoning.}{6}{section*.17}%
+\contentsline {paragraph}{Privacy defenses.}{6}{section*.18}%
+\contentsline {section}{Exercises}{7}{section*.19}%

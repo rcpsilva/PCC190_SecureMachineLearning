@@ -1,0 +1,118 @@
+\begin{thebibliography}{}
+
+\bibitem[Andriushchenko et~al., 2020]{andriushchenko2020square}
+Andriushchenko, M., Croce, F., Flammarion, N., and Hein, M. (2020).
+\newblock Square attack: A query-efficient black-box adversarial attack via random search.
+\newblock In {\em European Conference on Computer Vision (ECCV)}, pages 484--501.
+
+\bibitem[Athalye et~al., 2018]{athalye2018eot}
+Athalye, A., Engstrom, L., Ilyas, A., and Kwok, K. (2018).
+\newblock Synthesizing robust adversarial examples.
+\newblock In {\em Proceedings of the 35th International Conference on Machine Learning (ICML)}, pages 284--293.
+
+\bibitem[Brendel et~al., 2018]{brendel2018decision}
+Brendel, W., Rauber, J., and Bethge, M. (2018).
+\newblock Decision-based adversarial attacks: Reliable attacks against black-box machine learning models.
+\newblock In {\em International Conference on Learning Representations (ICLR)}.
+
+\bibitem[Carlini et~al., 2019]{carlini2019evaluating}
+Carlini, N., Athalye, A., Papernot, N., Brendel, W., Rauber, J., Tsipras, D., Goodfellow, I., Madry, A., and Kurakin, A. (2019).
+\newblock On evaluating adversarial robustness.
+\newblock {\em arXiv preprint arXiv:1902.06705}.
+
+\bibitem[Carlini and Wagner, 2017]{carlini2017towards}
+Carlini, N. and Wagner, D. (2017).
+\newblock Towards evaluating the robustness of neural networks.
+\newblock In {\em IEEE Symposium on Security and Privacy (S\&P)}, pages 39--57.
+
+\bibitem[Chen et~al., 2020]{chen2020hopskipjump}
+Chen, J., Jordan, M.~I., and Wainwright, M.~J. (2020).
+\newblock {HopSkipJumpAttack}: A query-efficient decision-based attack.
+\newblock In {\em IEEE Symposium on Security and Privacy (S\&P)}, pages 1277--1294.
+
+\bibitem[Chen et~al., 2017]{chen2017zoo}
+Chen, P.-Y., Zhang, H., Sharma, Y., Yi, J., and Hsieh, C.-J. (2017).
+\newblock {ZOO}: Zeroth order optimization based black-box attacks to deep neural networks without training substitute models.
+\newblock In {\em Proceedings of the 10th ACM Workshop on Artificial Intelligence and Security (AISec)}, pages 15--26.
+
+\bibitem[Croce and Hein, 2020]{croce2020reliable}
+Croce, F. and Hein, M. (2020).
+\newblock Reliable evaluation of adversarial robustness with an ensemble of diverse parameter-free attacks.
+\newblock In {\em Proceedings of the 37th International Conference on Machine Learning (ICML)}, pages 2206--2216.
+
+\bibitem[Dong et~al., 2018]{dong2018boosting}
+Dong, Y., Liao, F., Pang, T., Su, H., Zhu, J., Hu, X., and Li, J. (2018).
+\newblock Boosting adversarial attacks with momentum.
+\newblock In {\em IEEE Conference on Computer Vision and Pattern Recognition (CVPR)}, pages 9185--9193.
+
+\bibitem[Goodfellow et~al., 2015]{goodfellow2015explaining}
+Goodfellow, I.~J., Shlens, J., and Szegedy, C. (2015).
+\newblock Explaining and harnessing adversarial examples.
+\newblock In {\em International Conference on Learning Representations (ICLR)}.
+
+\bibitem[He et~al., 2017]{he2017ensemble}
+He, W., Wei, J., Chen, X., Carlini, N., and Song, D. (2017).
+\newblock Adversarial example defenses: Ensembles of weak defenses are not strong.
+\newblock In {\em 11th USENIX Workshop on Offensive Technologies (WOOT)}.
+
+\bibitem[Ilyas et~al., 2018]{ilyas2018blackbox}
+Ilyas, A., Engstrom, L., Athalye, A., and Lin, J. (2018).
+\newblock Black-box adversarial attacks with limited queries and information.
+\newblock In {\em Proceedings of the 35th International Conference on Machine Learning (ICML)}, pages 2137--2146.
+
+\bibitem[Ilyas et~al., 2019]{ilyas2019features}
+Ilyas, A., Santurkar, S., Tsipras, D., Engstrom, L., Tran, B., and Madry, A. (2019).
+\newblock Adversarial examples are not bugs, they are features.
+\newblock In {\em Advances in Neural Information Processing Systems (NeurIPS)}.
+
+\bibitem[Kurakin et~al., 2017]{kurakin2017physical}
+Kurakin, A., Goodfellow, I., and Bengio, S. (2017).
+\newblock Adversarial examples in the physical world.
+\newblock In {\em ICLR Workshop Track}.
+
+\bibitem[Liu et~al., 2017]{liu2017delving}
+Liu, Y., Chen, X., Liu, C., and Song, D. (2017).
+\newblock Delving into transferable adversarial examples and black-box attacks.
+\newblock {\em International Conference on Learning Representations (ICLR)}.
+
+\bibitem[Madry et~al., 2018]{madry2018towards}
+Madry, A., Makelov, A., Schmidt, L., Tsipras, D., and Vladu, A. (2018).
+\newblock Towards deep learning models resistant to adversarial attacks.
+\newblock In {\em International Conference on Learning Representations (ICLR)}.
+
+\bibitem[Moosavi-Dezfooli et~al., 2016]{moosavi2016deepfool}
+Moosavi-Dezfooli, S.-M., Fawzi, A., and Frossard, P. (2016).
+\newblock {DeepFool}: A simple and accurate method to fool deep neural networks.
+\newblock In {\em IEEE Conference on Computer Vision and Pattern Recognition (CVPR)}, pages 2574--2582.
+
+\bibitem[Papernot et~al., 2017]{papernot2017practical}
+Papernot, N., McDaniel, P., Goodfellow, I., Jha, S., Celik, Z.~B., and Swami, A. (2017).
+\newblock Practical black-box attacks against machine learning.
+\newblock In {\em Proceedings of the ACM Asia Conference on Computer and Communications Security (ASIACCS)}, pages 506--519.
+
+\bibitem[Szegedy et~al., 2014]{szegedy2014intriguing}
+Szegedy, C., Zaremba, W., Sutskever, I., Bruna, J., Erhan, D., Goodfellow, I., and Fergus, R. (2014).
+\newblock Intriguing properties of neural networks.
+\newblock In {\em International Conference on Learning Representations (ICLR)}.
+
+\bibitem[Tram{\`e}r et~al., 2018]{tramer2018ensemble}
+Tram{\`e}r, F., Kurakin, A., Papernot, N., Goodfellow, I., Boneh, D., and McDaniel, P. (2018).
+\newblock Ensemble adversarial training: Attacks and defenses.
+\newblock In {\em International Conference on Learning Representations (ICLR)}.
+
+\bibitem[Tram{\`e}r et~al., 2017]{tramer2017space}
+Tram{\`e}r, F., Papernot, N., Goodfellow, I., Boneh, D., and McDaniel, P. (2017).
+\newblock The space of transferable adversarial examples.
+\newblock {\em arXiv preprint arXiv:1704.03453}.
+
+\bibitem[Uesato et~al., 2018]{uesato2018adversarial}
+Uesato, J., O'Donoghue, B., van~den Oord, A., and Kohli, P. (2018).
+\newblock Adversarial risk and the dangers of evaluating against weak attacks.
+\newblock In {\em Proceedings of the 35th International Conference on Machine Learning (ICML)}, pages 5025--5034.
+
+\bibitem[Xie et~al., 2019]{xie2019improving}
+Xie, C., Zhang, Z., Zhou, Y., Bai, S., Wang, J., Ren, Z., and Yuille, A.~L. (2019).
+\newblock Improving transferability of adversarial examples with input diversity.
+\newblock In {\em IEEE Conference on Computer Vision and Pattern Recognition (CVPR)}, pages 2730--2739.
+
+\end{thebibliography}

@@ -1,0 +1,31 @@
+\babel@toc {english}{}\relax 
+\contentsline {section}{Setting and notation}{1}{section*.2}%
+\contentsline {section}{\numberline {1}Poisoning Strategies: Availability versus Integrity}{2}{section.1}%
+\contentsline {paragraph}{Availability (indiscriminate) attacks.}{2}{section*.3}%
+\contentsline {paragraph}{Integrity attacks.}{2}{section*.4}%
+\contentsline {subsection}{\numberline {1.1}Label flipping}{2}{subsection.1.1}%
+\contentsline {subsection}{\numberline {1.2}Gradient-based poisoning}{2}{subsection.1.2}%
+\contentsline {section}{\numberline {2}Targeted Data Poisoning}{2}{section.2}%
+\contentsline {paragraph}{Bilevel targeted objective.}{3}{section*.5}%
+\contentsline {paragraph}{Gradient matching.}{3}{section*.6}%
+\contentsline {paragraph}{Why targeted attacks are hard to detect.}{3}{section*.7}%
+\contentsline {section}{\numberline {3}Backdoor Attack Mechanisms and Trigger Design}{3}{section.3}%
+\contentsline {paragraph}{BadNets.}{3}{section*.8}%
+\contentsline {paragraph}{Blended and invisible triggers.}{3}{section*.9}%
+\contentsline {paragraph}{Model-level trojans.}{3}{section*.10}%
+\contentsline {paragraph}{Backdoors in federated learning.}{3}{section*.11}%
+\contentsline {paragraph}{Design dimensions.}{3}{section*.12}%
+\contentsline {section}{\numberline {4}Clean-Label Poisoning}{3}{section.4}%
+\contentsline {paragraph}{Feature collision (Poison Frogs).}{4}{section*.13}%
+\contentsline {paragraph}{Convex polytope and gradient-based variants.}{4}{section*.14}%
+\contentsline {paragraph}{Clean-label backdoors.}{4}{section*.15}%
+\contentsline {section}{\numberline {5}Analyzing the Impact of Poisoning}{4}{section.5}%
+\contentsline {subsection}{\numberline {5.1}Influence functions}{4}{subsection.5.1}%
+\contentsline {subsection}{\numberline {5.2}Geometric and statistical effects}{4}{subsection.5.2}%
+\contentsline {subsection}{\numberline {5.3}Upper bounds on damage}{4}{subsection.5.3}%
+\contentsline {section}{\numberline {6}Hands-On: Crafting Data Poisoning Attacks}{4}{section.6}%
+\contentsline {subsection}{\numberline {6.1}BadNets backdoor}{5}{subsection.6.1}%
+\contentsline {subsection}{\numberline {6.2}Feature-collision clean-label poison}{5}{subsection.6.2}%
+\contentsline {subsection}{\numberline {6.3}Gradient-matching poison (one step of crafting)}{5}{subsection.6.3}%
+\contentsline {subsection}{\numberline {6.4}Suggested experiments}{5}{subsection.6.4}%
+\contentsline {section}{Exercises}{6}{section*.16}%

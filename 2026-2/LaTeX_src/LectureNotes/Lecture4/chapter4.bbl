@@ -1,0 +1,118 @@
+\begin{thebibliography}{}
+
+\bibitem[Abadi et~al., 2016]{abadi2016deep}
+Abadi, M., Chu, A., Goodfellow, I., McMahan, H.~B., Mironov, I., Talwar, K., and Zhang, L. (2016).
+\newblock Deep learning with differential privacy.
+\newblock In {\em Proceedings of the ACM SIGSAC Conference on Computer and Communications Security (CCS)}, pages 308--318.
+
+\bibitem[Carlini et~al., 2022]{carlini2022membership}
+Carlini, N., Chien, S., Nasr, M., Song, S., Terzis, A., and Tram{\`e}r, F. (2022).
+\newblock Membership inference attacks from first principles.
+\newblock In {\em IEEE Symposium on Security and Privacy (S\&P)}, pages 1897--1914.
+
+\bibitem[Carlini et~al., 2020]{carlini2020cryptanalytic}
+Carlini, N., Jagielski, M., and Mironov, I. (2020).
+\newblock Cryptanalytic extraction of neural network models.
+\newblock In {\em Advances in Cryptology (CRYPTO)}, pages 189--218.
+
+\bibitem[Carlini et~al., 2021]{carlini2021extracting}
+Carlini, N., Tram{\`e}r, F., Wallace, E., Jagielski, M., Herbert-Voss, A., Lee, K., Roberts, A., Brown, T., Song, D., Erlingsson, {\'U}., Oprea, A., and Raffel, C. (2021).
+\newblock Extracting training data from large language models.
+\newblock In {\em 30th USENIX Security Symposium}, pages 2633--2650.
+
+\bibitem[Choquette-Choo et~al., 2021]{choquette2021label}
+Choquette-Choo, C.~A., Tram{\`e}r, F., Carlini, N., and Papernot, N. (2021).
+\newblock Label-only membership inference attacks.
+\newblock In {\em Proceedings of the 38th International Conference on Machine Learning (ICML)}, pages 1964--1974.
+
+\bibitem[Dwork et~al., 2006]{dwork2006calibrating}
+Dwork, C., McSherry, F., Nissim, K., and Smith, A. (2006).
+\newblock Calibrating noise to sensitivity in private data analysis.
+\newblock In {\em Theory of Cryptography Conference (TCC)}, pages 265--284.
+
+\bibitem[Fredrikson et~al., 2015]{fredrikson2015model}
+Fredrikson, M., Jha, S., and Ristenpart, T. (2015).
+\newblock Model inversion attacks that exploit confidence information and basic countermeasures.
+\newblock In {\em Proceedings of the 22nd ACM SIGSAC Conference on Computer and Communications Security (CCS)}, pages 1322--1333.
+
+\bibitem[Fredrikson et~al., 2014]{fredrikson2014privacy}
+Fredrikson, M., Lantz, E., Jha, S., Lin, S., Page, D., and Ristenpart, T. (2014).
+\newblock Privacy in pharmacogenetics: An end-to-end case study of personalized warfarin dosing.
+\newblock In {\em 23rd USENIX Security Symposium}, pages 17--32.
+
+\bibitem[Geiping et~al., 2020]{geiping2020inverting}
+Geiping, J., Bauermeister, H., Dr{\"o}ge, H., and Moeller, M. (2020).
+\newblock Inverting gradients: How easy is it to break privacy in federated learning?
+\newblock In {\em Advances in Neural Information Processing Systems (NeurIPS)}.
+
+\bibitem[Jagielski et~al., 2020a]{jagielski2020high}
+Jagielski, M., Carlini, N., Berthelot, D., Kurakin, A., and Papernot, N. (2020a).
+\newblock High accuracy and high fidelity extraction of neural networks.
+\newblock In {\em 29th USENIX Security Symposium}, pages 1345--1362.
+
+\bibitem[Jagielski et~al., 2020b]{jagielski2020auditing}
+Jagielski, M., Ullman, J., and Oprea, A. (2020b).
+\newblock Auditing differentially private machine learning: How private is private {SGD}?
+\newblock In {\em Advances in Neural Information Processing Systems (NeurIPS)}.
+
+\bibitem[Jayaraman and Evans, 2019]{jayaraman2019evaluating}
+Jayaraman, B. and Evans, D. (2019).
+\newblock Evaluating differentially private machine learning in practice.
+\newblock In {\em 28th USENIX Security Symposium}, pages 1895--1912.
+
+\bibitem[Kairouz et~al., 2015]{kairouz2015composition}
+Kairouz, P., Oh, S., and Viswanath, P. (2015).
+\newblock The composition theorem for differential privacy.
+\newblock In {\em Proceedings of the 32nd International Conference on Machine Learning (ICML)}, pages 1376--1385.
+
+\bibitem[Nasr et~al., 2021]{nasr2021adversary}
+Nasr, M., Song, S., Thakurta, A., Papernot, N., and Carlini, N. (2021).
+\newblock Adversary instantiation: Lower bounds for differentially private machine learning.
+\newblock In {\em IEEE Symposium on Security and Privacy (S\&P)}, pages 866--882.
+
+\bibitem[Orekondy et~al., 2019]{orekondy2019knockoff}
+Orekondy, T., Schiele, B., and Fritz, M. (2019).
+\newblock Knockoff nets: Stealing functionality of black-box models.
+\newblock In {\em IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)}, pages 4954--4963.
+
+\bibitem[Papernot et~al., 2017]{papernot2017practical}
+Papernot, N., McDaniel, P., Goodfellow, I., Jha, S., Celik, Z.~B., and Swami, A. (2017).
+\newblock Practical black-box attacks against machine learning.
+\newblock In {\em Proceedings of the ACM Asia Conference on Computer and Communications Security (ASIACCS)}, pages 506--519.
+
+\bibitem[Salem et~al., 2019]{salem2019mlleaks}
+Salem, A., Zhang, Y., Humbert, M., Berrang, P., Fritz, M., and Backes, M. (2019).
+\newblock {ML-Leaks}: Model and data independent membership inference attacks and defenses on machine learning models.
+\newblock In {\em Network and Distributed System Security Symposium (NDSS)}.
+
+\bibitem[Shokri et~al., 2017]{shokri2017membership}
+Shokri, R., Stronati, M., Song, C., and Shmatikov, V. (2017).
+\newblock Membership inference attacks against machine learning models.
+\newblock In {\em IEEE Symposium on Security and Privacy (S\&P)}, pages 3--18.
+
+\bibitem[Song and Shmatikov, 2020]{song2020overlearning}
+Song, C. and Shmatikov, V. (2020).
+\newblock Overlearning reveals sensitive attributes.
+\newblock In {\em International Conference on Learning Representations (ICLR)}.
+
+\bibitem[Tram{\`e}r et~al., 2016]{tramer2016stealing}
+Tram{\`e}r, F., Zhang, F., Juels, A., Reiter, M.~K., and Ristenpart, T. (2016).
+\newblock Stealing machine learning models via prediction {APIs}.
+\newblock In {\em 25th USENIX Security Symposium}, pages 601--618.
+
+\bibitem[Yeom et~al., 2018]{yeom2018privacy}
+Yeom, S., Giacomelli, I., Fredrikson, M., and Jha, S. (2018).
+\newblock Privacy risk in machine learning: Analyzing the connection to overfitting.
+\newblock In {\em IEEE 31st Computer Security Foundations Symposium (CSF)}, pages 268--282.
+
+\bibitem[Zhang et~al., 2020]{zhang2020secret}
+Zhang, Y., Jia, R., Pei, H., Wang, W., Li, B., and Song, D. (2020).
+\newblock The secret revealer: Generative model-inversion attacks against deep neural networks.
+\newblock In {\em IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)}, pages 253--261.
+
+\bibitem[Zhu et~al., 2019]{zhu2019deep}
+Zhu, L., Liu, Z., and Han, S. (2019).
+\newblock Deep leakage from gradients.
+\newblock In {\em Advances in Neural Information Processing Systems (NeurIPS)}.
+
+\end{thebibliography}
