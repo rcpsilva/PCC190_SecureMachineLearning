@@ -1,38 +1,69 @@
 \babel@toc {english}{}\relax 
-\contentsline {section}{Setting and notation}{1}{section*.2}%
-\contentsline {section}{\numberline {1}Gradient-Based Attacks: FGSM, BIM and PGD}{2}{section.1}%
-\contentsline {subsection}{\numberline {1.1}Fast Gradient Sign Method (FGSM)}{2}{subsection.1.1}%
-\contentsline {paragraph}{Analysis.}{2}{section*.3}%
-\contentsline {subsection}{\numberline {1.2}Basic Iterative Method (BIM)}{2}{subsection.1.2}%
-\contentsline {subsection}{\numberline {1.3}Projected Gradient Descent (PGD)}{2}{subsection.1.3}%
-\contentsline {paragraph}{Why PGD became the reference first-order attack.}{2}{section*.4}%
-\contentsline {paragraph}{Practical analysis.}{3}{section*.5}%
-\contentsline {section}{\numberline {2}Optimization-Based Attacks: Carlini and Wagner}{3}{section.2}%
-\contentsline {paragraph}{From a hard constraint to a penalty.}{3}{section*.6}%
-\contentsline {paragraph}{Removing the box constraint.}{3}{section*.7}%
-\contentsline {paragraph}{The \(\ell _2\) attack.}{3}{section*.8}%
-\contentsline {paragraph}{\(\ell _0\) and \(\ell _\infty \) variants.}{3}{section*.9}%
-\contentsline {paragraph}{Analysis.}{3}{section*.10}%
-\contentsline {section}{\numberline {3}Score-Based Attacks}{4}{section.3}%
-\contentsline {subsection}{\numberline {3.1}Zeroth-order gradient estimation}{4}{subsection.3.1}%
-\contentsline {paragraph}{Coordinate-wise finite differences.}{4}{section*.11}%
-\contentsline {paragraph}{Random-direction estimators (NES).}{4}{section*.12}%
-\contentsline {subsection}{\numberline {3.2}Gradient-free random search}{4}{subsection.3.2}%
-\contentsline {paragraph}{Square Attack.}{4}{section*.13}%
-\contentsline {paragraph}{Analysis.}{4}{section*.14}%
-\contentsline {section}{\numberline {4}Decision-Based Attacks}{4}{section.4}%
-\contentsline {paragraph}{Boundary Attack.}{4}{section*.15}%
-\contentsline {paragraph}{HopSkipJump.}{4}{section*.16}%
-\contentsline {section}{\numberline {5}Transferability of Adversarial Examples}{5}{section.5}%
-\contentsline {paragraph}{Why transfer works.}{5}{section*.17}%
-\contentsline {paragraph}{What makes examples transfer better.}{5}{section*.18}%
-\contentsline {section}{\numberline {6}Attacking Ensemble Models}{5}{section.6}%
-\contentsline {paragraph}{Ensembles as surrogates.}{5}{section*.19}%
-\contentsline {paragraph}{Ensembles as defenses.}{6}{section*.20}%
-\contentsline {section}{\numberline {7}Hands-On: Implementing Evasion Attacks}{6}{section.7}%
-\contentsline {subsection}{\numberline {7.1}FGSM and PGD}{6}{subsection.7.1}%
-\contentsline {subsection}{\numberline {7.2}Carlini--Wagner \(\ell _2\) (single \(c\), no binary search)}{6}{subsection.7.2}%
-\contentsline {subsection}{\numberline {7.3}A score-based attack: NES gradient estimate inside PGD}{7}{subsection.7.3}%
-\contentsline {subsection}{\numberline {7.4}Transfer from an ensemble of surrogates}{7}{subsection.7.4}%
-\contentsline {subsection}{\numberline {7.5}Suggested experiments}{7}{subsection.7.5}%
-\contentsline {section}{Exercises}{8}{section*.21}%
+\contentsline {section}{Setting and notation}{2}{section*.2}%
+\contentsline {section}{\numberline {1}Definitions: Evasion Attacks}{2}{section.1}%
+\contentsline {subsection}{\numberline {1.1}Informal Definition}{2}{subsection.1.1}%
+\contentsline {subsection}{\numberline {1.2}Formal Definition}{2}{subsection.1.2}%
+\contentsline {section}{\numberline {2}A Taxonomy of Evasion Attacks}{3}{section.2}%
+\contentsline {paragraph}{Information level \(\mathcal {I}\).}{3}{section*.3}%
+\contentsline {paragraph}{Problem solved.}{3}{section*.4}%
+\contentsline {paragraph}{Solver.}{3}{section*.5}%
+\contentsline {section}{\numberline {3}White-Box Attacks}{4}{section.3}%
+\contentsline {subsection}{\numberline {3.1}Budget problem: FGSM, BIM and PGD}{4}{subsection.3.1}%
+\contentsline {subsubsection}{\numberline {3.1.1}Fast Gradient Sign Method (FGSM)}{4}{subsubsection.3.1.1}%
+\contentsline {paragraph}{Step 1: a local linear model of the loss.}{4}{section*.6}%
+\contentsline {paragraph}{Step 2: solving the linear problem.}{4}{section*.7}%
+\contentsline {paragraph}{Step 3: the box constraint.}{5}{section*.8}%
+\contentsline {paragraph}{When can one linear step be trusted?}{5}{section*.9}%
+\contentsline {paragraph}{Analysis.}{5}{section*.10}%
+\contentsline {subsubsection}{\numberline {3.1.2}Basic Iterative Method (BIM)}{5}{subsubsection.3.1.2}%
+\contentsline {paragraph}{How many steps?}{6}{section*.11}%
+\contentsline {subsubsection}{\numberline {3.1.3}Projected Gradient Descent (PGD)}{6}{subsubsection.3.1.3}%
+\contentsline {paragraph}{Projected steepest ascent.}{6}{section*.12}%
+\contentsline {paragraph}{The projections.}{6}{section*.13}%
+\contentsline {paragraph}{Why random starts and restarts.}{6}{section*.14}%
+\contentsline {paragraph}{Why PGD became the reference first-order attack.}{6}{section*.15}%
+\contentsline {paragraph}{Practical analysis.}{6}{section*.16}%
+\contentsline {subsection}{\numberline {3.2}Min-norm problem: Carlini and Wagner, and DeepFool}{7}{subsection.3.2}%
+\contentsline {paragraph}{From a hard constraint to a penalty.}{7}{section*.17}%
+\contentsline {paragraph}{Removing the box constraint.}{7}{section*.18}%
+\contentsline {paragraph}{The \(\ell _2\) attack.}{7}{section*.19}%
+\contentsline {paragraph}{\(\ell _0\) and \(\ell _\infty \) variants.}{7}{section*.20}%
+\contentsline {paragraph}{Analysis.}{8}{section*.21}%
+\contentsline {section}{\numberline {4}Query-Based Black-Box Attacks}{8}{section.4}%
+\contentsline {subsection}{\numberline {4.1}Score-based attacks}{8}{subsection.4.1}%
+\contentsline {subsubsection}{\numberline {4.1.1}Zeroth-order gradient estimation}{8}{subsubsection.4.1.1}%
+\contentsline {paragraph}{Coordinate-wise finite differences.}{8}{section*.22}%
+\contentsline {paragraph}{Random-direction estimators (NES).}{8}{section*.23}%
+\contentsline {subsubsection}{\numberline {4.1.2}Gradient-free random search}{8}{subsubsection.4.1.2}%
+\contentsline {paragraph}{Square Attack.}{8}{section*.24}%
+\contentsline {paragraph}{Analysis.}{8}{section*.25}%
+\contentsline {subsection}{\numberline {4.2}Decision-based attacks}{9}{subsection.4.2}%
+\contentsline {paragraph}{Boundary Attack.}{9}{section*.26}%
+\contentsline {paragraph}{HopSkipJump.}{9}{section*.27}%
+\contentsline {section}{\numberline {5}Transfer-Based Black-Box Attacks}{9}{section.5}%
+\contentsline {paragraph}{Why transfer works.}{9}{section*.28}%
+\contentsline {paragraph}{What makes examples transfer better.}{9}{section*.29}%
+\contentsline {section}{\numberline {6}Ensembles: Surrogates and Targets}{10}{section.6}%
+\contentsline {paragraph}{Ensembles as surrogates.}{10}{section*.30}%
+\contentsline {paragraph}{Ensembles as defenses.}{10}{section*.31}%
+\contentsline {section}{\numberline {7}Evasion Attacks on Large Language Models}{10}{section.7}%
+\contentsline {subsection}{\numberline {7.1}Setting and threat model}{11}{subsection.7.1}%
+\contentsline {subsection}{\numberline {7.2}A surrogate loss and the discrete budget problem}{11}{subsection.7.2}%
+\contentsline {paragraph}{Linearizing a discrete problem.}{11}{section*.32}%
+\contentsline {paragraph}{Why the linear model can only rank.}{12}{section*.33}%
+\contentsline {subsection}{\numberline {7.3}White-box: Greedy Coordinate Gradient}{12}{subsection.7.3}%
+\contentsline {paragraph}{Universal and transferable suffixes.}{12}{section*.34}%
+\contentsline {paragraph}{Embedding-space attacks.}{12}{section*.35}%
+\contentsline {subsection}{\numberline {7.4}Black-box attacks}{12}{subsection.7.4}%
+\contentsline {paragraph}{Score-based.}{12}{section*.36}%
+\contentsline {paragraph}{Judge-based (the decision-based analogue).}{13}{section*.37}%
+\contentsline {paragraph}{Hand-crafted attacks (no optimization).}{13}{section*.38}%
+\contentsline {subsection}{\numberline {7.5}Prompt injection}{13}{subsection.7.5}%
+\contentsline {subsection}{\numberline {7.6}Defenses and their limits}{13}{subsection.7.6}%
+\contentsline {section}{\numberline {8}Hands-On: Implementing Evasion Attacks}{14}{section.8}%
+\contentsline {subsection}{\numberline {8.1}FGSM and PGD}{14}{subsection.8.1}%
+\contentsline {subsection}{\numberline {8.2}Carlini--Wagner \(\ell _2\) (single \(c\), no binary search)}{15}{subsection.8.2}%
+\contentsline {subsection}{\numberline {8.3}A score-based attack: NES gradient estimate inside PGD}{15}{subsection.8.3}%
+\contentsline {subsection}{\numberline {8.4}Transfer from an ensemble of surrogates}{15}{subsection.8.4}%
+\contentsline {subsection}{\numberline {8.5}Suggested experiments}{15}{subsection.8.5}%
+\contentsline {section}{Exercises}{16}{section*.40}%
