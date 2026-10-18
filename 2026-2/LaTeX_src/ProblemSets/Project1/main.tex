@@ -1,0 +1,97 @@
+\documentclass[11pt,a4paper]{extarticle}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[english]{babel}
+\usepackage{geometry}
+\usepackage{parskip}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage[expansion=false]{microtype}
+\usepackage{csquotes}
+\usepackage{fancyhdr}
+\usepackage[most]{tcolorbox}
+\usepackage[hidelinks]{hyperref}
+
+\geometry{margin=2.2cm, headheight=22pt}
+
+\definecolor{primary}{RGB}{20, 50, 100}
+\definecolor{accent}{RGB}{230, 120, 20}
+
+\setlist{nosep, leftmargin=1.4em}
+\setlist[itemize]{label=\textcolor{accent}{\textbullet}}
+
+\newcommand{\tbd}[1]{\textcolor{accent}{\textbf{[#1]}}}
+
+\renewcommand{\headrulewidth}{0.6pt}
+\renewcommand{\headrule}{\hbox to\headwidth{\color{accent}\leaders\hrule height \headrulewidth\hfill}}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\color{primary} PCC190 -- Adversarial Machine Learning}
+\fancyhead[R]{\small\color{primary} Project 1}
+\fancyfoot[C]{\small\color{primary!70} \thepage}
+
+\usepackage{titlesec}
+\titleformat{\section}{\large\bfseries\color{primary}}{}{0pt}{}[\vspace{-0.4em}\textcolor{accent}{\titlerule[0.8pt]}]
+\titlespacing*{\section}{0pt}{1.4em}{0.6em}
+
+\newtcolorbox{keybox}[1][]{
+  colback=primary!6, colframe=primary, boxrule=0.6pt, arc=2pt,
+  left=8pt, right=8pt, top=6pt, bottom=6pt, #1
+}
+
+\begin{document}
+
+\begin{tcolorbox}[colback=primary, colframe=primary, arc=0pt, boxrule=0pt, left=12pt, right=12pt, top=10pt, bottom=10pt]
+{\color{white}\Large\bfseries Project 1: Study and Presentation on Evasion Attacks and Defenses\par}
+\vspace{4pt}
+{\color{white}\small PCC190 -- Adversarial Machine Learning \quad|\quad Individual project \quad|\quad One week}
+\end{tcolorbox}
+\vspace{-0.6em}
+\textcolor{accent}{\rule{\linewidth}{2.5pt}}
+
+\section{Goal}
+
+This is an individual project and the first step of your course project. You will choose a problem related to evasion attacks or defenses, study a small set of papers around it, and present what you found. The emphasis is on understanding the main algorithms well enough to explain them in detail. You are not expected to survey the field, to implement anything, or to write a full research proposal at this stage.
+
+\section{Choosing the problem}
+
+Pick one problem that fits at least one of the following tracks.
+
+\begin{enumerate}[label=\textbf{\arabic*.}]
+  \item \textbf{Attacks.} An evasion attack, or a family of attacks, in a specific setting (a threat model, a data modality, or a model family).
+  \item \textbf{Defenses.} A defense, or a family of defenses, against evasion attacks.
+  \item \textbf{Evaluation.} How the robustness of a model or a defense is measured, and what can go wrong in that measurement.
+\end{enumerate}
+
+The problem must be narrow. ``Adversarial robustness of neural networks'' is too broad. ``Query-efficient decision-based attacks'' or ``Why gradient masking gives a false sense of security'' are workable.
+
+\section{What to study}
+
+Read \tbd{3--10} papers, chosen so that together they give a coherent picture of the problem: at least one foundational paper, and at least one recent paper. Read the original papers, not only blog posts or summaries. Your presentation must cover the following points.
+
+\paragraph{Problem and threat model.} What the adversary wants, what it knows, what it can do, and the constraint on the perturbation or on the input.
+
+\paragraph{Main algorithms, in detail.} This is the core of the presentation. For each main algorithm, present:
+
+\begin{itemize}
+  \item the formal problem it solves, including the objective and the constraints;
+  \item the algorithm itself, step by step, with pseudocode or equations;
+  \item the intuition behind each step, and why the method is expected to work;
+  \item the assumptions it relies on, and its cost (gradients, queries, iterations);
+  \item a small worked example or a figure that shows how it operates.
+\end{itemize}
+
+\paragraph{Reported evidence.} Which datasets, models, and metrics the papers use, what they show, and how strong the evidence is. Note whether a defense was tested against adaptive attacks.
+
+\paragraph{Limitations and open questions.} Where the methods fail, what the papers leave unanswered, and what you would investigate next. A short list is enough. This feeds the next phase of the project.
+
+\section{Deliverable}
+
+The deliverable is a presentation of \tbd{20--40} minutes. Plan most of the time for the algorithms. Slides must be self-contained, and every figure, equation, or result taken from a paper must cite it. You will be asked to explain any step of the algorithms, so do not present anything you cannot derive or justify.
+
+
+\end{document}
