@@ -219,11 +219,34 @@ Two caveats on the classification. First, transfer is a strategy rather than an 
 %==========================================================================
 \section{White-Box Attacks}\label{sec:whitebox}
 
-With \(\mathcal{I}=\text{gradients}\) the attacker can differentiate through \(f\). We first treat attacks on the (budget) problem and then attacks on the (min-norm) problem.
+With \(\mathcal{I}=\text{gradients}\) the attacker knows the architecture and the weights \(\btheta\), and can compute derivatives of the model outputs with respect to the \emph{input}. Concretely, for any \(\x\) the attacker can evaluate the logits \(Z(\x)\in\R^K\) and, by backpropagation, the gradients
+\[
+\nabla_{\x}Z_k(\x)\in\R^d\quad(k=1,\dots,K),
+\qquad
+\nabla_{\x}\Loss(\x,y)\in\R^d,
+\]
+at the cost of one forward and one backward pass per gradient. The gradient is taken with respect to \(\x\) and not with respect to \(\btheta\): the parameters are fixed at inference time (Definition~\ref{def:attack}), so \(\nabla_{\btheta}\Loss\) plays no role here, in contrast with training. For a ReLU network the logits are piecewise linear in \(\x\), so these gradients exist almost everywhere, but they may be zero or uninformative (saturated softmax, gradient masking), a point we return to when evaluating defenses.
+
+The two problems of Section~\ref{sec:defs} use these quantities differently. Attacks on the budget problem (Definition~\ref{def:budget}) ascend the loss using \(\nabla_{\x}\Loss\). Attacks on the min-norm problem (Definition~\ref{def:minnorm}) use the gradients of the logits, or of margins \(m_k=Z_k-Z_y\), to locate and cross the decision boundary. We first treat the budget problem and then the min-norm problem.
 
 \subsection{Budget problem: FGSM, BIM and PGD}\label{sec:pgd}
 
-The (budget) problem maximizes a nonconcave loss over a ball, so no closed-form solution exists. The three attacks of this subsection are three consecutive refinements of one idea, and we derive each from the previous one. FGSM replaces the loss by its linearization and solves the resulting problem exactly. BIM repeats this with small steps, re-linearizing at every iterate because the linear model is only trustworthy locally. PGD formalizes the repetition as projected steepest ascent and adds random starts to cope with nonconcavity.
+\begin{definition}[Budget problem]\label{def:budget}
+Let \((\x,y)\) with \(f(\x)=y\), a norm \(p\ge1\) and a budget \(\epsilon>0\). The \emph{budget problem} is
+\begin{equation}\label{eq:budget}
+\max_{\xadv\in\mathcal{S}_p(\x,\epsilon)}\Loss(\xadv,y)
+\;=\;
+\max_{\substack{\|\bdelta\|_p\le\epsilon\\ \x+\bdelta\in\X}}\Loss(\x+\bdelta,y),
+\end{equation}
+and its targeted version, for a target class \(t\neq y\), is \(\min_{\xadv\in\mathcal{S}_p(\x,\epsilon)}\Loss(\xadv,t)\), which is the same problem with \(\Loss(\cdot,y)\) replaced by \(-\Loss(\cdot,t)\).
+\end{definition}
+
+The feasible set \(\mathcal{S}_p(\x,\epsilon)=\B_p(\x,\epsilon)\cap\X\) is convex and compact, and the Euclidean projection onto it is cheap to compute or approximate. The objective is nonconcave in \(\xadv\), so problem~\eqref{eq:budget} has no closed-form solution and may have many local maxima. The loss \(\Loss\) is a differentiable surrogate for the indicator \(\mathbb{1}[f(\xadv)\neq y]\) (Remark on the two optimization problems), so a high value of \(\Loss\) does not by itself guarantee misclassification, and every candidate must be checked with \(f\). The attacks of this subsection are three consecutive refinements of one idea, and we derive each from the previous one:
+\begin{itemize}
+  \item \textbf{FGSM (Fast Gradient Sign Method)} replaces \(\Loss\) by its first-order linearization at \(\x\) and solves the resulting linear problem exactly, in one step.
+  \item \textbf{BIM (Basic Iterative Method)} repeats this step with a small step size \(\alpha<\epsilon\), re-linearizing at every iterate because the linear model is only trustworthy locally, and maps each iterate back to \(\mathcal{S}_p(\x,\epsilon)\) by projection.
+  \item \textbf{PGD (Projected Gradient Descent)} formalizes the repetition as projected steepest ascent for any \(\ell_p\) norm, and adds random starts and restarts to cope with the nonconcavity of~\eqref{eq:budget}.
+\end{itemize}
 
 \subsubsection{Fast Gradient Sign Method (FGSM)}
 
@@ -347,9 +370,28 @@ For \(\ell_2\) the feasible set also includes the box, and the intersection of a
 A PGD robust accuracy is an \emph{upper bound} on true robust accuracy (Remark~\ref{rem:bounds}). Sanity checks: accuracy should decrease monotonically with \(\epsilon\) and reach zero for large \(\epsilon\); more iterations and restarts should not increase accuracy; PGD should beat FGSM; white-box should beat black-box. Violations indicate gradient masking or a bug \citep{carlini2019evaluating}.
 \end{warnbox}
 
-\subsection{Min-norm problem: Carlini and Wagner, and DeepFool}\label{sec:cw}
+\subsection{Min-norm problem: Carlini and Wagner, and DeepFool}\label{sec:minnorm}
 
-\citet{carlini2017towards} (C\&W) attack the minimum-norm problem directly. Two obstacles must be removed: the constraint \(f(\x+\bdelta)=t\) is discrete, and the box constraint \(\x+\bdelta\in[0,1]^d\) is awkward for gradient methods.
+\begin{definition}[Min-norm problem]\label{def:minnorm}
+Let \((\x,y)\) with \(f(\x)=y\) and a norm \(p\ge1\). The \emph{min-norm problem} is
+\begin{equation}\label{eq:minnorm}
+\epsilon^\star(\x,y)\;=\;\min_{\bdelta}\;\|\bdelta\|_p
+\quad\text{s.t.}\quad f(\x+\bdelta)\neq y,\;\; \x+\bdelta\in\X,
+\end{equation}
+and its targeted version, for a target class \(t\neq y\), replaces the constraint \(f(\x+\bdelta)\neq y\) by \(f(\x+\bdelta)=t\). An attack returns a feasible \(\bdelta\), and its norm \(\|\bdelta\|_p\) is an upper bound on \(\epsilon^\star(\x,y)\).
+\end{definition}
+
+Problem~\eqref{eq:minnorm} has no budget \(\epsilon\): the output is a \emph{distance}, not a success rate at a fixed \(\epsilon\). It is the dual view of the budget problem (Definition~\ref{def:budget}): an adversarial example at budget \(\epsilon\) exists if and only if \(\epsilon^\star(\x,y)\le\epsilon\) (Remark on the two optimization problems). The objective \(\|\bdelta\|_p\) is convex, but the feasible set \(\{\bdelta: f(\x+\bdelta)\neq y\}\cap(\X-\x)\) is in general nonconvex, since it is the complement of the (possibly nonconvex) region where the model predicts \(y\). Moreover, the constraint is discrete, so it provides no gradient, and the box constraint \(\x+\bdelta\in[0,1]^d\) is awkward for gradient methods. The attacks of this subsection differ in how they deal with these obstacles:
+\begin{itemize}
+  \item \textbf{C\&W} \citep{carlini2017towards} replaces the discrete constraint by a penalty on a logit margin, removes the box constraint by a change of variables, solves the resulting unconstrained problem with Adam, and selects the penalty weight per input by binary search. It exists for \(\ell_0\), \(\ell_2\) and \(\ell_\infty\).
+  \item \textbf{DeepFool} \citep{moosavi2016deepfool} is a cheaper alternative for \(\ell_2\): at each step it linearizes all class boundaries around the current iterate and jumps to the nearest one. For a linear classifier this recovers the exact minimal \(\ell_2\) perturbation (compare Exercise~2 of Chapter~1).
+\end{itemize}
+We develop C\&W in detail, since it introduces the margin surrogate that is reused elsewhere in the chapter.
+
+
+\subsubsection{Carlini and Wagner}\label{sec:cw}
+
+\citet{carlini2017towards} (C\&W) attack problem~\eqref{eq:minnorm} directly, and must remove the two obstacles named above: the constraint \(f(\x+\bdelta)=t\) is discrete, and the box constraint \(\x+\bdelta\in[0,1]^d\) is awkward for gradient methods.
 
 \paragraph{From a hard constraint to a penalty.} Replace the classification constraint by a function \(h\) such that \(f(\x+\bdelta)=t\) holds whenever \(h(\x+\bdelta)\le0\). After comparing several candidates, C\&W recommend the logit margin
 \begin{equation}\label{eq:cwloss}
@@ -375,13 +417,86 @@ solved with Adam. The constant \(c>0\) trades off distortion against success; it
 \begin{itemize}
   \item C\&W produces much smaller perturbations than FGSM/PGD at a fixed success rate and was historically decisive in breaking defenses such as defensive distillation, which shrank softmax gradients but left logits informative.
   \item It is expensive: thousands of gradient steps per input including the binary search.
-  \item It reports a \emph{distance}, not a success rate at fixed \(\epsilon\). To compare with PGD, count the fraction of inputs whose minimal C\&W perturbation is below \(\epsilon\).
+  \item To compare with PGD, count the fraction of inputs whose minimal C\&W perturbation is below \(\epsilon\).
   \item The margin loss (Eq.~\ref{eq:cwloss}) is widely reused inside PGD (\enquote{PGD-CW}), often outperforming cross-entropy.
 \end{itemize}
 
-\begin{remark}
-DeepFool \citep{moosavi2016deepfool} is a cheaper minimum-norm alternative: at each step it linearizes all class boundaries and jumps to the nearest one, which for a linear classifier recovers the exact minimal \(\ell_2\) perturbation (compare Exercise~2 of Chapter~1).
-\end{remark}
+\subsubsection{DeepFool}\label{sec:deepfool}
+
+C\&W solves a penalized problem with thousands of gradient steps. DeepFool \citep{moosavi2016deepfool} instead exploits the fact that the min-norm problem has a closed-form solution when the classifier is linear, and applies that solution repeatedly to the local linearization of a nonlinear one. We write the derivation for \(\ell_2\) and state the general \(\ell_p\) case afterwards.
+
+\paragraph{Step 1: the linear binary case.} Let \(g(\x)=\mathbf{a}^\top\x+b\) with \(f(\x)=\sign(g(\x))\), \(\mathbf{a}\neq\mathbf{0}\).
+
+\begin{proposition}[Distance to a hyperplane]\label{prop:hyperplane}
+The minimal \(\ell_2\) perturbation that changes the sign of \(g\) at \(\x\) has norm \(|g(\x)|/\|\mathbf{a}\|_2\), and is attained at
+\[
+\bdelta^\star=-\frac{g(\x)}{\|\mathbf{a}\|_2^2}\,\mathbf{a}.
+\]
+\end{proposition}
+
+\begin{proof}
+Changing the sign requires \(g(\x+\bdelta)=g(\x)+\mathbf{a}^\top\bdelta\) to reach zero or beyond, so \(|\mathbf{a}^\top\bdelta|\ge|g(\x)|\) with \(\mathbf{a}^\top\bdelta\) of sign opposite to \(g(\x)\). By Cauchy--Schwarz, \(|\mathbf{a}^\top\bdelta|\le\|\mathbf{a}\|_2\|\bdelta\|_2\), hence \(\|\bdelta\|_2\ge|g(\x)|/\|\mathbf{a}\|_2\). Equality in Cauchy--Schwarz holds when \(\bdelta\) is parallel to \(\mathbf{a}\), which gives \(\bdelta^\star\), and then \(g(\x+\bdelta^\star)=0\).
+\end{proof}
+
+The perturbation is the orthogonal projection of \(\x\) onto the hyperplane \(\{g=0\}\). It is the same Hölder argument as in Proposition~\ref{prop:steepest}, read as a min-norm problem instead of a budget problem.
+
+\paragraph{Step 2: the linear multiclass case.} Let \(Z_k(\x)=\mathbf{w}_k^\top\x+b_k\) and \(f(\x)=y\). For each \(k\neq y\) define the margin
+\[
+m_k(\x)=Z_k(\x)-Z_y(\x)=\mathbf{a}_k^\top\x+\beta_k,\qquad \mathbf{a}_k=\mathbf{w}_k-\mathbf{w}_y,\;\; \beta_k=b_k-b_y,
+\]
+which is negative at \(\x\) because \(f(\x)=y\). The region where the model predicts \(y\) is the polyhedron \(P=\{\x: m_k(\x)<0\;\forall k\neq y\}\), and its complement is the union of the half-spaces \(H_k=\{m_k\ge0\}\). Hence
+\begin{equation}\label{eq:dfnearest}
+\epsilon^\star(\x,y)=\min_{k\neq y}\,\operatorname{dist}_2(\x,H_k)=\min_{k\neq y}\frac{|m_k(\x)|}{\|\mathbf{a}_k\|_2},
+\end{equation}
+using Proposition~\ref{prop:hyperplane} for each \(k\). The minimizer is the class \(l\) whose boundary is closest, and the optimal perturbation is
+\[
+\bdelta^\star=\frac{|m_l(\x)|}{\|\mathbf{a}_l\|_2^2}\,\mathbf{a}_l,\qquad l=\argmin_{k\neq y}\frac{|m_k(\x)|}{\|\mathbf{a}_k\|_2}.
+\]
+This is exact when the box constraint is inactive. The nearest boundary in terms of \emph{logit gap} \(|m_k|\) is not in general the nearest in terms of \emph{distance}, because the denominators \(\|\mathbf{a}_k\|_2\) differ.
+
+\paragraph{Step 3: nonlinear classifiers.} For a differentiable \(Z\), replace \(m_k\) around the current iterate \(\x^{(i)}\) by its first-order model
+\[
+m_k(\x^{(i)}+\bdelta)\approx m_k(\x^{(i)})+\nabla m_k(\x^{(i)})^\top\bdelta,\qquad \nabla m_k=\nabla Z_k-\nabla Z_y,
+\]
+which is the linear multiclass classifier of Step 2 with \(\mathbf{a}_k=\nabla m_k(\x^{(i)})\). One DeepFool step applies the formula above to this model:
+\begin{equation}\label{eq:dfstep}
+l_i=\argmin_{k\neq y}\frac{|m_k(\x^{(i)})|}{\|\nabla m_k(\x^{(i)})\|_2},\qquad
+\mathbf{r}_i=\frac{|m_{l_i}(\x^{(i)})|}{\|\nabla m_{l_i}(\x^{(i)})\|_2^2}\,\nabla m_{l_i}(\x^{(i)}).
+\end{equation}
+Since the linear model is only local, the iteration is repeated from the new point until the label changes. The final perturbation is the accumulated sum of the steps.
+
+\begin{algorithm}[h]
+\caption{DeepFool, \(\ell_2\), untargeted}
+\begin{algorithmic}[1]
+\Require \(\x, y=f(\x)\), overshoot \(\eta\), maximum iterations \(T\)
+\State \(\x^{(0)}\gets\x\), \(\mathbf{r}_{\mathrm{tot}}\gets\mathbf{0}\)
+\For{\(i=0,\dots,T-1\)}
+  \If{\(f(\x^{(i)})\neq y\)} \textbf{break} \EndIf
+  \State compute \(m_k(\x^{(i)})\) and \(\nabla m_k(\x^{(i)})\) for all \(k\neq y\) \Comment{\(K-1\) backward passes}
+  \State compute \(l_i\) and \(\mathbf{r}_i\) by Eq.~\eqref{eq:dfstep}
+  \State \(\mathbf{r}_{\mathrm{tot}}\gets\mathbf{r}_{\mathrm{tot}}+\mathbf{r}_i\)
+  \State \(\x^{(i+1)}\gets\mathrm{clip}_{[0,1]}\big(\x+(1+\eta)\,\mathbf{r}_{\mathrm{tot}}\big)\)
+\EndFor
+\State \Return \(\x^{(i)}\) and \(\|\x^{(i)}-\x\|_2\)
+\end{algorithmic}
+\end{algorithm}
+
+The overshoot \(\eta>0\) (the original paper uses \(\eta=0.02\)) is needed because each step lands \emph{on} the linearized boundary, and the true boundary is only approximated. Without it the iterate often stops at \(m_{l}\approx0^-\) and the label does not change. The update recomputes the point from \(\x\) and the accumulated perturbation, so the overshoot does not compound across iterations.
+
+\paragraph{General \(\ell_p\).} The same derivation with Hölder's inequality in place of Cauchy--Schwarz gives, for \(1/p+1/q=1\), the distance \(|m_k|/\|\nabla m_k\|_q\) and the step
+\[
+\mathbf{r}_i=\frac{|m_{l}(\x^{(i)})|}{\|\nabla m_{l}(\x^{(i)})\|_q^{q}}\,\sign(\nabla m_{l})\,|\nabla m_{l}|^{q-1}.
+\]
+For \(p=\infty\) (\(q=1\)) this reduces to \(\mathbf{r}_i=|m_l|\,\sign(\nabla m_l)/\|\nabla m_l\|_1\), which is again the sign step of Proposition~\ref{prop:steepest}, now with a step size chosen to land on the linearized boundary instead of a fixed budget.
+
+\paragraph{Analysis.}
+\begin{itemize}
+  \item DeepFool is exact for linear classifiers (Eq.~\ref{eq:dfnearest}) and is a fixed-point iteration of local linearizations for nonlinear ones. It has no optimality guarantee: the returned norm is an upper bound on \(\epsilon^\star(\x,y)\), as for any attack.
+  \item It needs no penalty weight and no binary search, and typically converges in a small number of iterations. The cost per iteration is up to \(K-1\) backward passes, which can be reduced by restricting the search to the few classes with the largest logits.
+  \item It tends to return larger perturbations than C\&W on the same input, since C\&W optimizes the distortion directly. Its role is a fast estimate of the distance to the boundary, for example to compute an average robustness over a dataset, and not the strongest attack for evaluating a defense.
+  \item The box constraint is handled by clipping, which is only an approximation of the constrained problem, and the \(\ell_2\) projection issue of Exercise~2 applies here as well.
+  \item Because it linearizes the logits, it is affected by gradient masking in the same way as FGSM: if \(\nabla m_k\) is uninformative, the step is unreliable.
+\end{itemize}
 
 %==========================================================================
 \section{Query-Based Black-Box Attacks}\label{sec:query}

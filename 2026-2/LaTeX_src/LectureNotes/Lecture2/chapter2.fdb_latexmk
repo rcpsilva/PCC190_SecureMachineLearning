@@ -1,14 +1,14 @@
 # Fdb version 4
-["bibtex chapter2"] 1791328188.71384 "chapter2.aux" "chapter2.bbl" "chapter2" 1791328194.14116 0
+["bibtex chapter2"] 1792982862.65645 "chapter2.aux" "chapter2.bbl" "chapter2" 1792982874.00287 0
   "./references.bib" 1791328182 17871 bb47d474fa805093950ae481a9fdabe8 ""
   "c:/texlive/2024/texmf-dist/bibtex/bst/base/apalike.bst" 1730312304 24635 604dafcc79f521a11ea73e506e1fbd98 ""
-  "chapter2.aux" 1791328192 15929 05ea0d2b974186c5d90bbad6a7d2c357 "pdflatex"
+  "chapter2.aux" 1792982870 17629 168a27877fa995b18133f9a3ef0eea07 "pdflatex"
   (generated)
   "chapter2.bbl"
   "chapter2.blg"
   (rewritten before read)
-["pdflatex"] 1791328189.50523 "c:/Users/rcpsi/OneDrive/Documents/GitHub/Consultoria/PCC190_SecureMachineLearning/2026-2/LaTeX_src/LectureNotes/Lecture2/chapter2.tex" "chapter2.pdf" "chapter2" 1791328194.1422 0
-  "c:/Users/rcpsi/OneDrive/Documents/GitHub/Consultoria/PCC190_SecureMachineLearning/2026-2/LaTeX_src/LectureNotes/Lecture2/chapter2.tex" 1791328142 70073 14b179507e803bacaecdac5e56f30bb7 ""
+["pdflatex"] 1792982863.77641 "c:/Users/rcpsi/OneDrive/Documents/GitHub/Consultoria/PCC190_SecureMachineLearning/2026-2/LaTeX_src/LectureNotes/Lecture2/chapter2.tex" "chapter2.pdf" "chapter2" 1792982874.00444 0
+  "c:/Users/rcpsi/OneDrive/Documents/GitHub/Consultoria/PCC190_SecureMachineLearning/2026-2/LaTeX_src/LectureNotes/Lecture2/chapter2.tex" 1792982851 81094 eb922bb5ceca25cca6d9479ee60f191f ""
   "c:/texlive/2024/texmf-dist/fonts/enc/dvips/cm-super/cm-super-t1.enc" 1730312644 2971 def0b6c1f0b107b3b936def894055589 ""
   "c:/texlive/2024/texmf-dist/fonts/enc/dvips/cm-super/cm-super-ts1.enc" 1730312644 2900 1537cc8184ad1792082cd229ecc269f4 ""
   "c:/texlive/2024/texmf-dist/fonts/map/fontname/texfonts.map" 1730314164 3524 cb3e574dea2d1052e39280babc910dc8 ""
@@ -276,11 +276,11 @@
   "c:/texlive/2024/texmf-var/fonts/map/pdftex/updmap/pdftex.map" 1730319856 5521136 47e49b84c41d5ab3414c7e2d0ef6eb2b ""
   "c:/texlive/2024/texmf-var/web2c/pdftex/pdflatex.fmt" 1730320026 3325936 6e896a909b476ed009efbfbadbcd5207 ""
   "c:/texlive/2024/texmf.cnf" 1730319826 713 e69b156964470283e0530f5060668171 ""
-  "chapter2.aux" 1791328192 15929 05ea0d2b974186c5d90bbad6a7d2c357 "pdflatex"
-  "chapter2.bbl" 1791328189 10622 1159d714e2b6e44668b84f00852c40a1 "bibtex chapter2"
-  "chapter2.out" 1791328192 6683 bea8e28fdde4c87ea11297731f9d6589 "pdflatex"
-  "chapter2.tex" 1791328142 70073 14b179507e803bacaecdac5e56f30bb7 ""
-  "chapter2.toc" 1791328192 5580 d8f829daefc830733b698584f97fd7d1 "pdflatex"
+  "chapter2.aux" 1792982870 17629 168a27877fa995b18133f9a3ef0eea07 "pdflatex"
+  "chapter2.bbl" 1792982863 10622 1159d714e2b6e44668b84f00852c40a1 "bibtex chapter2"
+  "chapter2.out" 1792982870 6955 eae0b719b19445f85db8b0ea68f774c7 "pdflatex"
+  "chapter2.tex" 1792982851 81094 eb922bb5ceca25cca6d9479ee60f191f ""
+  "chapter2.toc" 1792982870 6123 d7710e603f96759da2f327dcd4603bdc "pdflatex"
   (generated)
   "chapter2.aux"
   "chapter2.log"
