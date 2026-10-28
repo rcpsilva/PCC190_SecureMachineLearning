@@ -3,9 +3,13 @@ Capacity: max_strings=200000, hash_size=200000, hash_prime=170003
 The top-level auxiliary file: chapter2.aux
 The style file: apalike.bst
 Database file #1: references.bib
+Warning--I didn't find a database entry for "engstrom2019exploring"
+Warning--I didn't find a database entry for "wong2019wasserstein"
+Warning--I didn't find a database entry for "brown2017adversarial"
+Warning--I didn't find a database entry for "pierazzi2020intriguing"
 You've used 38 entries,
             1935 wiz_defined-function locations,
-            636 strings with 11383 characters,
+            640 strings with 11465 characters,
 and the built_in function-call counts, 18723 in all, are:
 = -- 1780
 > -- 984
@@ -44,3 +48,4 @@ warning$ -- 0
 while$ -- 124
 width$ -- 0
 write$ -- 475
+(There were 4 warnings)

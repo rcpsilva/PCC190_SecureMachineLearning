@@ -1,5 +1,5 @@
 \documentclass[10pt,a4paper]{extarticle}
-\newcommand{\coursehead}{PCC190 -- Secure Machine Learning}
+\newcommand{\coursehead}{PCC190 -- Adversarial Machine Learning}
 \newcommand{\chapterhead}{Chapter 2: Evasion Attacks}
 \usepackage{parskip}
 \usepackage[utf8]{inputenc}
@@ -73,13 +73,14 @@
 \newcommand{\bdelta}{\boldsymbol{\delta}}
 \newcommand{\btheta}{\boldsymbol{\theta}}
 \newcommand{\B}{\mathcal{B}}
+\newcommand{\T}{\mathcal{T}}
 \newcommand{\Proj}{\Pi}
 \DeclareMathOperator*{\argmax}{arg\,max}
 \DeclareMathOperator*{\argmin}{arg\,min}
 \DeclareMathOperator{\sign}{sign}
 
 \title{Chapter 2\\Evasion Attacks}
-\author{PCC190 -- Secure Machine Learning\\Prof.\ Rodrigo C.\ P.\ Silva -- DECOM/UFOP}
+\author{PCC190 -- Adversarial Machine Learning\\Prof.\ Rodrigo C.\ P.\ Silva -- DECOM/UFOP}
 \date{\today}
 
 \begin{document}
@@ -90,31 +91,33 @@
 \section*{Setting and notation}
 \addcontentsline{toc}{section}{Setting and notation}
 
-We keep the notation of Chapter~1: classifier \(f\) with logits \(Z(\x)\in\R^K\), probabilities \(F(\x)\), loss \(\Loss(\x, y)\) (we drop \(\btheta\) since the model is fixed at inference time), threat set \(\B_p(\x,\epsilon)\) and valid input domain \(\X = [0,1]^d\). All attacks in this chapter solve, exactly or approximately, one of two problems:
+\paragraph{Model.} We keep the notation of Chapter~1. The label set is \(\Y=\{1,\dots,K\}\) and the input domain is \(\X=[0,1]^d\). The classifier \(f:\X\to\Y\) is \(f(\x)=\argmax_k Z_k(\x)\), where \(Z(\x)\in\R^K\) are the logits and \(F(\x)=\mathrm{softmax}(Z(\x))\) the probabilities. The loss is \(\Loss(\x,y)\), for example the cross-entropy \(-\log F_y(\x)\). We drop \(\btheta\) from the notation because the parameters are fixed at inference time. \(\D\) is the data distribution over \(\X\times\Y\).
+
+\paragraph{Clean point, candidate, perturbation.} Throughout the chapter \(\x\) is a clean input with label \(y\), and we assume \(f(\x)=y\) unless stated otherwise. Any other input, whether it is a candidate under evaluation or the output of an attack, is written \(\xadv\), and the corresponding perturbation is \(\bdelta=\xadv-\x\); the two notations are interchangeable, \(\xadv=\x+\bdelta\). Iterates of an algorithm are \(\x^{(k)}\), with \(\x^{(0)}\) the starting point, and \(t\neq y\) denotes a target class.
+
+\paragraph{Norms and threat balls.} For \(p\in[1,\infty)\), \(\|\mathbf{v}\|_p=(\sum_i|v_i|^p)^{1/p}\), and \(\|\mathbf{v}\|_\infty=\max_i|v_i|\). We also use \(\|\mathbf{v}\|_0=|\{i: v_i\neq0\}|\), the number of modified coordinates, which is not a norm but is used as a perturbation size. For \(p\ge1\) the conjugate exponent \(q\) is defined by \(1/p+1/q=1\) (with \(q=1\) for \(p=\infty\) and \(q=\infty\) for \(p=1\)). The \emph{threat ball} of radius \(\epsilon\ge0\) around \(\x\) is
 \[
-\text{(budget)}\;\; \max_{\xadv \in \B_p(\x,\epsilon)\cap\X} \Loss(\xadv, y)
-\qquad\qquad
-\text{(min-norm)}\;\; \min_{\bdelta} \|\bdelta\|_p \;\text{ s.t. }\; f(\x+\bdelta)\neq y,\; \x+\bdelta\in\X.
+\B_p(\x,\epsilon)=\{\xadv\in\R^d:\ \|\xadv-\x\|_p\le\epsilon\},
 \]
-Since both are optimization problems, \emph{every} attack in this chapter is optimization-based, and \enquote{optimization-based} cannot name a family. What distinguishes attacks is the information the attacker has about \(f\) (gradients, scores, labels only, or nothing about the target at all), which problem is solved, and which solver is used. Section~\ref{sec:taxonomy} organizes the chapter along these three axes. We denote by \(\Proj_{S}(\cdot)\) the Euclidean projection onto a set \(S\), and by \(\mathrm{clip}_{[0,1]}\) the elementwise projection onto the box.
+and the \emph{admissible set} is its intersection with the input domain,
+\[
+\mathcal{S}_p(\x,\epsilon)=\B_p(\x,\epsilon)\cap\X .
+\]
+\(\B_p(\x,\epsilon)\) is closed and, for \(p\ge1\), convex; it is not contained in \(\X\), which is why the intersection is needed. For \(p=\infty\), \(\mathcal{S}_\infty(\x,\epsilon)\) is the box \(\prod_i[\max(x_i-\epsilon,0),\min(x_i+\epsilon,1)]\). For images the budget \(\epsilon\) is often quoted in 0--255 units, so \(\epsilon=8/255\) and \enquote{\(\epsilon=8\)} denote the same ball.
+
+\paragraph{Operators.} \(\Proj_S(\mathbf{z})=\argmin_{\mathbf{u}\in S}\|\mathbf{u}-\mathbf{z}\|_2\) is the Euclidean projection onto a closed convex set \(S\), and \(\mathrm{clip}_{[0,1]}(\mathbf{z})\) is the elementwise projection onto \(\X\). \(\mathbf{e}_i\) is the \(i\)-th canonical basis vector.
 
 %==========================================================================
-\section{Definitions: Evasion Attacks}\label{sec:defs}
+\section{Evasion Attacks: Definitions}\label{sec:defs}
 
-\subsection{Informal Definition}
+\subsection{Informal definition}
 
-Evasion attacks craft inputs at inference time that cause the model to misbehave, without touching weights or training data.
+Evasion attacks craft inputs at inference time that cause the model to misbehave, without touching weights or training data. The attacker's power is described by two things: \emph{which inputs} it may submit (the threat set) and \emph{what it may observe} about the model (the information level).
 
-\subsection{Formal Definition}
-
-Let \(\Y=\{1,\dots,K\}\) and let \(f:\X\to\Y\) be the classifier, \(f(\x)=\argmax_{k} Z_k(\x)\), with parameters \(\btheta\) fixed. Let \(\D\) be the data distribution over \(\X\times\Y\). For a pair \((\x,y)\), write
-\[
-\mathcal{S}_p(\x,\epsilon) \;=\; \B_p(\x,\epsilon)\cap\X
-\]
-for the set of admissible inputs under budget \(\epsilon\).
+\subsection{Formal definition}
 
 \begin{definition}[Adversarial example]\label{def:adv}
-Let \(\x\in\X\) with \(f(\x)=y\). A point \(\xadv\) is an \emph{adversarial example} for \((\x,y)\) at budget \(\epsilon\) if \(\xadv\in\mathcal{S}_p(\x,\epsilon)\) and
+Let \(\x\in\X\) with \(f(\x)=y\), let \(p\ge1\) and \(\epsilon>0\). A point \(\xadv\in\X\) is an \emph{adversarial example} for \((\x,y)\) at budget \(\epsilon\) if \(\xadv\in\mathcal{S}_p(\x,\epsilon)\) and
 \[
 \text{(untargeted)}\;\; f(\xadv)\neq y
 \qquad\text{or}\qquad
@@ -123,18 +126,20 @@ Let \(\x\in\X\) with \(f(\x)=y\). A point \(\xadv\) is an \emph{adversarial exam
 Since \(f\) is an argmax, the untargeted condition is equivalent to \(\max_{j\neq y}Z_j(\xadv)-Z_y(\xadv)\ge 0\) (up to tie-breaking), and the targeted one to \(Z_t(\xadv)>\max_{j\neq t}Z_j(\xadv)\).
 \end{definition}
 
+The definition is a property of a \emph{point}; it says nothing about how the point was found. An attack is the procedure that finds it.
+
 \begin{definition}[Evasion attack]\label{def:attack}
-An \emph{evasion attack} is a (possibly randomized) algorithm \(\mathcal{A}\) that receives \((\x,y)\) (and \(t\) if targeted), a threat set \(\B_p(\x,\epsilon)\), and access to \(f\) only through an information level \(\mathcal{I}\in\{\text{gradients},\text{scores},\text{labels},\text{none}\}\) (white-box, score-based, decision-based, transfer), and returns
+An \emph{evasion attack} is a (possibly randomized) algorithm \(\mathcal{A}\) that receives \((\x,y)\) (and \(t\) if targeted), a norm \(p\), possibly a budget \(\epsilon\), and access to \(f\) only through an information level \(\mathcal{I}\in\{\text{gradients},\text{scores},\text{labels},\text{none}\}\) (white-box, score-based, decision-based, transfer). It returns a point
 \[
-\xadv=\mathcal{A}^{\mathcal{I}(f)}(\x,y;\epsilon)\in\mathcal{S}_p(\x,\epsilon).
+\xadv=\mathcal{A}^{\mathcal{I}(f)}(\x,y)\in\X .
 \]
-The attack acts only on the input: \(\btheta\) and the training set are fixed, and \(\mathcal{A}\) is run at inference time. Level \(\mathcal{I}=\text{none}\) means that no query to the target is made for the input being attacked; a surrogate model may still have been built beforehand, possibly by querying the target (Section~\ref{sec:transfer}).
+A \emph{budget attack} receives \(\epsilon\) and guarantees \(\xadv\in\mathcal{S}_p(\x,\epsilon)\). A \emph{min-norm attack} receives no budget and tries to return a misclassified \(\xadv\) with \(\|\xadv-\x\|_p\) as small as possible. The attack acts only on the input: \(\btheta\) and the training set are fixed, and \(\mathcal{A}\) is run at inference time. Level \(\mathcal{I}=\text{none}\) means that no query to the target is made for the input being attacked; a surrogate model may still have been built beforehand, possibly by querying the target (Section~\ref{sec:transfer}).
 \end{definition}
 
 \begin{definition}[Attack success and robustness]\label{def:robust}
-The \emph{attack success rate} of \(\mathcal{A}\) is
+At budget \(\epsilon\), an attack \emph{succeeds} on \((\x,y)\) if its output is an adversarial example in the sense of Definition~\ref{def:adv}, that is, \(\xadv\in\mathcal{S}_p(\x,\epsilon)\) and \(f(\xadv)\neq y\). The \emph{attack success rate} is
 \[
-\mathrm{ASR}(\mathcal{A},\epsilon)=\Pr_{(\x,y)\sim\D}\Big[f\big(\mathcal{A}^{\mathcal{I}(f)}(\x,y;\epsilon)\big)\neq y \;\Big|\; f(\x)=y\Big],
+\mathrm{ASR}(\mathcal{A},\epsilon)=\Pr_{(\x,y)\sim\D}\Big[\xadv\in\mathcal{S}_p(\x,\epsilon)\ \text{and}\ f(\xadv)\neq y \;\Big|\; f(\x)=y\Big],\qquad \xadv=\mathcal{A}^{\mathcal{I}(f)}(\x,y),
 \]
 and the \emph{robust accuracy} of \(f\) is
 \[
@@ -142,48 +147,133 @@ and the \emph{robust accuracy} of \(f\) is
 \]
 \end{definition}
 
-\begin{remark}[Relation to the two optimization problems]
-The \emph{minimal adversarial perturbation}
+For a budget attack the membership condition holds by construction. For a min-norm attack it is the check \(\|\xadv-\x\|_p\le\epsilon\), so one run of a min-norm attack yields the success rate at every \(\epsilon\) simultaneously. Note also that \(\mathrm{RA}\) is a property of \(f\) alone, while \(\mathrm{ASR}\) depends on the attack; Section~\ref{sec:bounds} relates the two.
+
+%==========================================================================
+\section{The Two Optimization Problems}\label{sec:problems}
+
+Definition~\ref{def:robust} asks a universal question (\enquote{is \(f\) correct on every point of \(\mathcal{S}_p(\x,\epsilon)\)?}), and an attacker answers it negatively by exhibiting one witness. Searching for a witness is an optimization problem, and there are two natural ways to pose it: fix the budget and look for the worst point inside it, or fix the goal (misclassification) and look for the cheapest point that achieves it. Every attack in this chapter, including the black-box and LLM attacks, solves one of these two problems exactly or approximately, which is why \enquote{optimization-based} cannot name a family of attacks. This section states both problems, relates them, and explains what makes them hard. Sections~\ref{sec:whitebox}--\ref{sec:llm} are then organized by the information available to solve them.
+
+\subsection{The budget problem}
+
+\begin{definition}[Budget problem]\label{def:budget}
+Let \((\x,y)\) with \(f(\x)=y\), a norm \(p\ge1\) and a budget \(\epsilon>0\). The \emph{budget problem} is
+\begin{equation}\label{eq:budget}
+\max_{\xadv\in\mathcal{S}_p(\x,\epsilon)}\Loss(\xadv,y)
+\;=\;
+\max_{\substack{\|\bdelta\|_p\le\epsilon\\ \x+\bdelta\in\X}}\Loss(\x+\bdelta,y).
+\end{equation}
+Its targeted version, for a target class \(t\neq y\), is \(\min_{\xadv\in\mathcal{S}_p(\x,\epsilon)}\Loss(\xadv,t)\), which is the same problem with \(\Loss(\cdot,y)\) replaced by \(-\Loss(\cdot,t)\).
+\end{definition}
+
+The feasible set \(\mathcal{S}_p(\x,\epsilon)\) is convex and compact, and for \(p\in\{2,\infty\}\) the projection onto the ball is available in closed form (Section~\ref{sec:pgd}). The difficulty is entirely in the objective: \(\Loss\) is nonconcave in \(\xadv\) for a neural network, so~\eqref{eq:budget} has no closed-form solution and may have many local maxima. A budget attack answers the question \enquote{can the model be fooled within this budget}, one value of \(\epsilon\) at a time.
+
+\subsection{The min-norm problem}
+
+\begin{definition}[Min-norm problem]\label{def:minnorm}
+Let \((\x,y)\) with \(f(\x)=y\) and a norm \(p\ge1\) (or \(p=0\)). The \emph{min-norm problem} is
+\begin{equation}\label{eq:minnorm}
+\epsilon^\star(\x,y)\;=\;\inf_{\bdelta}\;\|\bdelta\|_p
+\quad\text{s.t.}\quad f(\x+\bdelta)\neq y,\;\; \x+\bdelta\in\X .
+\end{equation}
+Its targeted version replaces \(f(\x+\bdelta)\neq y\) by \(f(\x+\bdelta)=t\). The value \(\epsilon^\star(\x,y)\) is the \emph{minimal adversarial perturbation}, or distance to the decision boundary.
+\end{definition}
+
+We write \(\inf\) because the feasible set need not be closed (its boundary contains ties of the argmax); in the literature it is usually written as a \(\min\). Here the situation is reversed with respect to the budget problem: the objective \(\|\bdelta\|_p\) is convex, but the feasible set \(\{\bdelta: f(\x+\bdelta)\neq y\}\cap(\X-\x)\) is in general nonconvex, since it is the complement of the region where the model predicts \(y\), and the constraint \(f(\x+\bdelta)\neq y\) is discrete, so it provides no gradient. A min-norm attack returns a distance, not a success rate at a fixed \(\epsilon\), and any feasible \(\bdelta\) it finds gives the upper bound \(\epsilon^\star(\x,y)\le\|\bdelta\|_p\).
+
+\subsection{How the two problems are related}
+
+\begin{proposition}[Duality between the two problems]\label{prop:duality}
+Fix \((\x,y)\) with \(f(\x)=y\). If \(\epsilon^\star(\x,y)<\epsilon\), an adversarial example at budget \(\epsilon\) exists; if \(\epsilon^\star(\x,y)>\epsilon\), none exists. Consequently
 \[
-\epsilon^\star(\x,y)=\min\{\|\bdelta\|_p:\; f(\x+\bdelta)\neq y,\; \x+\bdelta\in\X\}
+\Pr_{(\x,y)\sim\D}\big[\epsilon^\star(\x,y)>\epsilon\big]\;\le\;\mathrm{RA}(f,\epsilon)\;\le\;\Pr_{(\x,y)\sim\D}\big[\epsilon^\star(\x,y)\ge\epsilon\big],
 \]
-is the value of the (min-norm) problem. An adversarial example at budget \(\epsilon\) exists if and only if \(\epsilon^\star(\x,y)\le\epsilon\). The (budget) problem replaces the indicator \(\mathbb{1}[f(\xadv)\neq y]\), which has zero gradient almost everywhere, with the surrogate \(\Loss(\xadv,y)\) (or a logit margin). Hence an attack that maximizes the surrogate need not find an adversarial example even when one exists, which is why the attacks below differ in surrogate, optimizer, and information level.
+where \(\epsilon^\star=0\) by convention for misclassified points.
+\end{proposition}
+
+\begin{proof}
+If \(\epsilon^\star<\epsilon\), by definition of the infimum there is a feasible \(\bdelta\) with \(\|\bdelta\|_p<\epsilon\), and \(\x+\bdelta\) is an adversarial example at budget \(\epsilon\). If \(\epsilon^\star>\epsilon\), every misclassified point of \(\X\) is at distance larger than \(\epsilon\) from \(\x\), so \(f\) is constant on \(\mathcal{S}_p(\x,\epsilon)\). The bounds on \(\mathrm{RA}\) follow by taking probabilities.
+\end{proof}
+
+Up to the boundary case \(\epsilon^\star=\epsilon\), the robust accuracy curve \(\epsilon\mapsto\mathrm{RA}(f,\epsilon)\) is the survival function of the random variable \(\epsilon^\star(\x,y)\). This is the precise sense in which the two problems are two views of the same object. A budget attack estimates one point of this curve; a min-norm attack, run once per input, estimates the whole curve, at the price of solving a harder problem per input.
+
+The two problems are also linked algorithmically. Replacing the discrete constraint of~\eqref{eq:minnorm} by a penalty gives
+\begin{equation}\label{eq:penalty}
+\min_{\bdelta}\;\|\bdelta\|_p+c\cdot h(\x+\bdelta),
+\end{equation}
+where \(h\le0\) implies misclassification and \(c>0\) trades size for success. For large \(c\) the penalty dominates and the problem behaves like a search for misclassification; for small \(c\) it behaves like norm minimization. Carlini and Wagner (Section~\ref{sec:cw}) solve~\eqref{eq:penalty} and search over \(c\), and the same function \(h\) (a logit margin) is often used as the objective of the budget problem instead of \(\Loss\).
+
+\begin{remark}[The surrogate gap]\label{rem:surrogate}
+The quantity the attacker actually cares about is the indicator \(\mathbb{1}[f(\xadv)\neq y]\), which has zero gradient almost everywhere. The budget problem replaces it by the surrogate \(\Loss(\xadv,y)\) (or a logit margin), and the penalty form~\eqref{eq:penalty} replaces the constraint by \(h\). Hence an attack that maximizes the surrogate need not find an adversarial example even when one exists, and every candidate must be checked with \(f\). The attacks below differ in surrogate, solver and information level, and much of the practical advice in this chapter (margin instead of cross-entropy, random restarts, confidence \(\kappa\)) is about narrowing this gap.
 \end{remark}
 
-\begin{remark}[Scope of the definition]
-Definition~\ref{def:adv} equates \enquote{admissible} with membership in an \(\ell_p\) ball intersected with \(\X\). This is a convenient, analyzable proxy for \enquote{imperceptible}, not a model of what a real adversary can do. It does not cover semantic perturbations (rotations, translations, color shifts, style changes), physical-world perturbations (adversarial patches, stickers, printed or projected patterns), or domains where the input is not a continuous vector (text, graphs, malware binaries) and the threat set is defined by edit operations or functionality-preserving transformations. A small \(\ell_p\) distance is neither necessary nor sufficient for an input to be \enquote{the same} to a human. All results in this chapter are therefore statements about the chosen threat set \(\B_p(\x,\epsilon)\cap\X\), and robustness under one norm or budget does not imply robustness under another.
-\end{remark}
+\subsection{What can be computed: bounds on robustness}\label{sec:bounds}
 
-\begin{remark}[Computability and bounds]\label{rem:bounds}
-The robust accuracy \(\mathrm{RA}(f,\epsilon)\) of Definition~\ref{def:robust} contains a universal quantifier over a continuous set, so it is not computable by enumeration. Deciding whether an adversarial example exists is a nonconvex optimization problem, and for ReLU networks it is NP-hard in general \citep{katz2017reluplex}. Exact verifiers exist (SMT or mixed-integer programming based), but they scale only to small networks. In practice one brackets \(\mathrm{RA}\) from both sides.
+The robust accuracy \(\mathrm{RA}(f,\epsilon)\) contains a universal quantifier over a continuous set, so it is not computable by enumeration. Deciding whether an adversarial example exists, equivalently whether \(\epsilon^\star(\x,y)\le\epsilon\), is a nonconvex problem, and for ReLU networks it is NP-hard in general \citep{katz2017reluplex}. Exact verifiers exist (SMT or mixed-integer programming based), but they scale only to small networks. In practice one brackets \(\mathrm{RA}\), or \(\epsilon^\star\), from both sides.
 
-\emph{Upper bound (attacks).} Any attack \(\mathcal{A}\) that returns \(\xadv\in\mathcal{S}_p(\x,\epsilon)\) exhibits a witness whenever \(f(\xadv)\neq y\). Hence
+\paragraph{Upper bound (attacks).} Any attack \(\mathcal{A}\) that returns \(\xadv\in\mathcal{S}_p(\x,\epsilon)\) exhibits a witness whenever \(f(\xadv)\neq y\). Hence
 \[
-\mathrm{RA}(f,\epsilon)\;\le\;\mathrm{RA}_{\mathcal{A}}(f,\epsilon)\;=\;\Pr_{(\x,y)\sim\D}\big[f(\mathcal{A}^{\mathcal{I}(f)}(\x,y;\epsilon))=y\big].
+\mathrm{RA}(f,\epsilon)\;\le\;\mathrm{RA}_{\mathcal{A}}(f,\epsilon)\;=\;\Pr_{(\x,y)\sim\D}\big[\text{\(\mathcal{A}\) does not succeed on }(\x,y)\text{ at budget }\epsilon\big].
 \]
-A stronger attack lowers this bound, a weaker one (FGSM, an attack with gradient masking, too few iterations) leaves it loose. A \emph{failed} attack is never a proof of robustness. Equivalently, every successful attack gives \(\epsilon^\star(\x,y)\le\|\xadv-\x\|_p\), an upper bound on the minimal perturbation.
+A stronger attack lowers this bound, a weaker one (FGSM, an attack defeated by gradient masking, too few iterations) leaves it loose. A \emph{failed} attack is never a proof of robustness. Equivalently, every successful min-norm attack gives \(\epsilon^\star(\x,y)\le\|\xadv-\x\|_p\).
 
-\emph{Lower bound (certification).} A certification method returns, for each input, a radius \(r(\x,y)\) such that \(f\) is provably constant on \(\B_p(\x,r)\cap\X\), that is, \(r\le\epsilon^\star(\x,y)\). Counting the points with \(r(\x,y)\ge\epsilon\) and \(f(\x)=y\) gives
+\paragraph{Lower bound (certification).} A certification method returns, for each input, a radius \(r(\x,y)\) such that \(f\) is provably constant on \(\mathcal{S}_p(\x,r)\), that is, \(r\le\epsilon^\star(\x,y)\). Counting the points with \(r(\x,y)\ge\epsilon\) and \(f(\x)=y\) gives
 \[
 \mathrm{RA}_{\mathrm{cert}}(f,\epsilon)\;\le\;\mathrm{RA}(f,\epsilon).
 \]
 Typical routes are relaxation-based verification and verified training \citep{wong2018provable,gowal2019scalable}, which is deterministic but loose for large networks, and randomized smoothing \citep{cohen2019certified}, which certifies a \emph{smoothed} classifier \(g\), not \(f\) itself, with a probabilistic guarantee for \(\ell_2\).
 
-\emph{Consequence.} The true value lies in the interval
+\paragraph{Consequence.} The true value lies in the interval
 \[
 \mathrm{RA}_{\mathrm{cert}}(f,\epsilon)\;\le\;\mathrm{RA}(f,\epsilon)\;\le\;\mathrm{RA}_{\mathcal{A}}(f,\epsilon),
 \]
 and the width of the interval measures how much we do not know. A narrow gap is only achieved for small models or models trained for verifiability. For standard deep networks the certified lower bound is typically near zero while the attack upper bound is not, so reported numbers must state which side they bound. Two further caveats: all three quantities are estimated on a finite test set, so they carry sampling error in addition to the gap above, and the attack bound holds only if the returned point is actually checked to satisfy \(\xadv\in\mathcal{S}_p(\x,\epsilon)\) (see the implementation pitfalls).
-\end{remark}
+
+\subsection{Beyond \texorpdfstring{\(\ell_p\)}{lp} balls: general threat sets}\label{sec:threatsets}
+
+Nothing in the two problems depends on the set being an \(\ell_p\) ball. Let \(\T_\epsilon(\x)\subseteq\X\) be any family of admissible sets indexed by a budget, nested (\(\T_{\epsilon}(\x)\subseteq\T_{\epsilon'}(\x)\) for \(\epsilon\le\epsilon'\)) and containing \(\x\), or equivalently a cost \(c(\x,\xadv)\ge0\) with \(\T_\epsilon(\x)=\{\xadv: c(\x,\xadv)\le\epsilon\}\). The two problems become
+\[
+\text{(budget)}\;\;\max_{\xadv\in\T_\epsilon(\x)}\Loss(\xadv,y),
+\qquad
+\text{(min-cost)}\;\;\inf_{\xadv\in\X}c(\x,\xadv)\;\text{ s.t. }\;f(\xadv)\neq y,
+\]
+and Definitions~\ref{def:adv}--\ref{def:robust}, Proposition~\ref{prop:duality} and the bounds of Section~\ref{sec:bounds} carry over verbatim with \(\mathcal{S}_p(\x,\epsilon)\) replaced by \(\T_\epsilon(\x)\) and \(\|\bdelta\|_p\) by \(c(\x,\xadv)\). The \(\ell_p\) ball is the instance \(c(\x,\xadv)=\|\xadv-\x\|_p\). Other instances in use:
+
+\begin{table}[h]
+\centering
+\small
+\renewcommand{\arraystretch}{1.15}
+\begin{tabularx}{\textwidth}{@{}l X X@{}}
+\toprule
+Threat model & Admissible set \(\T_\epsilon(\x)\) & Budget or cost \\
+\midrule
+\(\ell_p\) perturbation & \(\mathcal{S}_p(\x,\epsilon)\) & \(\|\xadv-\x\|_p\le\epsilon\) \\
+Spatial transformation & \(\{\tau_{\boldsymbol{\phi}}(\x):\boldsymbol{\phi}\in\Phi_\epsilon\}\), rotations and translations \citep{engstrom2019exploring} & range of angles and shifts \\
+Wasserstein & \(\{\xadv: W(\x,\xadv)\le\epsilon\}\), pixel mass moved spatially \citep{wong2019wasserstein} & transport cost \\
+Patch & \(\{(\mathbf{1}-\mathbf{m})\odot\x+\mathbf{m}\odot\mathbf{p}:\ \mathbf{p}\in\X\}\), mask \(\mathbf{m}\) of fixed area \citep{brown2017adversarial} & patch area; no bound on \(\mathbf{p}\) \\
+Physical world & \(\{\tau(\xadv):\ \tau\sim\text{printing, viewpoint, lighting}\}\), success in expectation \citep{athalye2018eot} & as for the digital set, averaged over \(\tau\) \\
+Problem space (malware, code) & outputs of functionality-preserving transformations \citep{pierazzi2020intriguing} & number or type of transformations \\
+Token sequences (LLMs) & suffixes, rewrites, injected documents (Section~\ref{sec:llm}) & suffix length, access \\
+\bottomrule
+\end{tabularx}
+\caption{The budget and min-cost problems under different threat sets.}
+\label{tab:threatsets}
+\end{table}
+
+Why, then, does the chapter use \(\ell_p\) balls for everything up to Section~\ref{sec:llm}? Because the ball buys three things that the other sets lose to varying degrees: a projection in closed form (Section~\ref{sec:pgd}), a steepest ascent direction in closed form (Proposition~\ref{prop:steepest}), and certification methods with provable radii (Section~\ref{sec:bounds}). Spatial and Wasserstein sets keep a continuous structure and are attacked with the same first-order methods after reparametrization; patch and physical sets keep gradients but change the objective (an expectation over \(\tau\)); problem-space and token sets are discrete and need search, as Section~\ref{sec:llm} shows.
+
+\begin{warnbox}[What \(\ell_p\) results mean]
+The \(\ell_p\) ball is a convenient, analyzable proxy for \enquote{imperceptible}, not a model of what a real adversary can do. A small \(\ell_p\) distance is neither necessary nor sufficient for an input to be \enquote{the same} to a human: a one-pixel shift of the whole image has large \(\ell_p\) distance and is invisible, and a perturbation concentrated on a few pixels can have small \(\ell_2\) norm and be obvious. Every robustness statement is a statement about the chosen threat set, and robustness under one set, norm or budget does not imply robustness under another.
+\end{warnbox}
 
 %==========================================================================
 \section{A Taxonomy of Evasion Attacks}\label{sec:taxonomy}
 
 An attack is characterized by three largely independent choices.
 
-\paragraph{Information level \(\mathcal{I}\).} What the attacker may observe about \(f\) (Definition~\ref{def:attack}). This is the axis that decides what is computable, and it is the top-level structure of this chapter: white-box attacks (Section~\ref{sec:whitebox}), query-based black-box attacks with scores or labels (Section~\ref{sec:query}), and transfer-based black-box attacks (Section~\ref{sec:transfer}).
+\paragraph{Information level \(\mathcal{I}\).} What the attacker may observe about \(f\) (Definition~\ref{def:attack}). This is the axis that decides what is computable, and it is the top-level structure of the rest of the chapter: white-box attacks (Section~\ref{sec:whitebox}), query-based black-box attacks with scores or labels (Section~\ref{sec:query}), and transfer-based black-box attacks (Section~\ref{sec:transfer}).
 
-\paragraph{Problem solved.} The (budget) problem fixes \(\epsilon\) and maximizes a surrogate loss; it answers \enquote{can the model be fooled within this budget}. The (min-norm) problem minimizes the perturbation size; it answers \enquote{how far is the nearest adversarial example}, and returns a distance rather than a success rate at fixed \(\epsilon\).
+\paragraph{Problem solved.} The budget problem (Definition~\ref{def:budget}) or the min-norm problem (Definition~\ref{def:minnorm}), possibly in the penalty form~\eqref{eq:penalty}. Each section below opens by stating which problem its attacks solve and why the information level favors one or the other.
 
 \paragraph{Solver.} How the optimization is carried out: projected first-order steps, penalty methods with an adaptive optimizer, iterative linearization, zeroth-order gradient estimation, random search, or boundary random walks.
 
@@ -200,9 +290,9 @@ Attack & Information & Problem & Solver & Norms \\
 FGSM & gradients & budget & one linearized step & \(\ell_\infty\), \(\ell_2\) \\
 BIM, PGD & gradients & budget & projected first-order ascent & \(\ell_\infty\), \(\ell_2\) \\
 APGD & gradients & budget & PGD with adaptive step and momentum & \(\ell_\infty\), \(\ell_2\) \\
-C\&W & gradients & min-norm & penalty with margin loss, Adam, binary search on \(c\) & \(\ell_0\), \(\ell_2\), \(\ell_\infty\) \\
+C\&W & gradients & min-norm (penalty) & margin penalty, Adam, binary search on \(c\) & \(\ell_0\), \(\ell_2\), \(\ell_\infty\) \\
 DeepFool & gradients & min-norm & iterative linearization of the boundaries & \(\ell_2\) \\
-ZOO & scores & min-norm (C\&W-style) & coordinate-wise finite differences & \(\ell_2\) \\
+ZOO & scores & min-norm (penalty) & coordinate-wise finite differences & \(\ell_2\) \\
 NES, SPSA & scores & budget & zeroth-order gradient estimate inside PGD & \(\ell_\infty\) \\
 Square Attack & scores & budget & random search on the ball vertices & \(\ell_\infty\) \\
 Boundary Attack & labels & min-norm & random walk along the boundary & \(\ell_2\) \\
@@ -219,29 +309,19 @@ Two caveats on the classification. First, transfer is a strategy rather than an 
 %==========================================================================
 \section{White-Box Attacks}\label{sec:whitebox}
 
-With \(\mathcal{I}=\text{gradients}\) the attacker knows the architecture and the weights \(\btheta\), and can compute derivatives of the model outputs with respect to the \emph{input}. Concretely, for any \(\x\) the attacker can evaluate the logits \(Z(\x)\in\R^K\) and, by backpropagation, the gradients
+With \(\mathcal{I}=\text{gradients}\) the attacker knows the architecture and the weights \(\btheta\), and can compute derivatives of the model outputs with respect to the \emph{input}. Concretely, for any \(\xadv\) the attacker can evaluate the logits \(Z(\xadv)\in\R^K\) and, by backpropagation, the gradients
 \[
-\nabla_{\x}Z_k(\x)\in\R^d\quad(k=1,\dots,K),
+\nabla_{\x}Z_k(\xadv)\in\R^d\quad(k=1,\dots,K),
 \qquad
-\nabla_{\x}\Loss(\x,y)\in\R^d,
+\nabla_{\x}\Loss(\xadv,y)\in\R^d,
 \]
-at the cost of one forward and one backward pass per gradient. The gradient is taken with respect to \(\x\) and not with respect to \(\btheta\): the parameters are fixed at inference time (Definition~\ref{def:attack}), so \(\nabla_{\btheta}\Loss\) plays no role here, in contrast with training. For a ReLU network the logits are piecewise linear in \(\x\), so these gradients exist almost everywhere, but they may be zero or uninformative (saturated softmax, gradient masking), a point we return to when evaluating defenses.
+at the cost of one forward and one backward pass per gradient. The gradient is taken with respect to the input and not with respect to \(\btheta\): the parameters are fixed at inference time (Definition~\ref{def:attack}), so \(\nabla_{\btheta}\Loss\) plays no role here, in contrast with training. For a ReLU network the logits are piecewise linear in the input, so these gradients exist almost everywhere, but they may be zero or uninformative (saturated softmax, gradient masking), a point we return to when evaluating defenses.
 
-The two problems of Section~\ref{sec:defs} use these quantities differently. Attacks on the budget problem (Definition~\ref{def:budget}) ascend the loss using \(\nabla_{\x}\Loss\). Attacks on the min-norm problem (Definition~\ref{def:minnorm}) use the gradients of the logits, or of margins \(m_k=Z_k-Z_y\), to locate and cross the decision boundary. We first treat the budget problem and then the min-norm problem.
+\paragraph{Which problem.} Gradients serve both problems of Section~\ref{sec:problems}. Attacks on the budget problem~\eqref{eq:budget} ascend the surrogate using \(\nabla_{\x}\Loss\), and the convex feasible set is handled by projection. Attacks on the min-norm problem~\eqref{eq:minnorm} use the gradients of the logits, or of the margins \(m_k=Z_k-Z_y\), either to build the penalty~\eqref{eq:penalty} or to locate and cross the nearest decision boundary. We first treat the budget problem and then the min-norm problem.
 
 \subsection{Budget problem: FGSM, BIM and PGD}\label{sec:pgd}
 
-\begin{definition}[Budget problem]\label{def:budget}
-Let \((\x,y)\) with \(f(\x)=y\), a norm \(p\ge1\) and a budget \(\epsilon>0\). The \emph{budget problem} is
-\begin{equation}\label{eq:budget}
-\max_{\xadv\in\mathcal{S}_p(\x,\epsilon)}\Loss(\xadv,y)
-\;=\;
-\max_{\substack{\|\bdelta\|_p\le\epsilon\\ \x+\bdelta\in\X}}\Loss(\x+\bdelta,y),
-\end{equation}
-and its targeted version, for a target class \(t\neq y\), is \(\min_{\xadv\in\mathcal{S}_p(\x,\epsilon)}\Loss(\xadv,t)\), which is the same problem with \(\Loss(\cdot,y)\) replaced by \(-\Loss(\cdot,t)\).
-\end{definition}
-
-The feasible set \(\mathcal{S}_p(\x,\epsilon)=\B_p(\x,\epsilon)\cap\X\) is convex and compact, and the Euclidean projection onto it is cheap to compute or approximate. The objective is nonconcave in \(\xadv\), so problem~\eqref{eq:budget} has no closed-form solution and may have many local maxima. The loss \(\Loss\) is a differentiable surrogate for the indicator \(\mathbb{1}[f(\xadv)\neq y]\) (Remark on the two optimization problems), so a high value of \(\Loss\) does not by itself guarantee misclassification, and every candidate must be checked with \(f\). The attacks of this subsection are three consecutive refinements of one idea, and we derive each from the previous one:
+This subsection solves problem~\eqref{eq:budget}. The three attacks are consecutive refinements of one idea, and we derive each from the previous one:
 \begin{itemize}
   \item \textbf{FGSM (Fast Gradient Sign Method)} replaces \(\Loss\) by its first-order linearization at \(\x\) and solves the resulting linear problem exactly, in one step.
   \item \textbf{BIM (Basic Iterative Method)} repeats this step with a small step size \(\alpha<\epsilon\), re-linearizing at every iterate because the linear model is only trustworthy locally, and maps each iterate back to \(\mathcal{S}_p(\x,\epsilon)\) by projection.
@@ -254,7 +334,7 @@ The feasible set \(\mathcal{S}_p(\x,\epsilon)=\B_p(\x,\epsilon)\cap\X\) is conve
 \begin{equation}\label{eq:lin}
 \Loss(\x+\bdelta,y)=\Loss(\x,y)+\bdelta^\top\mathbf{g}+R(\bdelta),
 \end{equation}
-where the remainder \(R(\bdelta)\) is of order \(\|\bdelta\|^2\) when \(\Loss\) is twice differentiable. For a ReLU network the logits are piecewise linear in \(\x\), so the linear model is exact inside the activation region that contains \(\x\); the ball \(\B_p(\x,\epsilon)\) may, however, cross many regions. Dropping \(R\) and the constant \(\Loss(\x,y)\), the budget problem becomes
+where the remainder \(R(\bdelta)\) is of order \(\|\bdelta\|^2\) when \(\Loss\) is twice differentiable. For a ReLU network the logits are piecewise linear in the input, so the linear model is exact inside the activation region that contains \(\x\); the ball \(\B_p(\x,\epsilon)\) may, however, cross many regions. Dropping \(R\) and the constant \(\Loss(\x,y)\), and ignoring the box \(\X\) for the moment, problem~\eqref{eq:budget} becomes
 \begin{equation}\label{eq:linprob}
 \max_{\|\bdelta\|_p\le\epsilon}\;\bdelta^\top\mathbf{g}.
 \end{equation}
@@ -263,7 +343,7 @@ This is the problem of finding the perturbation of size at most \(\epsilon\) tha
 \paragraph{Step 2: solving the linear problem.}
 
 \begin{proposition}[Steepest ascent direction]\label{prop:steepest}
-For any \(\mathbf{g}\in\R^d\), \(\mathbf{g}\neq\mathbf{0}\), and \(p\ge1\), with \(1/p+1/q=1\),
+For any \(\mathbf{g}\in\R^d\), \(\mathbf{g}\neq\mathbf{0}\), and \(p\ge1\) with conjugate \(q\),
 \[
 \max_{\|\bdelta\|_p\le\epsilon}\bdelta^\top\mathbf{g}=\epsilon\|\mathbf{g}\|_q .
 \]
@@ -278,22 +358,22 @@ For \(p=\infty\) (\(q=1\)) the maximum is attained at \(\bdelta=\epsilon\,\sign(
 \emph{Attainment for \(1<p<\infty\).} Equality in Hölder's inequality requires \(|\delta_i|^p\) proportional to \(|g_i|^q\) with matching signs, which suggests \(\delta_i=c\,\sign(g_i)|g_i|^{q-1}\). From \(1/p+1/q=1\) we get \((q-1)p=q\). Therefore \(\|\bdelta\|_p^p=c^p\sum_i|g_i|^{(q-1)p}=c^p\|\mathbf{g}\|_q^q\), and \(\|\bdelta\|_p=\epsilon\) fixes \(c=\epsilon/\|\mathbf{g}\|_q^{q/p}=\epsilon/\|\mathbf{g}\|_q^{q-1}\). The value is then \(\bdelta^\top\mathbf{g}=c\sum_i|g_i|^q=\epsilon\|\mathbf{g}\|_q^q/\|\mathbf{g}\|_q^{q-1}=\epsilon\|\mathbf{g}\|_q\). For \(p=2\) we have \(q=2\) and \(c=\epsilon/\|\mathbf{g}\|_2\), which gives \(\bdelta=\epsilon\,\mathbf{g}/\|\mathbf{g}\|_2\).
 \end{proof}
 
-The case \(p=1\) (\(q=\infty\)) is Exercise~1. Two consequences are worth stating explicitly.
+The case \(p=1\) (\(q=\infty\)) is Exercise~\ref{ex:l1}. Two consequences are worth stating explicitly.
 
 \begin{itemize}
   \item For \(p=\infty\) the optimal perturbation uses only the \emph{sign} of each partial derivative, and the first-order gain is \(\epsilon\|\mathbf{g}\|_1\). This sum has \(d\) terms, so for a fixed per-pixel budget \(\epsilon\) the first-order gain grows with the input dimension. This is the linearity argument of \citet{goodfellow2015explaining}: many individually negligible changes add up. It explains why the effect exists at first order, not that the linear model remains accurate.
   \item For the targeted attack we want to \emph{decrease} the loss of the target class. Maximizing \(-\Loss(\x,t)\) is the same problem with \(\mathbf{g}\) replaced by \(-\nabla_{\x}\Loss(\x,t)\), so the proposition gives \(\bdelta=-\epsilon\,\sign(\nabla_{\x}\Loss(\x,t))\).
 \end{itemize}
 
-\paragraph{Step 3: the box constraint.} Problem~\eqref{eq:linprob} ignored \(\x+\bdelta\in[0,1]^d\). For \(p=\infty\) the constraints are separable: coordinate \(i\) must satisfy \(\delta_i\in[l_i,u_i]\) with \(l_i=-\min(\epsilon,x_i)\le0\le u_i=\min(\epsilon,1-x_i)\). The objective \(\sum_ig_i\delta_i\) is linear in each coordinate, so the maximum sits at \(u_i\) if \(g_i>0\) and at \(l_i\) if \(g_i<0\). Since \(x_i+u_i=\min(x_i+\epsilon,1)\) and \(x_i+l_i=\max(x_i-\epsilon,0)\), this is exactly the sign step followed by clipping, so clipping loses nothing for \(\ell_\infty\). The result is the attack of \citet{goodfellow2015explaining},
+\paragraph{Step 3: the box constraint.} Problem~\eqref{eq:linprob} ignored \(\x+\bdelta\in\X\). For \(p=\infty\) the constraints are separable: coordinate \(i\) must satisfy \(\delta_i\in[l_i,u_i]\) with \(l_i=-\min(\epsilon,x_i)\le0\le u_i=\min(\epsilon,1-x_i)\). The objective \(\sum_ig_i\delta_i\) is linear in each coordinate, so the maximum sits at \(u_i\) if \(g_i>0\) and at \(l_i\) if \(g_i<0\). Since \(x_i+u_i=\min(x_i+\epsilon,1)\) and \(x_i+l_i=\max(x_i-\epsilon,0)\), this is exactly the sign step followed by clipping, so clipping loses nothing for \(\ell_\infty\). The result is the attack of \citet{goodfellow2015explaining},
 \begin{equation}\label{eq:fgsm}
 \xadv = \mathrm{clip}_{[0,1]}\big(\x + \epsilon\,\sign(\nabla_{\x}\Loss(\x,y))\big).
 \end{equation}
 For \(p=2\) the same reasoning with Proposition~\ref{prop:steepest} gives the \emph{fast gradient method} (FGM), \(\bdelta=\epsilon\,\mathbf{g}/\|\mathbf{g}\|_2\); here clipping is only an approximation of the box-constrained optimum, because the constraints no longer separate.
 
-\paragraph{When can one linear step be trusted?} Suppose \(\nabla_{\x}\Loss\) is \(\beta\)-Lipschitz in the Euclidean norm. Then, writing \(\x_t=\x+t\bdelta\),
+\paragraph{When can one linear step be trusted?} Suppose \(\nabla_{\x}\Loss\) is \(\beta\)-Lipschitz in the Euclidean norm. Then, writing \(\x_s=\x+s\bdelta\),
 \[
-\Loss(\x+\bdelta)-\Loss(\x)-\bdelta^\top\mathbf{g}=\int_0^1\big(\nabla\Loss(\x_t)-\nabla\Loss(\x)\big)^\top\bdelta\,dt\;\ge\;-\int_0^1\beta t\|\bdelta\|_2^2\,dt=-\tfrac{\beta}{2}\|\bdelta\|_2^2 .
+\Loss(\x+\bdelta)-\Loss(\x)-\bdelta^\top\mathbf{g}=\int_0^1\big(\nabla\Loss(\x_s)-\nabla\Loss(\x)\big)^\top\bdelta\,ds\;\ge\;-\int_0^1\beta s\|\bdelta\|_2^2\,ds=-\tfrac{\beta}{2}\|\bdelta\|_2^2 .
 \]
 For the FGSM perturbation \(\|\bdelta\|_2^2=\epsilon^2d\), so the actual loss increase is at least \(\epsilon\|\mathbf{g}\|_1-\tfrac{\beta}{2}\epsilon^2d\). This guarantee is positive only if \(\epsilon<2\|\mathbf{g}\|_1/(\beta d)\): the single-step guarantee degrades with the curvature \(\beta\) and with the dimension. It is a lower bound, not a prediction, and deep networks are not globally smooth, so it should be read as intuition. It explains two observations at once. A model whose loss surface is highly curved near the data (large \(\beta\), as in the gradient masking induced by FGSM training) makes the single step uninformative, and a smaller step that is re-linearized, as in BIM below, gives guarantees at a much smaller \(\epsilon\).
 
@@ -301,17 +381,17 @@ For the FGSM perturbation \(\|\bdelta\|_2^2=\epsilon^2d\), so the actual loss in
 
 \subsubsection{Basic Iterative Method (BIM)}
 
-The remedy suggested by the previous analysis is to take a step small enough for the linear model to hold, move, and linearize again. Let \(\x^{(k)}\) be the current iterate and \(\mathbf{g}^{(k)}=\nabla_{\x}\Loss(\x^{(k)},y)\). Within a trust region \(\|\bdelta\|_\infty\le\alpha\) around \(\x^{(k)}\), Proposition~\ref{prop:steepest} says that the best step for the local linear model is \(\alpha\,\sign(\mathbf{g}^{(k)})\), that is, an FGSM step with budget \(\alpha<\epsilon\). After the step the iterate may have left the original ball, which is not allowed, so we map it back with the Euclidean projection \(\Proj\) onto \(\B_\infty(\x,\epsilon)\cap[0,1]^d\), derived explicitly in the next subsection. This is the update of \citet{kurakin2017physical}:
+The remedy suggested by the previous analysis is to take a step small enough for the linear model to hold, move, and linearize again. Let \(\x^{(k)}\) be the current iterate and \(\mathbf{g}^{(k)}=\nabla_{\x}\Loss(\x^{(k)},y)\). Within a trust region \(\|\bdelta\|_\infty\le\alpha\) around \(\x^{(k)}\), Proposition~\ref{prop:steepest} says that the best step for the local linear model is \(\alpha\,\sign(\mathbf{g}^{(k)})\), that is, an FGSM step with budget \(\alpha<\epsilon\). After the step the iterate may have left \(\mathcal{S}_\infty(\x,\epsilon)\), which is not allowed, so we map it back with the projection \(\Proj_{\mathcal{S}_\infty(\x,\epsilon)}\), derived explicitly in the next subsection. This is the update of \citet{kurakin2017physical}:
 \begin{equation}\label{eq:bim}
 \x^{(0)} = \x,\qquad
-\x^{(k+1)} = \Proj_{\B_\infty(\x,\epsilon)\cap[0,1]^d}\Big(\x^{(k)} + \alpha\,\sign\big(\nabla_{\x}\Loss(\x^{(k)},y)\big)\Big).
+\x^{(k+1)} = \Proj_{\mathcal{S}_\infty(\x,\epsilon)}\Big(\x^{(k)} + \alpha\,\sign\big(\nabla_{\x}\Loss(\x^{(k)},y)\big)\Big).
 \end{equation}
 
 \paragraph{How many steps?} Every step changes each coordinate by at most \(\alpha\), so after \(k\) steps \(\|\x^{(k)}-\x\|_\infty\le k\alpha\). Reaching the boundary of the ball therefore requires \(T\ge\epsilon/\alpha\) iterations. With \(\epsilon\) in 0--255 units and \(\alpha=1\) this reads \(T\ge\epsilon\). Kurakin et al.\ use the heuristic \(T=\lceil\min(\epsilon+4,\,1.25\epsilon)\rceil\), which adds slack to this lower bound. Our reading of the slack is that coordinates whose gradient sign flips between iterations move back, so more than \(\epsilon/\alpha\) steps are needed in practice, while the cap \(\epsilon+4\) keeps the cost bounded for large \(\epsilon\). For \(\epsilon=8\) the minimum is 8 steps and the heuristic gives \(\lceil\min(12,10)\rceil=10\).
 
 \subsubsection{Projected Gradient Descent (PGD)}
 
-\paragraph{Projected steepest ascent.} Let \(S=\B_p(\x,\epsilon)\cap[0,1]^d\) be the feasible set. The generic method for maximizing a differentiable function over a closed set is: move along an ascent direction, then return to the set with the Euclidean projection \(\Proj_S(\mathbf{z})=\argmin_{\mathbf{u}\in S}\|\mathbf{u}-\mathbf{z}\|_2\). The direction is a design choice. Plain gradient ascent uses \(\mathbf{g}\); steepest ascent with respect to the \(\ell_p\) norm uses the maximizer of \(\mathbf{d}^\top\mathbf{g}\) over \(\|\mathbf{d}\|_p\le1\), which Proposition~\ref{prop:steepest} gives in closed form. For the two norms of this chapter,
+\paragraph{Projected steepest ascent.} Let \(S=\mathcal{S}_p(\x,\epsilon)\) be the feasible set of~\eqref{eq:budget}. The generic method for maximizing a differentiable function over a closed convex set is: move along an ascent direction, then return to the set with \(\Proj_S\). The direction is a design choice. Plain gradient ascent uses \(\mathbf{g}\); steepest ascent with respect to the \(\ell_p\) norm uses the maximizer of \(\mathbf{d}^\top\mathbf{g}\) over \(\|\mathbf{d}\|_p\le1\), which Proposition~\ref{prop:steepest} gives in closed form. For the two norms of this chapter,
 \[
 \x^{(k+1)}=\Proj_S\big(\x^{(k)}+\alpha\,\mathbf{d}^{(k)}\big),\qquad
 \mathbf{d}^{(k)}=\begin{cases}\sign(\mathbf{g}^{(k)}) & p=\infty,\\ \mathbf{g}^{(k)}/\|\mathbf{g}^{(k)}\|_2 & p=2.\end{cases}
@@ -321,7 +401,7 @@ BIM is this iteration for \(p=\infty\). What \citet{madry2018towards} add is the
 \paragraph{The projections.} Both are short derivations.
 
 \begin{proposition}[Projection for \(\ell_\infty\)]\label{prop:projinf}
-Let \(S=\B_\infty(\x,\epsilon)\cap[0,1]^d\). Then \(\Proj_S(\mathbf{z})_i=\min\big(\max(z_i,\,x_i-\epsilon,\,0),\,x_i+\epsilon,\,1\big)\).
+Let \(S=\mathcal{S}_\infty(\x,\epsilon)\). Then \(\Proj_S(\mathbf{z})_i=\min\big(\max(z_i,\,x_i-\epsilon,\,0),\,x_i+\epsilon,\,1\big)\).
 \end{proposition}
 
 \begin{proof}
@@ -336,9 +416,9 @@ For \(S=\B_2(\x,\epsilon)\), \(\Proj_S(\mathbf{z})=\x+\epsilon\,\mathbf{v}/\max(
 Write \(\mathbf{u}=\x+\mathbf{w}\) with \(\|\mathbf{w}\|_2\le\epsilon\), so the problem is \(\min\|\mathbf{w}-\mathbf{v}\|_2\). If \(\|\mathbf{v}\|_2\le\epsilon\), then \(\mathbf{w}=\mathbf{v}\) is feasible with value zero. Otherwise, the triangle inequality gives \(\|\mathbf{w}-\mathbf{v}\|_2\ge\|\mathbf{v}\|_2-\|\mathbf{w}\|_2\ge\|\mathbf{v}\|_2-\epsilon\), with equality exactly when \(\mathbf{w}\) points in the direction of \(\mathbf{v}\) and \(\|\mathbf{w}\|_2=\epsilon\), that is, \(\mathbf{w}=\epsilon\mathbf{v}/\|\mathbf{v}\|_2\).
 \end{proof}
 
-For \(\ell_2\) the feasible set also includes the box, and the intersection of a ball and a box is not a box, so the problem no longer splits. Rescaling and then clipping is therefore only an approximation of \(\Proj_S\), which is the usual practice (Exercise~2).
+For \(\ell_2\) the feasible set \(\mathcal{S}_2(\x,\epsilon)\) also includes the box, and the intersection of a ball and a box is not a box, so the problem no longer splits. Rescaling and then clipping is therefore only an approximation of \(\Proj_S\), which is the usual practice (Exercise~\ref{ex:proj}).
 
-\paragraph{Why random starts and restarts.} The budget problem is nonconcave, so the iteration converges (if at all) to a local maximum determined by its starting point. Starting from \(\x\) itself is a deterministic choice: if the gradient there is uninformative, for example because cross-entropy saturates on a very confident input, every restart from \(\x\) fails in the same way. Sampling the start \(\x^{(0)}=\mathrm{clip}_{[0,1]}(\x+\mathbf{u})\), \(\mathbf{u}\sim\mathcal{U}[-\epsilon,\epsilon]^d\), places the iterate in different basins of attraction. Running \(R\) restarts and keeping the best of them gives a maximum over \(R\) local maxima, which cannot decrease as \(R\) grows. This is the reason for the sanity check below that more restarts should never raise the reported accuracy.
+\paragraph{Why random starts and restarts.} Problem~\eqref{eq:budget} is nonconcave, so the iteration converges (if at all) to a local maximum determined by its starting point. Starting from \(\x\) itself is a deterministic choice: if the gradient there is uninformative, for example because cross-entropy saturates on a very confident input, every restart from \(\x\) fails in the same way. Sampling the start \(\x^{(0)}=\mathrm{clip}_{[0,1]}(\x+\mathbf{u})\), \(\mathbf{u}\sim\mathcal{U}[-\epsilon,\epsilon]^d\), places the iterate in different basins of attraction. Running \(R\) restarts and keeping the best of them gives a maximum over \(R\) local maxima, which cannot decrease as \(R\) grows. This is the reason for the sanity check below that more restarts should never raise the reported accuracy.
 
 \begin{algorithm}[h]
 \caption{PGD attack, \(\ell_\infty\), untargeted}
@@ -349,7 +429,7 @@ For \(\ell_2\) the feasible set also includes the box, and the intersection of a
   \State \(\x^{(0)} \gets \mathrm{clip}_{[0,1]}(\x + \mathbf{u}),\; \mathbf{u}\sim\mathcal{U}[-\epsilon,\epsilon]^d\)
   \For{\(k=0,\dots,T-1\)}
     \State \(\mathbf{g} \gets \nabla_{\x}\Loss(\x^{(k)},y)\)
-    \State \(\x^{(k+1)} \gets \Proj_{\B_\infty(\x,\epsilon)\cap[0,1]^d}\big(\x^{(k)}+\alpha\,\sign(\mathbf{g})\big)\)
+    \State \(\x^{(k+1)} \gets \Proj_{\mathcal{S}_\infty(\x,\epsilon)}\big(\x^{(k)}+\alpha\,\sign(\mathbf{g})\big)\)
   \EndFor
   \State keep \(\x^{(T)}\) as \(\xadv_{\text{best}}\) if it misclassifies (or has higher loss)
 \EndFor
@@ -362,38 +442,25 @@ For \(\ell_2\) the feasible set also includes the box, and the intersection of a
 \paragraph{Practical analysis.}
 \begin{itemize}
   \item \textbf{Step size and iterations.} Too small an \(\alpha\) with few iterations never reaches the boundary (the bound \(T\ge\epsilon/\alpha\) above). Too large an \(\alpha\) wastes the iteration: if \(\alpha\ge2\epsilon\), then after the random start each coordinate offset lies in \([-\epsilon,\epsilon]\), the sign step moves it by \(\pm\alpha\), and the projection sends it to \(\pm\epsilon\). Every iterate is then a vertex of the ball, the update can no longer refine the solution, and the method degenerates into hopping among vertices. A typical CIFAR-10 setting is \(\epsilon=8/255\), \(\alpha=2/255\), \(T\in[20,100]\).
-  \item \textbf{Loss choice.} Cross-entropy saturates when the model is very confident, giving tiny gradients. Margin losses on logits, such as \(\max_{j\neq y}Z_j(\x)-Z_y(\x)\) (Section~\ref{sec:cw}), or the difference-of-logits-ratio loss, are often stronger.
+  \item \textbf{Loss choice.} This is the surrogate gap of Remark~\ref{rem:surrogate}. Cross-entropy saturates when the model is very confident, giving tiny gradients. Margin losses on logits, such as \(\max_{j\neq y}Z_j(\xadv)-Z_y(\xadv)\) (Section~\ref{sec:cw}), or the difference-of-logits-ratio loss, are often stronger.
   \item \textbf{Fixed schedules are brittle.} APGD \citep{croce2020reliable} adapts the step size and adds momentum, removing the hyperparameter sensitivity of PGD. Together with complementary attacks, it forms AutoAttack, the current standard for reporting \(\ell_\infty\) and \(\ell_2\) robustness (Chapter~6).
 \end{itemize}
 
 \begin{warnbox}[Reading PGD results]
-A PGD robust accuracy is an \emph{upper bound} on true robust accuracy (Remark~\ref{rem:bounds}). Sanity checks: accuracy should decrease monotonically with \(\epsilon\) and reach zero for large \(\epsilon\); more iterations and restarts should not increase accuracy; PGD should beat FGSM; white-box should beat black-box. Violations indicate gradient masking or a bug \citep{carlini2019evaluating}.
+A PGD robust accuracy is an \emph{upper bound} on true robust accuracy (Section~\ref{sec:bounds}). Sanity checks: accuracy should decrease monotonically with \(\epsilon\) and reach zero for large \(\epsilon\); more iterations and restarts should not increase accuracy; PGD should beat FGSM; white-box should beat black-box. Violations indicate gradient masking or a bug \citep{carlini2019evaluating}.
 \end{warnbox}
 
 \subsection{Min-norm problem: Carlini and Wagner, and DeepFool}\label{sec:minnorm}
 
-\begin{definition}[Min-norm problem]\label{def:minnorm}
-Let \((\x,y)\) with \(f(\x)=y\) and a norm \(p\ge1\). The \emph{min-norm problem} is
-\begin{equation}\label{eq:minnorm}
-\epsilon^\star(\x,y)\;=\;\min_{\bdelta}\;\|\bdelta\|_p
-\quad\text{s.t.}\quad f(\x+\bdelta)\neq y,\;\; \x+\bdelta\in\X,
-\end{equation}
-and its targeted version, for a target class \(t\neq y\), replaces the constraint \(f(\x+\bdelta)\neq y\) by \(f(\x+\bdelta)=t\). An attack returns a feasible \(\bdelta\), and its norm \(\|\bdelta\|_p\) is an upper bound on \(\epsilon^\star(\x,y)\).
-\end{definition}
-
-Problem~\eqref{eq:minnorm} has no budget \(\epsilon\): the output is a \emph{distance}, not a success rate at a fixed \(\epsilon\). It is the dual view of the budget problem (Definition~\ref{def:budget}): an adversarial example at budget \(\epsilon\) exists if and only if \(\epsilon^\star(\x,y)\le\epsilon\) (Remark on the two optimization problems). The objective \(\|\bdelta\|_p\) is convex, but the feasible set \(\{\bdelta: f(\x+\bdelta)\neq y\}\cap(\X-\x)\) is in general nonconvex, since it is the complement of the (possibly nonconvex) region where the model predicts \(y\). Moreover, the constraint is discrete, so it provides no gradient, and the box constraint \(\x+\bdelta\in[0,1]^d\) is awkward for gradient methods. The attacks of this subsection differ in how they deal with these obstacles:
+This subsection solves problem~\eqref{eq:minnorm}. Section~\ref{sec:problems} named its obstacles: the constraint \(f(\x+\bdelta)\neq y\) is discrete and gives no gradient, the feasible set is nonconvex, and the box \(\x+\bdelta\in\X\) is awkward for unconstrained gradient methods. The two attacks deal with them differently:
 \begin{itemize}
-  \item \textbf{C\&W} \citep{carlini2017towards} replaces the discrete constraint by a penalty on a logit margin, removes the box constraint by a change of variables, solves the resulting unconstrained problem with Adam, and selects the penalty weight per input by binary search. It exists for \(\ell_0\), \(\ell_2\) and \(\ell_\infty\).
-  \item \textbf{DeepFool} \citep{moosavi2016deepfool} is a cheaper alternative for \(\ell_2\): at each step it linearizes all class boundaries around the current iterate and jumps to the nearest one. For a linear classifier this recovers the exact minimal \(\ell_2\) perturbation (compare Exercise~2 of Chapter~1).
+  \item \textbf{C\&W} \citep{carlini2017towards} uses the penalty form~\eqref{eq:penalty} with a logit margin, removes the box constraint by a change of variables, solves the resulting unconstrained problem with Adam, and selects the penalty weight per input by binary search. It exists for \(\ell_0\), \(\ell_2\) and \(\ell_\infty\).
+  \item \textbf{DeepFool} \citep{moosavi2016deepfool} keeps the constraint and replaces the classifier: at each step it linearizes all class boundaries around the current iterate and jumps to the nearest one. For a linear classifier this recovers the exact solution of~\eqref{eq:minnorm} for \(\ell_2\) (compare Exercise~2 of Chapter~1).
 \end{itemize}
-We develop C\&W in detail, since it introduces the margin surrogate that is reused elsewhere in the chapter.
-
 
 \subsubsection{Carlini and Wagner}\label{sec:cw}
 
-\citet{carlini2017towards} (C\&W) attack problem~\eqref{eq:minnorm} directly, and must remove the two obstacles named above: the constraint \(f(\x+\bdelta)=t\) is discrete, and the box constraint \(\x+\bdelta\in[0,1]^d\) is awkward for gradient methods.
-
-\paragraph{From a hard constraint to a penalty.} Replace the classification constraint by a function \(h\) such that \(f(\x+\bdelta)=t\) holds whenever \(h(\x+\bdelta)\le0\). After comparing several candidates, C\&W recommend the logit margin
+\paragraph{From a hard constraint to a penalty.} Replace the classification constraint by a function \(h\) such that \(f(\xadv)=t\) holds whenever \(h(\xadv)\le0\). After comparing several candidates, C\&W recommend the logit margin
 \begin{equation}\label{eq:cwloss}
 h(\xadv) = \max\Big(\max_{j\neq t} Z_j(\xadv) - Z_t(\xadv),\; -\kappa\Big),
 \end{equation}
@@ -403,9 +470,9 @@ where \(\kappa\ge0\) is a \emph{confidence} parameter: the attack keeps pushing 
 \[
 \xadv = \tfrac12\big(\tanh(\mathbf{w})+1\big),
 \]
-so that \(\xadv\in[0,1]^d\) automatically and the problem becomes unconstrained in \(\mathbf{w}\).
+so that \(\xadv\in\X\) automatically and the problem becomes unconstrained in \(\mathbf{w}\).
 
-\paragraph{The \(\ell_2\) attack.} Combining both,
+\paragraph{The \(\ell_2\) attack.} Combining both, and using the squared norm in~\eqref{eq:penalty},
 \begin{equation}\label{eq:cwl2}
 \min_{\mathbf{w}}\; \big\|\tfrac12(\tanh(\mathbf{w})+1)-\x\big\|_2^2 + c\cdot h\big(\tfrac12(\tanh(\mathbf{w})+1)\big),
 \end{equation}
@@ -417,13 +484,13 @@ solved with Adam. The constant \(c>0\) trades off distortion against success; it
 \begin{itemize}
   \item C\&W produces much smaller perturbations than FGSM/PGD at a fixed success rate and was historically decisive in breaking defenses such as defensive distillation, which shrank softmax gradients but left logits informative.
   \item It is expensive: thousands of gradient steps per input including the binary search.
-  \item To compare with PGD, count the fraction of inputs whose minimal C\&W perturbation is below \(\epsilon\).
-  \item The margin loss (Eq.~\ref{eq:cwloss}) is widely reused inside PGD (\enquote{PGD-CW}), often outperforming cross-entropy.
+  \item To compare with PGD, use Proposition~\ref{prop:duality}: count the fraction of inputs whose C\&W perturbation is below \(\epsilon\).
+  \item The margin \eqref{eq:cwloss} is widely reused as the objective of the budget problem inside PGD (\enquote{PGD-CW}), often outperforming cross-entropy.
 \end{itemize}
 
 \subsubsection{DeepFool}\label{sec:deepfool}
 
-C\&W solves a penalized problem with thousands of gradient steps. DeepFool \citep{moosavi2016deepfool} instead exploits the fact that the min-norm problem has a closed-form solution when the classifier is linear, and applies that solution repeatedly to the local linearization of a nonlinear one. We write the derivation for \(\ell_2\) and state the general \(\ell_p\) case afterwards.
+C\&W solves a penalized problem with thousands of gradient steps. DeepFool \citep{moosavi2016deepfool} instead exploits the fact that problem~\eqref{eq:minnorm} has a closed-form solution when the classifier is linear, and applies that solution repeatedly to the local linearization of a nonlinear one. We write the derivation for \(\ell_2\) and state the general \(\ell_p\) case afterwards.
 
 \paragraph{Step 1: the linear binary case.} Let \(g(\x)=\mathbf{a}^\top\x+b\) with \(f(\x)=\sign(g(\x))\), \(\mathbf{a}\neq\mathbf{0}\).
 
@@ -477,13 +544,13 @@ Since the linear model is only local, the iteration is repeated from the new poi
   \State \(\mathbf{r}_{\mathrm{tot}}\gets\mathbf{r}_{\mathrm{tot}}+\mathbf{r}_i\)
   \State \(\x^{(i+1)}\gets\mathrm{clip}_{[0,1]}\big(\x+(1+\eta)\,\mathbf{r}_{\mathrm{tot}}\big)\)
 \EndFor
-\State \Return \(\x^{(i)}\) and \(\|\x^{(i)}-\x\|_2\)
+\State \Return \(\xadv=\x^{(i)}\) and \(\|\xadv-\x\|_2\)
 \end{algorithmic}
 \end{algorithm}
 
 The overshoot \(\eta>0\) (the original paper uses \(\eta=0.02\)) is needed because each step lands \emph{on} the linearized boundary, and the true boundary is only approximated. Without it the iterate often stops at \(m_{l}\approx0^-\) and the label does not change. The update recomputes the point from \(\x\) and the accumulated perturbation, so the overshoot does not compound across iterations.
 
-\paragraph{General \(\ell_p\).} The same derivation with Hölder's inequality in place of Cauchy--Schwarz gives, for \(1/p+1/q=1\), the distance \(|m_k|/\|\nabla m_k\|_q\) and the step
+\paragraph{General \(\ell_p\).} The same derivation with Hölder's inequality in place of Cauchy--Schwarz gives the distance \(|m_k|/\|\nabla m_k\|_q\) and the step
 \[
 \mathbf{r}_i=\frac{|m_{l}(\x^{(i)})|}{\|\nabla m_{l}(\x^{(i)})\|_q^{q}}\,\sign(\nabla m_{l})\,|\nabla m_{l}|^{q-1}.
 \]
@@ -494,50 +561,50 @@ For \(p=\infty\) (\(q=1\)) this reduces to \(\mathbf{r}_i=|m_l|\,\sign(\nabla m_
   \item DeepFool is exact for linear classifiers (Eq.~\ref{eq:dfnearest}) and is a fixed-point iteration of local linearizations for nonlinear ones. It has no optimality guarantee: the returned norm is an upper bound on \(\epsilon^\star(\x,y)\), as for any attack.
   \item It needs no penalty weight and no binary search, and typically converges in a small number of iterations. The cost per iteration is up to \(K-1\) backward passes, which can be reduced by restricting the search to the few classes with the largest logits.
   \item It tends to return larger perturbations than C\&W on the same input, since C\&W optimizes the distortion directly. Its role is a fast estimate of the distance to the boundary, for example to compute an average robustness over a dataset, and not the strongest attack for evaluating a defense.
-  \item The box constraint is handled by clipping, which is only an approximation of the constrained problem, and the \(\ell_2\) projection issue of Exercise~2 applies here as well.
+  \item The box constraint is handled by clipping, which is only an approximation of the constrained problem, and the \(\ell_2\) projection issue of Exercise~\ref{ex:proj} applies here as well.
   \item Because it linearizes the logits, it is affected by gradient masking in the same way as FGSM: if \(\nabla m_k\) is uninformative, the step is unreliable.
 \end{itemize}
 
 %==========================================================================
 \section{Query-Based Black-Box Attacks}\label{sec:query}
 
-Here the attacker cannot differentiate through \(f\) but can query it on chosen inputs. The cost of an attack is measured in queries. We distinguish what a query returns: scores (Section~\ref{sec:score}) or only the predicted label (Section~\ref{sec:decision}).
+Here the attacker cannot differentiate through \(f\) but can query it on chosen inputs. The cost of an attack is measured in queries. We distinguish what a query returns: scores (Section~\ref{sec:score}) or only the predicted label (Section~\ref{sec:decision}). The information level decides which of the two problems of Section~\ref{sec:problems} remains tractable.
 
 \subsection{Score-based attacks}\label{sec:score}
 
-Suppose the attacker can query \(F(\x)\) (or the top-\(k\) scores) but has no gradients. The loss \(\Loss(\x,y)\) is still computable from scores, so the budget problem can still be attacked, provided we can \emph{estimate} the gradient or avoid it.
+\paragraph{Which problem.} Suppose the attacker can query \(F(\xadv)\) (or the top-\(k\) scores) at any point. Then the surrogate \(\Loss(\xadv,y)\), the margin \(h(\xadv)\) of Eq.~\eqref{eq:cwloss}, and the penalized objective~\eqref{eq:penalty} can all be \emph{evaluated}; what is missing is their gradient. Both problems therefore keep their formulation, and only the solver changes: either the gradient is estimated from function values (zeroth-order optimization) and plugged into a white-box solver, or it is avoided altogether by a search that needs only comparisons of objective values. ZOO estimates gradients for the penalized min-norm problem~\eqref{eq:cwl2}; NES, SPSA and the Square Attack solve the budget problem~\eqref{eq:budget}.
 
 \subsubsection{Zeroth-order gradient estimation}
 
-\paragraph{Coordinate-wise finite differences.} ZOO \citep{chen2017zoo} estimates partial derivatives with symmetric differences,
+\paragraph{Coordinate-wise finite differences.} ZOO \citep{chen2017zoo} solves the C\&W objective~\eqref{eq:cwl2}, with the margin computed from scores, replacing each partial derivative by a symmetric difference,
 \[
-\hat g_i = \frac{\Loss(\x+h\mathbf{e}_i,y)-\Loss(\x-h\mathbf{e}_i,y)}{2h},
+\hat g_i = \frac{\Loss(\xadv+h\mathbf{e}_i,y)-\Loss(\xadv-h\mathbf{e}_i,y)}{2h},
 \]
-updating a random batch of coordinates per iteration (with a C\&W-style objective). An exact gradient needs \(2d\) queries, which is prohibitive for images; ZOO mitigates this by attacking in a downsampled space and prioritizing important coordinates.
+and updating a random batch of coordinates per iteration. An exact gradient needs \(2d\) queries, which is prohibitive for images; ZOO mitigates this by attacking in a downsampled space and prioritizing important coordinates.
 
-\paragraph{Random-direction estimators (NES).} \citet{ilyas2018blackbox} use natural evolution strategies. They sample \(n\) directions \(\mathbf{u}_i\sim\mathcal{N}(0,I)\) and estimate
+\paragraph{Random-direction estimators (NES).} \citet{ilyas2018blackbox} solve the budget problem with PGD in which the gradient is replaced by a natural evolution strategies estimate. They sample \(n\) directions \(\mathbf{u}_i\sim\mathcal{N}(0,I)\) and estimate
 \begin{equation}\label{eq:nes}
-\hat{\mathbf{g}} = \frac{1}{2n\sigma}\sum_{i=1}^{n}\big[\Loss(\x+\sigma\mathbf{u}_i,y)-\Loss(\x-\sigma\mathbf{u}_i,y)\big]\mathbf{u}_i,
+\hat{\mathbf{g}} = \frac{1}{2n\sigma}\sum_{i=1}^{n}\big[\Loss(\xadv+\sigma\mathbf{u}_i,y)-\Loss(\xadv-\sigma\mathbf{u}_i,y)\big]\mathbf{u}_i,
 \end{equation}
-which is an unbiased estimate of the gradient of a Gaussian-smoothed loss. Plugging \(\hat{\mathbf{g}}\) into PGD gives an effective attack with far fewer than \(d\) queries per step. The same paper handles the \emph{partial-information} (top-\(k\) only) and \emph{label-only} settings. SPSA \citep{uesato2018adversarial} is a closely related estimator using Rademacher directions; it is also a standard tool to test for gradient masking, since it does not rely on the model's backpropagated gradients.
+which is an unbiased estimate of the gradient of a Gaussian-smoothed loss. Plugging \(\hat{\mathbf{g}}\) into the PGD update of Section~\ref{sec:pgd} gives an effective attack with far fewer than \(d\) queries per step, and the projection is unchanged because the feasible set \(\mathcal{S}_p(\x,\epsilon)\) does not depend on \(f\). The same paper handles the \emph{partial-information} (top-\(k\) only) and \emph{label-only} settings. SPSA \citep{uesato2018adversarial} is a closely related estimator using Rademacher directions; it is also a standard tool to test for gradient masking, since it does not rely on the model's backpropagated gradients.
 
 \subsubsection{Gradient-free random search}
 
-\paragraph{Square Attack.} \citet{andriushchenko2020square} dispense with gradient estimation. At each iteration a random square window is chosen and the perturbation inside it is resampled at the vertices of the \(\ell_\infty\) ball (values \(\pm\epsilon\)); the change is accepted only if the margin loss decreases. Window size shrinks over time. Despite its simplicity, Square Attack is among the most query-efficient score-based attacks and, because it never touches gradients, is immune to gradient masking. It is part of AutoAttack for that reason.
+\paragraph{Square Attack.} \citet{andriushchenko2020square} solve the budget problem with a margin objective and no gradient estimate. The search space is motivated by Proposition~\ref{prop:steepest}: for \(\ell_\infty\) the maximizer of a linear objective over the ball is a vertex, with every coordinate offset equal to \(\pm\epsilon\), so the attack restricts itself to vertices. At each iteration a random square window is chosen and the perturbation inside it is resampled at values \(\pm\epsilon\); the change is accepted only if it improves the margin objective. Window size shrinks over time. Despite its simplicity, Square Attack is among the most query-efficient score-based attacks and, because it never touches gradients, is immune to gradient masking. It is part of AutoAttack for that reason.
 
-\paragraph{Analysis.} Score-based attacks reveal that hiding gradients is not a defense: if scores are exposed, gradients can be approximated. Their cost is measured in queries, typically hundreds to a few thousand per image for untargeted \(\ell_\infty\) attacks on CIFAR-scale models, more for targeted attacks and larger inputs. Defenses that only return labels, add noise to scores, or rate-limit queries raise the cost but do not eliminate the threat.
+\paragraph{Analysis.} Score-based attacks reveal that hiding gradients is not a defense: if scores are exposed, the objectives of both problems can be evaluated and gradients approximated. Their cost is measured in queries, typically hundreds to a few thousand per image for untargeted \(\ell_\infty\) attacks on CIFAR-scale models, more for targeted attacks and larger inputs. Defenses that only return labels, add noise to scores, or rate-limit queries raise the cost but do not eliminate the threat.
 
 \subsection{Decision-based attacks}\label{sec:decision}
 
-In the hardest query setting the attacker sees only \(f(\x)\). The loss is now a step function, and its finite differences are zero almost everywhere. Decision-based attacks therefore work with the geometry of the decision boundary directly, and naturally solve the \emph{min-norm} problem.
+\paragraph{Which problem.} In the hardest query setting the attacker sees only \(f(\xadv)\). The budget objective then reduces to the indicator \(\mathbb{1}[f(\xadv)\neq y]\), which is constant on almost all of \(\mathcal{S}_p(\x,\epsilon)\): unless the attacker is already at an adversarial point, no query inside the ball indicates which direction to move, and finite differences are zero almost everywhere. The min-norm problem~\eqref{eq:minnorm} is better suited to this information level. Its objective \(\|\xadv-\x\|_p\) is computed without the model, and the model is needed only to test feasibility, a one-bit oracle. Decision-based attacks are therefore \emph{feasible-point methods} for~\eqref{eq:minnorm}: they start from an adversarial point, possibly far from \(\x\), and reduce \(\|\xadv-\x\|_p\) while keeping \(\xadv\) adversarial. The budget question is answered through Definition~\ref{def:robust}: the attack succeeds at \(\epsilon\) as soon as \(\|\xadv-\x\|_p\le\epsilon\), and can stop there.
 
-\paragraph{Boundary Attack.} \citet{brendel2018decision} start from a point that is already adversarial (for untargeted attacks, random noise that is misclassified; for targeted attacks, an image of the target class) and perform a random walk \emph{along} the boundary that progressively reduces the distance to \(\x\). Each step combines an orthogonal random perturbation (exploring along the boundary) and a small step toward \(\x\), and is accepted only if the point remains adversarial. Step sizes are adapted from the acceptance rate. It needs only labels but can require tens of thousands of queries.
+\paragraph{Boundary Attack.} \citet{brendel2018decision} start from a point that is already adversarial (for untargeted attacks, random noise that is misclassified; for targeted attacks, an image of the target class) and perform a random walk \emph{along} the boundary that progressively reduces the distance to \(\x\). Each step combines an orthogonal random perturbation (exploring along the boundary) and a small step toward \(\x\), and is accepted only if the point remains adversarial, that is, feasible for~\eqref{eq:minnorm}. Step sizes are adapted from the acceptance rate. It needs only labels but can require tens of thousands of queries.
 
-\paragraph{HopSkipJump.} \citet{chen2020hopskipjump} improve query efficiency by estimating the gradient direction \emph{at the boundary} from binary feedback. At a boundary point \(\xadv_b\), define \(\phi(\mathbf{z}) = +1\) if \(\mathbf{z}\) is adversarial and \(-1\) otherwise. Then
+\paragraph{HopSkipJump.} \citet{chen2020hopskipjump} improve query efficiency by estimating the gradient direction \emph{at the boundary} from binary feedback. At a boundary point \(\x_b\), define \(\phi(\mathbf{z}) = +1\) if \(\mathbf{z}\) is adversarial and \(-1\) otherwise. Then
 \[
-\widehat{\nabla} = \frac{1}{n}\sum_{i=1}^{n}\phi(\xadv_b+\sigma\mathbf{u}_i)\,\mathbf{u}_i
+\widehat{\nabla} = \frac{1}{n}\sum_{i=1}^{n}\phi(\x_b+\sigma\mathbf{u}_i)\,\mathbf{u}_i
 \]
-points, in expectation and for small \(\sigma\), along the boundary normal. Each iteration: (i) estimate the normal, (ii) take a geometric step along it, (iii) binary-search back to the boundary on the segment toward \(\x\). It supports both \(\ell_2\) and \(\ell_\infty\) and converges with far fewer queries than the Boundary Attack.
+points, in expectation and for small \(\sigma\), along the boundary normal. Each iteration: (i) estimate the normal, (ii) take a geometric step along it, (iii) binary-search back to the boundary on the segment toward \(\x\). Step (iii) solves~\eqref{eq:minnorm} exactly when restricted to that segment: \(\x\) is infeasible, the current point is feasible, and bisection on the label finds the crossing closest to \(\x\) up to the tolerance. It supports both \(\ell_2\) and \(\ell_\infty\) and converges with far fewer queries than the Boundary Attack.
 
 \begin{keybox}[Information versus cost]
 \begin{tabular}{@{}lll@{}}
@@ -556,6 +623,13 @@ Less information means higher cost and, usually, larger perturbations, but almos
 
 \citet{szegedy2014intriguing} already noted that adversarial examples crafted for one network often fool another network trained on different data or with a different architecture. \citet{papernot2017practical} turned this into a practical black-box attack: train a \emph{substitute} model by querying the target on synthetic inputs (using Jacobian-based dataset augmentation), attack the substitute with white-box methods, and submit the result to the target. The queries are spent once to build the substitute, not per attacked input. If a surrogate is available without any access to the target (a public pretrained model, for example), no query is needed at all.
 
+\paragraph{Which problem.} Let \(\hat f\) be the surrogate, with loss \(\hat\Loss\). The attacker solves one of the two problems for \(\hat f\) and submits the result to \(f\). The two choices behave very differently.
+\begin{itemize}
+  \item \emph{Budget.} The solution \(\hat\xadv\) of \(\max_{\xadv\in\mathcal{S}_p(\x,\epsilon)}\hat\Loss(\xadv,y)\) is \emph{feasible} for the target's budget problem, because \(\mathcal{S}_p(\x,\epsilon)\) does not depend on the model. Only the objective is wrong: \(\hat\xadv\) maximizes \(\hat\Loss\), not \(\Loss\), and succeeds if the two are aligned enough that \(f(\hat\xadv)\neq y\).
+  \item \emph{Min-norm.} The solution of~\eqref{eq:minnorm} for \(\hat f\) lies, by construction, just across the boundary of \(\hat f\). The boundary of \(f\) is elsewhere, so \(\hat\xadv\) is often \emph{infeasible} for the target's min-norm problem: the minimality that makes it a good solution for \(\hat f\) leaves no slack for the difference between the two models.
+\end{itemize}
+This is why transfer attacks are almost always run as budget attacks at a fixed \(\epsilon\), and why the confidence parameter \(\kappa\) of C\&W, which forces the point a margin \(\kappa\) past the surrogate's boundary, improves transfer.
+
 \paragraph{Why transfer works.} Two complementary explanations:
 \begin{itemize}
   \item \textbf{Shared subspaces.} \citet{tramer2017space} estimate that adversarial perturbations span a subspace of considerable dimension around each input, and that the decision boundaries of different models are close and aligned within it, so perturbations crossing one boundary tend to cross the other.
@@ -565,11 +639,11 @@ Less information means higher cost and, usually, larger perturbations, but almos
 \paragraph{What makes examples transfer better.} Strong white-box optimization tends to \emph{overfit} to the surrogate: highly specific perturbations exploit idiosyncrasies of one model. Empirically:
 \begin{itemize}
   \item Untargeted examples transfer far better than targeted ones \citep{liu2017delving}.
-  \item Higher-confidence examples (larger \(\kappa\) in C\&W) transfer better than minimal ones.
+  \item Higher-confidence examples (larger \(\kappa\) in C\&W) transfer better than minimal ones, as argued above.
   \item \emph{Momentum} stabilizes the update direction and reduces overfitting to the surrogate (MI-FGSM, \citealp{dong2018boosting}):
   \[
-  \mathbf{m}^{(k+1)} = \mu\,\mathbf{m}^{(k)} + \frac{\nabla_{\x}\Loss(\x^{(k)},y)}{\|\nabla_{\x}\Loss(\x^{(k)},y)\|_1},\qquad
-  \x^{(k+1)} = \Proj\big(\x^{(k)}+\alpha\,\sign(\mathbf{m}^{(k+1)})\big).
+  \mathbf{m}^{(k+1)} = \mu\,\mathbf{m}^{(k)} + \frac{\nabla_{\x}\hat\Loss(\x^{(k)},y)}{\|\nabla_{\x}\hat\Loss(\x^{(k)},y)\|_1},\qquad
+  \x^{(k+1)} = \Proj_{\mathcal{S}_\infty(\x,\epsilon)}\big(\x^{(k)}+\alpha\,\sign(\mathbf{m}^{(k+1)})\big).
   \]
   \item \emph{Input diversity}: applying random resizing and padding before each gradient computation acts like data augmentation for the attack \citep{xie2019improving}.
   \item Attacking an \emph{ensemble} of surrogates (next section).
@@ -582,7 +656,7 @@ Transfer success depends heavily on surrogate choice; low transfer success is no
 %==========================================================================
 \section{Ensembles: Surrogates and Targets}\label{sec:ensembles}
 
-Ensembles appear in this chapter in two roles: as surrogates that improve transfer, and as targets that claim robustness. In neither role do they define a new attack family; they change the function being attacked.
+Ensembles appear in this chapter in two roles: as surrogates that improve transfer, and as targets that claim robustness. In neither role do they define a new attack family or a new problem: they change the \emph{objective} of the budget (or min-norm) problem, while the feasible set stays \(\mathcal{S}_p(\x,\epsilon)\).
 
 \paragraph{Ensembles as surrogates.} \citet{liu2017delving} showed that optimizing a perturbation against several models simultaneously yields examples that transfer much better, including targeted examples, to an unseen model. For models \(f_1,\dots,f_M\) with weights \(w_m\ge0\), \(\sum_m w_m=1\), the common fusion choices are
 \begin{align*}
@@ -590,12 +664,12 @@ Ensembles appear in this chapter in two roles: as surrogates that improve transf
 \text{probability fusion:}\quad & F_{\text{ens}}(\x) = \textstyle\sum_m w_m F_m(\x), \\
 \text{loss fusion:}\quad & \Loss_{\text{ens}}(\x,y) = \textstyle\sum_m w_m \Loss_m(\x,y).
 \end{align*}
-Logit fusion is usually the most effective for transfer. The intuition: a direction that fools many diverse models is more likely to exploit features shared by all models, including the unseen target.
+Each defines a surrogate objective for~\eqref{eq:budget}. Logit fusion is usually the most effective for transfer. The intuition: a direction that fools many diverse models is more likely to exploit features shared by all models, including the unseen target.
 
 \paragraph{Ensembles as defenses.} An ensemble is a single differentiable function. If the defender averages logits or probabilities, a white-box attacker simply attacks the averaged output with PGD, exactly as for a single model. Problems arise only with \emph{non-differentiable} aggregation (majority vote) or with \emph{randomized} selection of members. In those cases:
 \begin{itemize}
   \item Replace the vote with a differentiable surrogate (average of logits or probabilities) for gradient computation; the resulting example usually fools the vote as well.
-  \item For random member selection, optimize the \emph{expected} loss, \(\mathbb{E}_m[\Loss_m(\xadv,y)]\), i.e., Expectation over Transformation \citep{athalye2018eot}.
+  \item For random member selection, solve the budget problem with the \emph{expected} loss as objective, \(\max_{\xadv\in\mathcal{S}_p(\x,\epsilon)}\mathbb{E}_m[\Loss_m(\xadv,y)]\), i.e., Expectation over Transformation \citep{athalye2018eot}.
   \item For ensembles of detectors or heterogeneous defenses, attack all components jointly with a combined loss. \citet{he2017ensemble} showed that combining several weak defenses does not yield a strong one under adaptive attack.
 \end{itemize}
 \emph{Ensemble adversarial training} \citep{tramer2018ensemble} is a different idea: augmenting training with adversarial examples transferred from other, fixed models. It improves robustness to \emph{transfer} attacks specifically, not to white-box attacks on the defended model.
@@ -603,50 +677,52 @@ Logit fusion is usually the most effective for transfer. The intuition: a direct
 %==========================================================================
 \section{Evasion Attacks on Large Language Models}\label{sec:llm}
 
-The framework of Section~\ref{sec:defs} was built for classifiers with continuous inputs. Large language models (LLMs) break its assumptions in four ways, and each one forces a change in the definitions or in the algorithms.
+The \(\ell_p\) framework of Sections~\ref{sec:defs}--\ref{sec:problems} was built for classifiers with continuous inputs. Large language models (LLMs) break its assumptions in four ways, and each one forces a change in the definitions or in the algorithms.
 \begin{enumerate}
   \item \textbf{Discrete inputs.} The input is a sequence of tokens, so \(\x+\bdelta\) is not an input and gradient steps do not stay inside the domain.
   \item \textbf{Structured outputs.} The model produces a sequence by sampling, not a label. \enquote{Misbehaving} is a predicate on the whole output, usually evaluated by a judge.
   \item \textbf{No \(\ell_p\) ball.} The admissible set is defined by what the attacker controls (a suffix, a document in a retrieval index, a conversation turn) or by preserving the meaning of a request, not by a distance.
   \item \textbf{Data and instructions share one channel.} Everything is text in one context window, so an attacker who controls any part of the context can issue instructions \citep{nist2025ai1002}. This is the structural analogue of SQL injection.
 \end{enumerate}
-We keep the three-axis taxonomy of Section~\ref{sec:taxonomy}. What changes is the threat set, the surrogate loss, and the solver.
+The general threat-set formulation of Section~\ref{sec:threatsets} absorbs the third point, and the three-axis taxonomy of Section~\ref{sec:taxonomy} still applies. What changes is the threat set, the success predicate, the surrogate loss and the solver.
 
 \subsection{Setting and threat model}
 
 Let \(\mathcal{V}\) be the vocabulary, \(N=|\mathcal{V}|\), and let \(\x\in\mathcal{V}^n\) be a token sequence. The model defines an autoregressive distribution over responses \(\mathbf{r}=(r_1,\dots,r_m)\),
 \[
-p(\mathbf{r}\mid\x)=\prod_{t=1}^{m}p(r_t\mid\x,r_{<t}).
+p(\mathbf{r}\mid\x)=\prod_{s=1}^{m}p(r_s\mid\x,r_{<s}).
 \]
 A \emph{policy} is a predicate \(J(\x,\mathbf{r})\in\{0,1\}\) that equals \(1\) when the response is unacceptable for that prompt (a harmful completion, a leaked system prompt, an action the user did not request). In practice \(J\) is a human, a classifier, or another LLM, and this has consequences for evaluation (see the warning box at the end of the section).
 
 \begin{definition}[Evasion against an LLM]\label{def:llmevasion}
-Let \(q\) be a request that the model should not fulfill (so \(J(q,\mathbf{r})=1\) for compliant responses). Let \(\mathcal{T}(q)\subseteq\mathcal{V}^*\) be a set of admissible transformations of \(q\) (the threat set). An attack returns \(\xadv\in\mathcal{T}(q)\), and it \emph{succeeds} if
+Let \(q\) be a request that the model should not fulfill (so \(J(q,\mathbf{r})=1\) for compliant responses). Let \(\T(q)\subseteq\mathcal{V}^*\) be a set of admissible transformations of \(q\) (the threat set). An attack returns \(\xadv\in\T(q)\), and it \emph{succeeds} if
 \[
 \Pr_{\mathbf{r}\sim p(\cdot\mid\xadv)}\big[J(q,\mathbf{r})=1\big]\ge\tau
 \]
 for a chosen threshold \(\tau\) (for example, \(\tau\) small for \enquote{at least one sample succeeds} and close to \(1\) for \enquote{reliably}).
 \end{definition}
 
-The threat set \(\mathcal{T}\) replaces \(\B_p(\x,\epsilon)\cap\X\). The common choices are:
+This is Definition~\ref{def:adv} with three substitutions: the admissible set \(\mathcal{S}_p(\x,\epsilon)\) becomes \(\T(q)\), as in Section~\ref{sec:threatsets}; the condition \(f(\xadv)\neq y\) becomes the predicate \(J\); and because the output is sampled, success is a probability compared with a threshold. The common choices of \(\T\) are:
 \begin{itemize}
-  \item \textbf{Suffix (or prefix) of length \(k\):} \(\mathcal{T}(q)=\{q\oplus\mathbf{s}:\mathbf{s}\in\mathcal{V}^k\}\), where \(\oplus\) is concatenation. The budget is the length \(k\).
-  \item \textbf{Intent-preserving rewrites:} \(\mathcal{T}(q)=\{\x:\ \x\text{ asks for the same thing as }q\}\). This is the analogue of \enquote{imperceptible}, and unlike \(\|\bdelta\|_p\le\epsilon\) it cannot be checked by computing a norm. Whether a rewrite preserves intent is itself a judgment.
+  \item \textbf{Suffix (or prefix) of length \(k\):} \(\T_k(q)=\{q\oplus\mathbf{s}:\mathbf{s}\in\mathcal{V}^k\}\), where \(\oplus\) is concatenation. The budget is the length \(k\), and the sets are nested if shorter suffixes are padded with a neutral token.
+  \item \textbf{Intent-preserving rewrites:} \(\T(q)=\{\x:\ \x\text{ asks for the same thing as }q\}\). This is the analogue of \enquote{imperceptible}, and unlike \(\|\bdelta\|_p\le\epsilon\) it cannot be checked by computing a norm. Whether a rewrite preserves intent is itself a judgment.
   \item \textbf{Attacker-controlled context:} the attacker does not write the user request at all. They control a document \(d\) that the application places into the context (indirect prompt injection, Section~\ref{sec:injection}).
 \end{itemize}
 Two things from the classifier setting disappear. There is no clean pair \((\x,y)\) with \(f(\x)=y\) to start from, and the ASR is a rate under a judge, not a rate of label flips.
 
-\subsection{A surrogate loss and the discrete budget problem}
+\subsection{A surrogate loss and the two problems}
 
-The indicator \(J\) is not differentiable and is expensive to query, so, as in Section~\ref{sec:defs}, we replace it by a surrogate. The standard choice is the likelihood of an \emph{affirmative prefix} \(\mathbf{r}^\star\) such as \enquote{Sure, here is\ldots}, which models that comply usually begin with. For the suffix threat set,
+The indicator \(J\) is not differentiable and is expensive to query, so, as in Remark~\ref{rem:surrogate}, we replace it by a surrogate. The standard choice is the likelihood of an \emph{affirmative prefix} \(\mathbf{r}^\star\) such as \enquote{Sure, here is\ldots}, which models that comply usually begin with. For the suffix threat set,
 \begin{equation}\label{eq:llmloss}
-\Loss(\mathbf{s})=-\log p(\mathbf{r}^\star\mid q\oplus\mathbf{s})=\sum_{t=1}^{m^\star}-\log p\big(r^\star_t\mid q\oplus\mathbf{s},\,r^\star_{<t}\big),
+\Loss(\mathbf{s})=-\log p(\mathbf{r}^\star\mid q\oplus\mathbf{s})=\sum_{s=1}^{m^\star}-\log p\big(r^\star_s\mid q\oplus\mathbf{s},\,r^\star_{<s}\big),
 \end{equation}
-where the equality is the chain rule of probability. The (budget) problem becomes the discrete problem
+where the equality is the chain rule of probability. The budget problem~\eqref{eq:budget} becomes the discrete problem
 \begin{equation}\label{eq:llmbudget}
-\min_{\mathbf{s}\in\mathcal{V}^k}\Loss(\mathbf{s}).
+\min_{\mathbf{s}\in\mathcal{V}^k}\Loss(\mathbf{s}),
 \end{equation}
-It has \(N^k\) candidates (for \(N\approx10^5\) and \(k=20\), far too many to enumerate), no continuous structure, and a surrogate gap: a response that begins with the affirmative prefix may still refuse afterwards, and a successful response may not begin with it. This is the same gap discussed in the remark on the two optimization problems, now with a more fragile surrogate.
+a minimization because \(\Loss\) is now the loss of the \emph{target} output, exactly as in the targeted version of Definition~\ref{def:budget}. It has \(N^k\) candidates (for \(N\approx10^5\) and \(k=20\), far too many to enumerate), no continuous structure, and a surrogate gap: a response that begins with the affirmative prefix may still refuse afterwards, and a successful response may not begin with it. This is the gap of Remark~\ref{rem:surrogate}, now with a more fragile surrogate.
+
+The min-cost analogue of~\eqref{eq:minnorm} also exists: minimize the suffix length \(k\), or the number of edited tokens of \(q\), subject to success under \(J\). It is the natural view for text \emph{classifiers}, where word-substitution attacks report the fraction of words changed. For jailbreaks it is rarely used, because each feasibility check requires sampling responses and running the judge, so the budget form with a fixed \(k\) dominates the literature.
 
 \paragraph{Linearizing a discrete problem.} Let \(W_E\in\R^{N\times h}\) be the embedding matrix. The model receives the embedding of token \(s_i\), which is \(\mathbf{e}_{s_i}^\top W_E\) for the one-hot vector \(\mathbf{e}_{s_i}\in\{0,1\}^N\). Treat the one-hot rows as real vectors, so that \(\Loss\) becomes a differentiable function of \(\mathbf{e}_i\in\R^N\) for each suffix position \(i\), and let \(\mathbf{g}_i=\nabla_{\mathbf{e}_i}\Loss\in\R^N\). The Taylor expansion of Eq.~\eqref{eq:lin} applies verbatim with \(\bdelta=\mathbf{e}_w-\mathbf{e}_v\), the change caused by replacing token \(v\) at position \(i\) by token \(w\):
 \[
@@ -655,27 +731,27 @@ It has \(N^k\) candidates (for \(N\approx10^5\) and \(k=20\), far too many to en
 This is the first-order estimate used by HotFlip \citep{ebrahimi2018hotflip}, and it means that all \(N\) possible replacements at position \(i\) are scored with a single backward pass.
 
 \begin{proposition}[Best swap under the linear model]\label{prop:swap}
-Among all convex combinations \(\mathbf{\lambda}\) of one-hot vectors (the simplex), \(\min_{\mathbf{\lambda}}\mathbf{\lambda}^\top\mathbf{g}_i=\min_w g_{i,w}\), and the minimum is attained at the vertex \(\mathbf{e}_{w^\star}\) with \(w^\star=\argmin_w g_{i,w}\). Hence the best replacement at position \(i\) under the linear model is \(w^\star\), and relaxing the discrete constraint to the simplex loses nothing.
+Among all convex combinations \(\boldsymbol{\lambda}\) of one-hot vectors (the simplex), \(\min_{\boldsymbol{\lambda}}\boldsymbol{\lambda}^\top\mathbf{g}_i=\min_w g_{i,w}\), and the minimum is attained at the vertex \(\mathbf{e}_{w^\star}\) with \(w^\star=\argmin_w g_{i,w}\). Hence the best replacement at position \(i\) under the linear model is \(w^\star\), and relaxing the discrete constraint to the simplex loses nothing.
 \end{proposition}
 
 \begin{proof}
-For \(\mathbf{\lambda}\ge0\) with \(\sum_w\lambda_w=1\), \(\mathbf{\lambda}^\top\mathbf{g}_i=\sum_w\lambda_wg_{i,w}\ge\sum_w\lambda_w\min_{w'}g_{i,w'}=\min_{w'}g_{i,w'}\), with equality for the vertex at the minimizing coordinate.
+For \(\boldsymbol{\lambda}\ge0\) with \(\sum_w\lambda_w=1\), \(\boldsymbol{\lambda}^\top\mathbf{g}_i=\sum_w\lambda_wg_{i,w}\ge\sum_w\lambda_w\min_{w'}g_{i,w'}=\min_{w'}g_{i,w'}\), with equality for the vertex at the minimizing coordinate.
 \end{proof}
 
-The structure matches the \(\ell_1\) case of Exercise~1: a linear objective over a set whose extreme points are coordinate vectors is optimized by placing all the mass on one coordinate. The difference from \(\ell_\infty\) FGSM is that there is no sign step spread across coordinates, only a choice of one token.
+The structure matches the \(\ell_1\) case of Exercise~\ref{ex:l1}: a linear objective over a set whose extreme points are coordinate vectors is optimized by placing all the mass on one coordinate. The difference from \(\ell_\infty\) FGSM is that there is no sign step spread across coordinates, only a choice of one token.
 
 \paragraph{Why the linear model can only rank.} In the classifier case the linearization error shrinks with the step, \(O(\|\bdelta\|^2)\), and BIM exploits this by taking small steps. Here no step is small: \(\|\mathbf{e}_w-\mathbf{e}_v\|_2^2=2\) for every swap. If the relaxed loss has a \(\beta\)-Lipschitz gradient, the bound derived for FGSM gives \(|R|\le\tfrac{\beta}{2}\cdot2=\beta\) for every swap, a fixed error that does not vanish as the attack proceeds. The estimate therefore cannot be trusted to predict the loss after a swap. It can still be used as a heuristic to \emph{propose} candidates, provided each candidate is checked with the true loss. This is the design principle of the next algorithm. The bound itself assumes smoothness that Transformers do not satisfy globally, so we read it as intuition.
 
 \subsection{White-box: Greedy Coordinate Gradient}
 
-The Greedy Coordinate Gradient attack (GCG) of \citet{zou2023universal} combines the proposal and the check. At each iteration it (i) computes \(\mathbf{g}_i\) for all suffix positions with one backward pass, (ii) keeps for each position the \(K\) tokens with the most negative gradient entries, (iii) samples \(B\) candidate suffixes, each obtained by replacing one random position by one of its top-\(K\) tokens, (iv) evaluates the true loss \(\Loss\) of every candidate with forward passes only, and (v) moves to the best candidate.
+The Greedy Coordinate Gradient attack (GCG) of \citet{zou2023universal} solves~\eqref{eq:llmbudget} by combining the proposal and the check. At each iteration it (i) computes \(\mathbf{g}_i\) for all suffix positions with one backward pass, (ii) keeps for each position the \(K\) tokens with the most negative gradient entries, (iii) samples \(B\) candidate suffixes, each obtained by replacing one random position by one of its top-\(K\) tokens, (iv) evaluates the true loss \(\Loss\) of every candidate with forward passes only, and (v) moves to the best candidate.
 
 \begin{algorithm}[h]
 \caption{GCG, suffix of length \(k\)}
 \begin{algorithmic}[1]
 \Require request \(q\), target prefix \(\mathbf{r}^\star\), suffix length \(k\), iterations \(T\), top-\(K\), batch \(B\)
 \State initialize \(\mathbf{s}\in\mathcal{V}^k\) (for example, a repeated filler token)
-\For{\(t=1,\dots,T\)}
+\For{\(j=1,\dots,T\)}
   \State \(\mathbf{g}_i\gets\nabla_{\mathbf{e}_i}\Loss(\mathbf{s})\) for \(i=1,\dots,k\) \Comment{one forward and backward pass}
   \State \(\mathcal{X}_i\gets\) the \(K\) tokens with smallest \(g_{i,w}\)
   \For{\(b=1,\dots,B\)}
@@ -693,15 +769,15 @@ The Greedy Coordinate Gradient attack (GCG) of \citet{zou2023universal} combines
 \]
 is exactly the loss fusion of Section~\ref{sec:ensembles}. The optimized suffix is then \emph{universal} (one string works for many requests) and, as in Section~\ref{sec:transfer}, an ensemble of surrogates improves transfer to models the attacker cannot differentiate through. \citet{zou2023universal} report transfer of such suffixes to closed-source models, but how well it works depends on the target and has changed as models were updated.
 
-\paragraph{Embedding-space attacks.} If the attacker has the weights, nothing prevents running PGD directly on the continuous embeddings of the suffix, which is the classifier setting of Section~\ref{sec:pgd}. This is an upper bound on what token-space attacks can achieve, but it is not a realistic threat model for a user who can only submit text, because an arbitrary embedding vector need not correspond to any token. The result of \citet{carlini2023aligned} that continuous inputs (images) in multimodal models are much easier to attack than text is the same phenomenon.
+\paragraph{Embedding-space attacks.} If the attacker has the weights, nothing prevents running PGD directly on the continuous embeddings of the suffix, which is the classifier setting of Section~\ref{sec:pgd}. This is an upper bound on what token-space attacks can achieve, but it is not a realistic threat model for a user who can only submit text, because an arbitrary embedding vector need not correspond to any token: the threat set has been enlarged beyond \(\T_k(q)\). The result of \citet{carlini2023aligned} that continuous inputs (images) in multimodal models are much easier to attack than text is the same phenomenon.
 
 \subsection{Black-box attacks}
 
-The chapter's information axis carries over directly.
+The chapter's information axis carries over directly, and so does the choice of problem: every attack below solves the budget form with a fixed threat set.
 
 \paragraph{Score-based.} If the API returns log-probabilities, the surrogate of Eq.~\eqref{eq:llmloss} can be evaluated without gradients. Random search then does what Square Attack does for images: mutate a few random suffix tokens and keep the change only if the log-probability of the affirmative prefix increases. \citet{andriushchenko2024simple} showed that this simple adaptive strategy reaches high success rates against several safety-aligned models. Restricting the logit bias, temperature or returned log-probabilities raises the cost, as for score-based attacks on classifiers.
 
-\paragraph{Judge-based (the decision-based analogue).} When only the response text is visible, the only feedback is the verdict of a judge. PAIR \citep{chao2023jailbreaking} uses an \emph{attacker LLM} that proposes a rewrite of the request, queries the target, receives the judge's score, and refines the rewrite in the next round. Like the Boundary Attack, it needs no gradients and no scores, and its cost is measured in queries (typically tens to a few hundred for PAIR). The rewrites are readable text, which matters for the defenses below. Multi-turn variants such as Crescendo spread the attack over a conversation of individually benign turns \citep{nist2025ai1002}.
+\paragraph{Judge-based (the decision-based analogue).} When only the response text is visible, the only feedback is the verdict of a judge, the analogue of a label. PAIR \citep{chao2023jailbreaking} uses an \emph{attacker LLM} that proposes a rewrite of the request within the intent-preserving threat set, queries the target, receives the judge's score, and refines the rewrite in the next round. Like the Boundary Attack, it needs no gradients and no scores, and its cost is measured in queries (typically tens to a few hundred for PAIR). Unlike the Boundary Attack, it does not solve a min-cost problem: there is no distance to reduce once the rewrite succeeds. The rewrites are readable text, which matters for the defenses below. Multi-turn variants such as Crescendo spread the attack over a conversation of individually benign turns \citep{nist2025ai1002}.
 
 \paragraph{Hand-crafted attacks (no optimization).} \citet{wei2023jailbroken} explain many manual jailbreaks by two failure modes. \emph{Competing objectives}: the model is trained to be helpful and to follow instructions, and the attack makes compliance win (refusal suppression, role-play, forcing an affirmative start). \emph{Mismatched generalization}: pretraining covers a wider distribution \(\D_{\mathrm{pre}}\) than safety training \(\D_{\mathrm{safe}}\), and an input in \(\D_{\mathrm{pre}}\setminus\D_{\mathrm{safe}}\) (Base64, ROT13, rare languages, payload splitting) is understood by the model but not covered by its refusal behavior. Neither mechanism requires a gradient, and the second one has a simple explanation in terms of the coverage of the training distribution, in the spirit of Section~\ref{sec:transfer}.
 
@@ -727,15 +803,15 @@ Universal suffix, transfer & none (per request) & budget, summed over models and
 
 \subsection{Prompt injection}\label{sec:injection}
 
-In a \emph{direct} prompt injection the attacker is the user and tries to override the developer's system prompt. In an \emph{indirect} injection the attacker controls a document \(d\) (a web page, an email, a retrieved passage) that the application inserts into the context together with the user's request \(u\) and the system prompt \(\mathbf{z}\), so the model receives a single sequence \(\mathbf{z}\oplus u\oplus d\) \citep{greshake2023not,nist2025ai1002}. The attacker's goal is a behavior \(b\) that neither \(\mathbf{z}\) nor \(u\) asked for (exfiltrating data to a URL, calling a tool, suppressing a source). The threat set is \(\{d:\text{the attacker can place }d\text{ in the context}\}\), which is limited by access, not by distance, and the goal can be stated as \(\Pr[\text{behavior }b\mid\mathbf{z}\oplus u\oplus d]\) being large. The same optimization techniques apply to \(d\) (for instance, optimized \enquote{execution triggers} reported by \citet{nist2025ai1002}), and the attack can persist through retrieval pipelines.
+In a \emph{direct} prompt injection the attacker is the user and tries to override the developer's system prompt. In an \emph{indirect} injection the attacker controls a document \(d\) (a web page, an email, a retrieved passage) that the application inserts into the context together with the user's request \(u\) and the system prompt \(\mathbf{z}\), so the model receives a single sequence \(\mathbf{z}\oplus u\oplus d\) \citep{greshake2023not,nist2025ai1002}. The attacker's goal is a behavior \(b\) that neither \(\mathbf{z}\) nor \(u\) asked for (exfiltrating data to a URL, calling a tool, suppressing a source). In the terms of Section~\ref{sec:threatsets}, the threat set is \(\{d:\text{the attacker can place }d\text{ in the context}\}\), which is limited by access, not by distance, and the budget problem is to make \(\Pr[\text{behavior }b\mid\mathbf{z}\oplus u\oplus d]\) large over that set. The same optimization techniques apply to \(d\) (for instance, optimized \enquote{execution triggers} reported by \citet{nist2025ai1002}), and the attack can persist through retrieval pipelines.
 
 The root cause is architectural: the model has no reliable mechanism to distinguish instructions from data, because both are tokens in the same sequence. For this reason, defenses that only modify the model reduce but do not remove the risk, and a common recommendation is to design the application on the assumption that the model may follow injected instructions, by limiting its permissions and the data it can reach \citep{nist2025ai1002}.
 
 \subsection{Defenses and their limits}
 
 \begin{itemize}
-  \item \textbf{Perplexity filtering.} GCG suffixes are unnatural token strings with high perplexity under a language model, and a filter that rejects prompts above a threshold detects them \citep{jain2023baseline}. This defends against that attack and not against PAIR-style rewrites, which are fluent. An adaptive attacker adds a fluency term to Eq.~\eqref{eq:llmloss}, trading attack strength for readability.
-  \item \textbf{Randomized perturbation (SmoothLLM).} \citet{robey2023smoothllm} query the model on several randomly perturbed copies of the prompt and aggregate the outputs. This is motivated by randomized smoothing (Remark~\ref{rem:bounds}): optimized suffixes are brittle, and character-level noise breaks them while leaving benign prompts mostly intact. It costs several queries per prompt, and the guarantee is not the certified radius of the classifier setting.
+  \item \textbf{Perplexity filtering.} GCG suffixes are unnatural token strings with high perplexity under a language model, and a filter that rejects prompts above a threshold detects them \citep{jain2023baseline}. In the terms of Section~\ref{sec:threatsets}, the filter shrinks the threat set to low-perplexity strings. This defends against that attack and not against PAIR-style rewrites, which are fluent. An adaptive attacker adds a fluency term to Eq.~\eqref{eq:llmloss}, trading attack strength for readability.
+  \item \textbf{Randomized perturbation (SmoothLLM).} \citet{robey2023smoothllm} query the model on several randomly perturbed copies of the prompt and aggregate the outputs. This is motivated by randomized smoothing (Section~\ref{sec:bounds}): optimized suffixes are brittle, and character-level noise breaks them while leaving benign prompts mostly intact. It costs several queries per prompt, and the guarantee is not the certified radius of the classifier setting.
   \item \textbf{Training-time defenses.} Safety training, refusal training and adversarial training on attack prompts raise the cost of attacks, but recent evaluations still find current models vulnerable to direct prompt injection \citep{nist2025ai1002}. Adversarial training against GCG-style suffixes faces the same difficulty as in Chapter~1: the inner maximization is expensive and the threat set is open-ended.
 \end{itemize}
 
@@ -743,27 +819,17 @@ The root cause is architectural: the model has no reliable mechanism to distingu
 \begin{itemize}
   \item \textbf{The judge is part of the threat model.} The ASR depends on who decides \(J\). Keyword matching on refusals produces both false successes (a hedged answer without a refusal phrase) and false failures. State the judge and validate it on a labeled sample.
   \item \textbf{The surrogate is not the objective.} Low \(\Loss(\mathbf{s})\) means the model starts with the affirmative prefix, not that the full response is harmful. Report success under \(J\), not the loss.
-  \item \textbf{Randomness and budget.} Sampling makes success probabilistic (the threshold \(\tau\) of Definition~\ref{def:llmevasion}). Report the number of samples, the number of queries, and the computational budget of the attack, since a weak attack gives a loose upper bound on robustness exactly as in Remark~\ref{rem:bounds}.
+  \item \textbf{Randomness and budget.} Sampling makes success probabilistic (the threshold \(\tau\) of Definition~\ref{def:llmevasion}). Report the number of samples, the number of queries, and the computational budget of the attack, since a weak attack gives a loose upper bound on robustness exactly as in Section~\ref{sec:bounds}.
   \item \textbf{Adaptive attacks.} A defense evaluated only against attacks that were not designed for it (a perplexity filter tested with plain GCG) says little. Follow the checklist of \citet{carlini2019evaluating} and \citet{tramer2020adaptive}: attack the defense, not the base model.
 \end{itemize}
 \end{warnbox}
-
-\subsection*{Exercises}
-
-\begin{enumerate}[label=\textbf{\arabic*.}]
-  \item Verify the equality in Eq.~\eqref{eq:llmloss} from the chain rule, and explain why \(\Loss\) can be evaluated for all \(m^\star\) positions with a single forward pass of the sequence \(q\oplus\mathbf{s}\oplus\mathbf{r}^\star\) (teacher forcing).
-  \item Show that the first-order estimate for a swap uses \(g_{i,w}-g_{i,v}\), and explain why the term \(g_{i,v}\) can be dropped when ranking replacements \(w\) at a fixed position \(i\).
-  \item In GCG, the cost of one iteration is one backward pass plus \(B\) forward passes. Compare this with the cost of one PGD step and of one NES-PGD step on a classifier. When is it worth increasing \(B\) rather than \(K\)?
-  \item Design an adaptive attack against a perplexity filter with threshold \(\theta\): write the modified objective, and say what happens to the attack success as \(\theta\) decreases.
-  \item Classify the following along the axes of Table~\ref{tab:taxonomy}: GCG on an ensemble of open models evaluated on a closed model, random search on log-probabilities, PAIR. For each, say which classifier-setting attack it most resembles and which assumption of that attack fails for LLMs.
-\end{enumerate}
 
 %==========================================================================
 \section{Hands-On: Implementing Evasion Attacks}
 
 The following PyTorch code implements the attacks of this chapter in their simplest form. It assumes a model \texttt{model} in \texttt{eval()} mode that receives images in \([0,1]\) (place any normalization inside the model), and batches \texttt{x}, \texttt{y}. Any CIFAR-10 classifier will do; pretrained robust and non-robust models are available in RobustBench.
 
-\subsection{FGSM and PGD}
+\subsection{FGSM and PGD (budget problem)}
 
 \begin{lstlisting}
 import torch
@@ -804,7 +870,7 @@ def pgd_linf(model, x, y, eps, alpha, steps, restarts=1, loss="ce"):
     return best, fooled
 \end{lstlisting}
 
-\subsection{Carlini--Wagner \(\ell_2\) (single \(c\), no binary search)}
+\subsection{Carlini--Wagner \(\ell_2\) (min-norm problem; single \(c\), no binary search)}
 
 \begin{lstlisting}
 def cw_l2(model, x, y, c=1.0, kappa=0.0, steps=200, lr=1e-2):
@@ -869,7 +935,7 @@ transfer_rate = (target(x_adv).argmax(1) != y).float().mean()
 \begin{enumerate}[label=\textbf{\arabic*.}]
   \item On a standard (non-robust) CIFAR-10 model, plot accuracy versus \(\epsilon\in\{0,1,2,4,8\}/255\) for FGSM, PGD-20 with cross-entropy and PGD-20 with the margin loss. Repeat on a robust model from RobustBench. Which attack is strongest, and does the ranking change?
   \item For PGD, vary \(\alpha\) and the number of steps with fixed \(\epsilon=8/255\). Identify a configuration that underestimates attack strength and explain why.
-  \item Run C\&W \(\ell_2\) with binary search over \(c\) on 100 test images. Report the median minimal \(\ell_2\) distance and compare the fraction below \(\epsilon_2=0.5\) with PGD-\(\ell_2\) at that budget.
+  \item Run C\&W \(\ell_2\) with binary search over \(c\) on 100 test images. Plot the empirical survival function of the returned distances (Proposition~\ref{prop:duality}) and compare its value at \(\epsilon_2=0.5\) with the robust accuracy given by PGD-\(\ell_2\) at that budget.
   \item Implement NES-PGD and plot success rate versus number of queries. How many queries are needed to match 90\% of white-box PGD success?
   \item Craft examples on a single surrogate and on a three-model logit ensemble. Measure transfer to a held-out architecture, with and without momentum (MI-FGSM). Report untargeted and targeted transfer rates.
 \end{enumerate}
@@ -886,13 +952,33 @@ transfer_rate = (target(x_adv).argmax(1) != y).float().mean()
 \section*{Exercises}
 \addcontentsline{toc}{section}{Exercises}
 
+\subsection*{The two problems and white-box attacks}
+
 \begin{enumerate}[label=\textbf{\arabic*.}]
-  \item Derive the FGM update for \(\ell_1\), the case \(p=1\) left open in Proposition~\ref{prop:steepest}: use the upper bound with \(q=\infty\) to find the maximizer. Why is the \(\ell_1\) steepest ascent step a poor attack in practice?
-  \item Show that for \(\ell_2\), rescaling onto the ball and then clipping to \([0,1]^d\) does not in general give the Euclidean projection onto \(\B_2(\x,\epsilon)\cap[0,1]^d\). (Hint: try \(d=2\), \(\x=(0,0)\), \(\epsilon=1\), \(\mathbf{z}=(-1,2)\).) Why does the argument of Proposition~\ref{prop:projinf} not carry over?
+  \item\label{ex:l1} Derive the FGM update for \(\ell_1\), the case \(p=1\) left open in Proposition~\ref{prop:steepest}: use the upper bound with \(q=\infty\) to find the maximizer. Why is the \(\ell_1\) steepest ascent step a poor attack in practice?
+  \item\label{ex:proj} Show that for \(\ell_2\), rescaling onto the ball and then clipping to \([0,1]^d\) does not in general give the Euclidean projection onto \(\mathcal{S}_2(\x,\epsilon)\). (Hint: try \(d=2\), \(\x=(0,0)\), \(\epsilon=1\), \(\mathbf{z}=(-1,2)\).) Why does the argument of Proposition~\ref{prop:projinf} not carry over?
   \item Explain why cross-entropy may yield vanishing gradients for highly confident predictions, while the margin loss of Eq.~\eqref{eq:cwloss} does not.
+  \item Give an example of a classifier and a point \(\x\) for which \(\epsilon^\star(\x,y)=\epsilon\) and no adversarial example exists at budget \(\epsilon\), and another for which one does. What does this say about the boundary case of Proposition~\ref{prop:duality}?
+  \item Write the budget and min-cost problems for the rotation threat model of Table~\ref{tab:threatsets}, with \(\T_\epsilon(\x)=\{\tau_\phi(\x):|\phi|\le\epsilon\}\). Which of the three advantages of \(\ell_p\) balls listed in Section~\ref{sec:threatsets} survive?
+\end{enumerate}
+
+\subsection*{Black-box, transfer and ensembles}
+
+\begin{enumerate}[label=\textbf{\arabic*.},resume]
   \item Show that Eq.~\eqref{eq:nes} is an unbiased estimator of \(\nabla_{\x}\mathbb{E}_{\mathbf{u}\sim\mathcal{N}(0,I)}[\Loss(\x+\sigma\mathbf{u},y)]\). (Hint: Stein's lemma.)
+  \item Explain why decision-based attacks solve the min-norm problem and not the budget problem. Could a decision-based attack solve the budget problem if it were given a starting point that is already adversarial and inside \(\mathcal{S}_p(\x,\epsilon)\)?
   \item A defender uses a majority vote over five independently trained networks and reports that PGD on each individual member fails to fool the vote. Describe a correct adaptive attack.
   \item Classify each of the following along the three axes of Table~\ref{tab:taxonomy} (information level, problem, solver): PGD with the margin loss, NES-PGD, HopSkipJump, MI-FGSM on a three-model ensemble. Which pairs differ in exactly one axis?
+\end{enumerate}
+
+\subsection*{Large language models}
+
+\begin{enumerate}[label=\textbf{\arabic*.},resume]
+  \item Verify the equality in Eq.~\eqref{eq:llmloss} from the chain rule, and explain why \(\Loss\) can be evaluated for all \(m^\star\) positions with a single forward pass of the sequence \(q\oplus\mathbf{s}\oplus\mathbf{r}^\star\) (teacher forcing).
+  \item Show that the first-order estimate for a swap uses \(g_{i,w}-g_{i,v}\), and explain why the term \(g_{i,v}\) can be dropped when ranking replacements \(w\) at a fixed position \(i\).
+  \item In GCG, the cost of one iteration is one backward pass plus \(B\) forward passes. Compare this with the cost of one PGD step and of one NES-PGD step on a classifier. When is it worth increasing \(B\) rather than \(K\)?
+  \item Design an adaptive attack against a perplexity filter with threshold \(\theta\): write the modified objective, and say what happens to the attack success as \(\theta\) decreases.
+  \item Classify the following along the axes of Table~\ref{tab:taxonomy}: GCG on an ensemble of open models evaluated on a closed model, random search on log-probabilities, PAIR. For each, say which classifier-setting attack it most resembles and which assumption of that attack fails for LLMs.
 \end{enumerate}
 
 \bibliographystyle{apalike}

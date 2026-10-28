@@ -1,0 +1,168 @@
+\begin{thebibliography}{}
+
+\bibitem[Athalye et~al., 2018a]{athalye2018obfuscated}
+Athalye, A., Carlini, N., and Wagner, D. (2018a).
+\newblock Obfuscated gradients give a false sense of security: Circumventing defenses to adversarial examples.
+\newblock In {\em Proceedings of the 35th International Conference on Machine Learning (ICML)}, pages 274--283.
+
+\bibitem[Athalye et~al., 2018b]{athalye2018eot}
+Athalye, A., Engstrom, L., Ilyas, A., and Kwok, K. (2018b).
+\newblock Synthesizing robust adversarial examples.
+\newblock In {\em Proceedings of the 35th International Conference on Machine Learning (ICML)}, pages 284--293.
+
+\bibitem[Bagdasaryan et~al., 2020]{bagdasaryan2020backdoor}
+Bagdasaryan, E., Veit, A., Hua, Y., Estrin, D., and Shmatikov, V. (2020).
+\newblock How to backdoor federated learning.
+\newblock In {\em Proceedings of the 23rd International Conference on Artificial Intelligence and Statistics (AISTATS)}, pages 2938--2948.
+
+\bibitem[Blanchard et~al., 2017]{blanchard2017krum}
+Blanchard, P., El~Mhamdi, E.~M., Guerraoui, R., and Stainer, J. (2017).
+\newblock Machine learning with adversaries: Byzantine tolerant gradient descent.
+\newblock In {\em Advances in Neural Information Processing Systems (NeurIPS)}.
+
+\bibitem[Carlini et~al., 2019]{carlini2019evaluating}
+Carlini, N., Athalye, A., Papernot, N., Brendel, W., Rauber, J., Tsipras, D., Goodfellow, I., Madry, A., and Kurakin, A. (2019).
+\newblock On evaluating adversarial robustness.
+\newblock {\em arXiv preprint arXiv:1902.06705}.
+
+\bibitem[Carlini et~al., 2023]{carlini2023certified}
+Carlini, N., Tram{\`e}r, F., Dvijotham, K.~D., Rice, L., Sun, M., and Kolter, J.~Z. (2023).
+\newblock (certified!!) adversarial robustness for free!
+\newblock In {\em International Conference on Learning Representations (ICLR)}.
+
+\bibitem[Carmon et~al., 2019]{carmon2019unlabeled}
+Carmon, Y., Raghunathan, A., Schmidt, L., Liang, P., and Duchi, J.~C. (2019).
+\newblock Unlabeled data improves adversarial robustness.
+\newblock In {\em Advances in Neural Information Processing Systems (NeurIPS)}.
+
+\bibitem[Chen et~al., 2019]{chen2019activation}
+Chen, B., Carvalho, W., Baracaldo, N., Ludwig, H., Edwards, B., Lee, T., Molloy, I., and Srivastava, B. (2019).
+\newblock Detecting backdoor attacks on deep neural networks by activation clustering.
+\newblock In {\em Workshop on Artificial Intelligence Safety, AAAI}.
+
+\bibitem[Cohen et~al., 2019]{cohen2019certified}
+Cohen, J., Rosenfeld, E., and Kolter, J.~Z. (2019).
+\newblock Certified adversarial robustness via randomized smoothing.
+\newblock In {\em Proceedings of the 36th International Conference on Machine Learning (ICML)}, pages 1310--1320.
+
+\bibitem[Croce and Hein, 2020]{croce2020reliable}
+Croce, F. and Hein, M. (2020).
+\newblock Reliable evaluation of adversarial robustness with an ensemble of diverse parameter-free attacks.
+\newblock In {\em Proceedings of the 37th International Conference on Machine Learning (ICML)}, pages 2206--2216.
+
+\bibitem[Gao et~al., 2019]{gao2019strip}
+Gao, Y., Xu, C., Wang, D., Chen, S., Ranasinghe, D.~C., and Nepal, S. (2019).
+\newblock {STRIP}: A defence against trojan attacks on deep neural networks.
+\newblock In {\em Proceedings of the 35th Annual Computer Security Applications Conference (ACSAC)}, pages 113--125.
+
+\bibitem[Gowal et~al., 2019]{gowal2019ibp}
+Gowal, S., Dvijotham, K., Stanforth, R., Bunel, R., Qin, C., Uesato, J., Arandjelovic, R., Mann, T., and Kohli, P. (2019).
+\newblock Scalable verified training for provably robust image classification.
+\newblock In {\em IEEE/CVF International Conference on Computer Vision (ICCV)}, pages 4842--4851.
+
+\bibitem[Guo et~al., 2018]{guo2018countering}
+Guo, C., Rana, M., Cisse, M., and van~der Maaten, L. (2018).
+\newblock Countering adversarial images using input transformations.
+\newblock In {\em International Conference on Learning Representations (ICLR)}.
+
+\bibitem[Lecuyer et~al., 2019]{lecuyer2019certified}
+Lecuyer, M., Atlidakis, V., Geambasu, R., Hsu, D., and Jana, S. (2019).
+\newblock Certified robustness to adversarial examples with differential privacy.
+\newblock In {\em IEEE Symposium on Security and Privacy (S\&P)}, pages 656--672.
+
+\bibitem[Levine and Feizi, 2021]{levine2021dpa}
+Levine, A. and Feizi, S. (2021).
+\newblock Deep partition aggregation: Provable defenses against general poisoning attacks.
+\newblock In {\em International Conference on Learning Representations (ICLR)}.
+
+\bibitem[Liu et~al., 2018]{liu2018fine}
+Liu, K., Dolan-Gavitt, B., and Garg, S. (2018).
+\newblock Fine-pruning: Defending against backdooring attacks on deep neural networks.
+\newblock In {\em Research in Attacks, Intrusions, and Defenses (RAID)}, pages 273--294.
+
+\bibitem[Madry et~al., 2018]{madry2018towards}
+Madry, A., Makelov, A., Schmidt, L., Tsipras, D., and Vladu, A. (2018).
+\newblock Towards deep learning models resistant to adversarial attacks.
+\newblock In {\em International Conference on Learning Representations (ICLR)}.
+
+\bibitem[Nie et~al., 2022]{nie2022diffusion}
+Nie, W., Guo, B., Huang, Y., Xiao, C., Vahdat, A., and Anandkumar, A. (2022).
+\newblock Diffusion models for adversarial purification.
+\newblock In {\em Proceedings of the 39th International Conference on Machine Learning (ICML)}, pages 16805--16827.
+
+\bibitem[Papernot et~al., 2016]{papernot2016distillation}
+Papernot, N., McDaniel, P., Wu, X., Jha, S., and Swami, A. (2016).
+\newblock Distillation as a defense to adversarial perturbations against deep neural networks.
+\newblock In {\em IEEE Symposium on Security and Privacy (S\&P)}, pages 582--597.
+
+\bibitem[Rice et~al., 2020]{rice2020overfitting}
+Rice, L., Wong, E., and Kolter, J.~Z. (2020).
+\newblock Overfitting in adversarially robust deep learning.
+\newblock In {\em Proceedings of the 37th International Conference on Machine Learning (ICML)}, pages 8093--8104.
+
+\bibitem[Salman et~al., 2019]{salman2019provably}
+Salman, H., Li, J., Razenshteyn, I., Zhang, P., Zhang, H., Bubeck, S., and Yang, G. (2019).
+\newblock Provably robust deep learning via adversarially trained smoothed classifiers.
+\newblock In {\em Advances in Neural Information Processing Systems (NeurIPS)}.
+
+\bibitem[Samangouei et~al., 2018]{samangouei2018defensegan}
+Samangouei, P., Kabkab, M., and Chellappa, R. (2018).
+\newblock {Defense-GAN}: Protecting classifiers against adversarial attacks using generative models.
+\newblock In {\em International Conference on Learning Representations (ICLR)}.
+
+\bibitem[Shafahi et~al., 2019]{shafahi2019free}
+Shafahi, A., Najibi, M., Ghiasi, A., Xu, Z., Dickerson, J., Studer, C., Davis, L.~S., Taylor, G., and Goldstein, T. (2019).
+\newblock Adversarial training for free!
+\newblock In {\em Advances in Neural Information Processing Systems (NeurIPS)}.
+
+\bibitem[Steinhardt et~al., 2017]{steinhardt2017certified}
+Steinhardt, J., Koh, P.~W., and Liang, P. (2017).
+\newblock Certified defenses for data poisoning attacks.
+\newblock In {\em Advances in Neural Information Processing Systems (NeurIPS)}.
+
+\bibitem[Tran et~al., 2018]{tran2018spectral}
+Tran, B., Li, J., and Madry, A. (2018).
+\newblock Spectral signatures in backdoor attacks.
+\newblock In {\em Advances in Neural Information Processing Systems (NeurIPS)}.
+
+\bibitem[Tsipras et~al., 2019]{tsipras2019robustness}
+Tsipras, D., Santurkar, S., Engstrom, L., Turner, A., and Madry, A. (2019).
+\newblock Robustness may be at odds with accuracy.
+\newblock In {\em International Conference on Learning Representations (ICLR)}.
+
+\bibitem[Wang et~al., 2019]{wang2019neural}
+Wang, B., Yao, Y., Shan, S., Li, H., Viswanath, B., Zheng, H., and Zhao, B.~Y. (2019).
+\newblock Neural cleanse: Identifying and mitigating backdoor attacks in neural networks.
+\newblock In {\em IEEE Symposium on Security and Privacy (S\&P)}, pages 707--723.
+
+\bibitem[Wang et~al., 2023]{wang2023better}
+Wang, Z., Pang, T., Du, C., Lin, M., Liu, W., and Yan, S. (2023).
+\newblock Better diffusion models further improve adversarial training.
+\newblock In {\em Proceedings of the 40th International Conference on Machine Learning (ICML)}, pages 36246--36263.
+
+\bibitem[Wong and Kolter, 2018]{wong2018provable}
+Wong, E. and Kolter, J.~Z. (2018).
+\newblock Provable defenses against adversarial examples via the convex outer adversarial polytope.
+\newblock In {\em Proceedings of the 35th International Conference on Machine Learning (ICML)}, pages 5286--5295.
+
+\bibitem[Wong et~al., 2020]{wong2020fast}
+Wong, E., Rice, L., and Kolter, J.~Z. (2020).
+\newblock Fast is better than free: Revisiting adversarial training.
+\newblock In {\em International Conference on Learning Representations (ICLR)}.
+
+\bibitem[Xu et~al., 2018]{xu2018feature}
+Xu, W., Evans, D., and Qi, Y. (2018).
+\newblock Feature squeezing: Detecting adversarial examples in deep neural networks.
+\newblock In {\em Network and Distributed System Security Symposium (NDSS)}.
+
+\bibitem[Yin et~al., 2018]{yin2018byzantine}
+Yin, D., Chen, Y., Kannan, R., and Bartlett, P. (2018).
+\newblock Byzantine-robust distributed learning: Towards optimal statistical rates.
+\newblock In {\em Proceedings of the 35th International Conference on Machine Learning (ICML)}, pages 5650--5659.
+
+\bibitem[Zhang et~al., 2019]{zhang2019trades}
+Zhang, H., Yu, Y., Jiao, J., Xing, E., El~Ghaoui, L., and Jordan, M. (2019).
+\newblock Theoretically principled trade-off between robustness and accuracy.
+\newblock In {\em Proceedings of the 36th International Conference on Machine Learning (ICML)}, pages 7472--7482.
+
+\end{thebibliography}

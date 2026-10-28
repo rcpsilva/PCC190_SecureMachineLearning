@@ -6,188 +6,218 @@
 \providecommand\HyField@AuxAddToCoFields[2]{}
 \babel@aux{english}{}
 \@writefile{toc}{\contentsline {section}{Setting and notation}{2}{section*.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {1}Definitions: Evasion Attacks}{2}{section.1}\protected@file@percent }
-\newlabel{sec:defs}{{1}{2}{Definitions: Evasion Attacks}{section.1}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {1.1}Informal Definition}{2}{subsection.1.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {1.2}Formal Definition}{2}{subsection.1.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Model.}{2}{section*.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Clean point, candidate, perturbation.}{2}{section*.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Norms and threat balls.}{2}{section*.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Operators.}{2}{section*.6}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {1}Evasion Attacks: Definitions}{2}{section.1}\protected@file@percent }
+\newlabel{sec:defs}{{1}{2}{Evasion Attacks: Definitions}{section.1}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {1.1}Informal definition}{2}{subsection.1.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {1.2}Formal definition}{2}{subsection.1.2}\protected@file@percent }
 \newlabel{def:adv}{{1.1}{2}{Adversarial example}{definition.1.1}{}}
 \newlabel{def:attack}{{1.2}{2}{Evasion attack}{definition.1.2}{}}
-\newlabel{def:robust}{{1.3}{2}{Attack success and robustness}{definition.1.3}{}}
+\newlabel{def:robust}{{1.3}{3}{Attack success and robustness}{definition.1.3}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {2}The Two Optimization Problems}{3}{section.2}\protected@file@percent }
+\newlabel{sec:problems}{{2}{3}{The Two Optimization Problems}{section.2}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.1}The budget problem}{3}{subsection.2.1}\protected@file@percent }
+\newlabel{def:budget}{{2.1}{3}{Budget problem}{definition.2.1}{}}
+\newlabel{eq:budget}{{1}{3}{Budget problem}{equation.2.1}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.2}The min-norm problem}{3}{subsection.2.2}\protected@file@percent }
+\newlabel{def:minnorm}{{2.2}{3}{Min-norm problem}{definition.2.2}{}}
+\newlabel{eq:minnorm}{{2}{3}{Min-norm problem}{equation.2.2}{}}
 \citation{katz2017reluplex}
 \citation{wong2018provable,gowal2019scalable}
 \citation{cohen2019certified}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.3}How the two problems are related}{4}{subsection.2.3}\protected@file@percent }
+\newlabel{prop:duality}{{2.1}{4}{Duality between the two problems}{theorem.2.1}{}}
+\newlabel{eq:penalty}{{3}{4}{How the two problems are related}{equation.2.3}{}}
+\newlabel{rem:surrogate}{{2.1}{4}{The surrogate gap}{remark.2.1}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.4}What can be computed: bounds on robustness}{4}{subsection.2.4}\protected@file@percent }
+\newlabel{sec:bounds}{{2.4}{4}{What can be computed: bounds on robustness}{subsection.2.4}{}}
+\@writefile{toc}{\contentsline {paragraph}{Upper bound (attacks).}{4}{section*.7}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Lower bound (certification).}{4}{section*.8}\protected@file@percent }
+\citation{engstrom2019exploring}
+\citation{wong2019wasserstein}
+\citation{brown2017adversarial}
+\citation{athalye2018eot}
+\citation{pierazzi2020intriguing}
+\@writefile{toc}{\contentsline {paragraph}{Consequence.}{5}{section*.9}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.5}Beyond \(\ell _p\) balls: general threat sets}{5}{subsection.2.5}\protected@file@percent }
+\newlabel{sec:threatsets}{{2.5}{5}{Beyond \texorpdfstring {\(\ell _p\)}{lp} balls: general threat sets}{subsection.2.5}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {1}{\ignorespaces The budget and min-cost problems under different threat sets.}}{5}{table.1}\protected@file@percent }
+\newlabel{tab:threatsets}{{1}{5}{The budget and min-cost problems under different threat sets}{table.1}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {3}A Taxonomy of Evasion Attacks}{5}{section.3}\protected@file@percent }
+\newlabel{sec:taxonomy}{{3}{5}{A Taxonomy of Evasion Attacks}{section.3}{}}
 \citation{ilyas2018blackbox}
-\newlabel{rem:bounds}{{1.3}{3}{Computability and bounds}{remark.1.3}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {2}A Taxonomy of Evasion Attacks}{3}{section.2}\protected@file@percent }
-\newlabel{sec:taxonomy}{{2}{3}{A Taxonomy of Evasion Attacks}{section.2}{}}
-\@writefile{toc}{\contentsline {paragraph}{Information level \(\mathcal  {I}\).}{3}{section*.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Problem solved.}{3}{section*.4}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Solver.}{3}{section*.5}\protected@file@percent }
-\@writefile{lot}{\contentsline {table}{\numberline {1}{\ignorespaces Attacks of this chapter along the three axes. Entries are a summary of the cited papers and some attacks have variants outside the listed norms.}}{4}{table.1}\protected@file@percent }
-\newlabel{tab:taxonomy}{{1}{4}{Attacks of this chapter along the three axes. Entries are a summary of the cited papers and some attacks have variants outside the listed norms}{table.1}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {3}White-Box Attacks}{4}{section.3}\protected@file@percent }
-\newlabel{sec:whitebox}{{3}{4}{White-Box Attacks}{section.3}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.1}Budget problem: FGSM, BIM and PGD}{4}{subsection.3.1}\protected@file@percent }
-\newlabel{sec:pgd}{{3.1}{4}{Budget problem: FGSM, BIM and PGD}{subsection.3.1}{}}
-\newlabel{def:budget}{{3.1}{4}{Budget problem}{definition.3.1}{}}
-\newlabel{eq:budget}{{1}{4}{Budget problem}{equation.3.1}{}}
+\@writefile{toc}{\contentsline {paragraph}{Information level \(\mathcal  {I}\).}{6}{section*.10}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Problem solved.}{6}{section*.11}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Solver.}{6}{section*.12}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {2}{\ignorespaces Attacks of this chapter along the three axes. Entries are a summary of the cited papers and some attacks have variants outside the listed norms.}}{6}{table.2}\protected@file@percent }
+\newlabel{tab:taxonomy}{{2}{6}{Attacks of this chapter along the three axes. Entries are a summary of the cited papers and some attacks have variants outside the listed norms}{table.2}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {4}White-Box Attacks}{6}{section.4}\protected@file@percent }
+\newlabel{sec:whitebox}{{4}{6}{White-Box Attacks}{section.4}{}}
+\@writefile{toc}{\contentsline {paragraph}{Which problem.}{6}{section*.13}\protected@file@percent }
 \citation{goodfellow2015explaining}
 \citation{goodfellow2015explaining}
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.1.1}Fast Gradient Sign Method (FGSM)}{5}{subsubsection.3.1.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Step 1: a local linear model of the loss.}{5}{section*.6}\protected@file@percent }
-\newlabel{eq:lin}{{2}{5}{Step 1: a local linear model of the loss}{equation.3.2}{}}
-\newlabel{eq:linprob}{{3}{5}{Step 1: a local linear model of the loss}{equation.3.3}{}}
-\@writefile{toc}{\contentsline {paragraph}{Step 2: solving the linear problem.}{5}{section*.7}\protected@file@percent }
-\newlabel{prop:steepest}{{3.1}{5}{Steepest ascent direction}{theorem.3.1}{}}
-\@writefile{toc}{\contentsline {paragraph}{Step 3: the box constraint.}{5}{section*.8}\protected@file@percent }
-\newlabel{eq:fgsm}{{4}{5}{Step 3: the box constraint}{equation.3.4}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.1}Budget problem: FGSM, BIM and PGD}{7}{subsection.4.1}\protected@file@percent }
+\newlabel{sec:pgd}{{4.1}{7}{Budget problem: FGSM, BIM and PGD}{subsection.4.1}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.1.1}Fast Gradient Sign Method (FGSM)}{7}{subsubsection.4.1.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Step 1: a local linear model of the loss.}{7}{section*.14}\protected@file@percent }
+\newlabel{eq:lin}{{4}{7}{Step 1: a local linear model of the loss}{equation.4.4}{}}
+\newlabel{eq:linprob}{{5}{7}{Step 1: a local linear model of the loss}{equation.4.5}{}}
+\@writefile{toc}{\contentsline {paragraph}{Step 2: solving the linear problem.}{7}{section*.15}\protected@file@percent }
+\newlabel{prop:steepest}{{4.1}{7}{Steepest ascent direction}{theorem.4.1}{}}
+\@writefile{toc}{\contentsline {paragraph}{Step 3: the box constraint.}{7}{section*.16}\protected@file@percent }
+\newlabel{eq:fgsm}{{6}{7}{Step 3: the box constraint}{equation.4.6}{}}
 \citation{tramer2018ensemble}
 \citation{kurakin2017physical}
 \citation{madry2018towards}
-\@writefile{toc}{\contentsline {paragraph}{When can one linear step be trusted?}{6}{section*.9}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Analysis.}{6}{section*.10}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.1.2}Basic Iterative Method (BIM)}{6}{subsubsection.3.1.2}\protected@file@percent }
-\newlabel{eq:bim}{{5}{6}{Basic Iterative Method (BIM)}{equation.3.5}{}}
-\@writefile{toc}{\contentsline {paragraph}{How many steps?}{6}{section*.11}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.1.3}Projected Gradient Descent (PGD)}{6}{subsubsection.3.1.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Projected steepest ascent.}{6}{section*.12}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{The projections.}{6}{section*.13}\protected@file@percent }
-\newlabel{prop:projinf}{{3.2}{6}{Projection for \(\ell _\infty \)}{theorem.3.2}{}}
+\@writefile{toc}{\contentsline {paragraph}{When can one linear step be trusted?}{8}{section*.17}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Analysis.}{8}{section*.18}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.1.2}Basic Iterative Method (BIM)}{8}{subsubsection.4.1.2}\protected@file@percent }
+\newlabel{eq:bim}{{7}{8}{Basic Iterative Method (BIM)}{equation.4.7}{}}
+\@writefile{toc}{\contentsline {paragraph}{How many steps?}{8}{section*.19}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.1.3}Projected Gradient Descent (PGD)}{8}{subsubsection.4.1.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Projected steepest ascent.}{8}{section*.20}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{The projections.}{8}{section*.21}\protected@file@percent }
+\newlabel{prop:projinf}{{4.2}{8}{Projection for \(\ell _\infty \)}{theorem.4.2}{}}
+\newlabel{prop:proj2}{{4.3}{8}{Projection onto an \(\ell _2\) ball}{theorem.4.3}{}}
 \citation{madry2018towards}
 \citation{croce2020reliable}
 \citation{carlini2019evaluating}
-\newlabel{prop:proj2}{{3.3}{7}{Projection onto an \(\ell _2\) ball}{theorem.3.3}{}}
-\@writefile{toc}{\contentsline {paragraph}{Why random starts and restarts.}{7}{section*.14}\protected@file@percent }
-\@writefile{loa}{\contentsline {algorithm}{\numberline {1}{\ignorespaces PGD attack, \(\ell _\infty \), untargeted}}{7}{algorithm.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Why PGD became the reference first-order attack.}{7}{section*.15}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Practical analysis.}{7}{section*.16}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Why random starts and restarts.}{9}{section*.22}\protected@file@percent }
+\@writefile{loa}{\contentsline {algorithm}{\numberline {1}{\ignorespaces PGD attack, \(\ell _\infty \), untargeted}}{9}{algorithm.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Why PGD became the reference first-order attack.}{9}{section*.23}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Practical analysis.}{9}{section*.24}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.2}Min-norm problem: Carlini and Wagner, and DeepFool}{9}{subsection.4.2}\protected@file@percent }
+\newlabel{sec:minnorm}{{4.2}{9}{Min-norm problem: Carlini and Wagner, and DeepFool}{subsection.4.2}{}}
 \citation{carlini2017towards}
 \citation{moosavi2016deepfool}
-\citation{carlini2017towards}
 \citation{moosavi2016deepfool}
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.2}Min-norm problem: Carlini and Wagner, and DeepFool}{8}{subsection.3.2}\protected@file@percent }
-\newlabel{sec:minnorm}{{3.2}{8}{Min-norm problem: Carlini and Wagner, and DeepFool}{subsection.3.2}{}}
-\newlabel{def:minnorm}{{3.2}{8}{Min-norm problem}{definition.3.2}{}}
-\newlabel{eq:minnorm}{{6}{8}{Min-norm problem}{equation.3.6}{}}
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.2.1}Carlini and Wagner}{8}{subsubsection.3.2.1}\protected@file@percent }
-\newlabel{sec:cw}{{3.2.1}{8}{Carlini and Wagner}{subsubsection.3.2.1}{}}
-\@writefile{toc}{\contentsline {paragraph}{From a hard constraint to a penalty.}{8}{section*.17}\protected@file@percent }
-\newlabel{eq:cwloss}{{7}{8}{From a hard constraint to a penalty}{equation.3.7}{}}
-\@writefile{toc}{\contentsline {paragraph}{Removing the box constraint.}{8}{section*.18}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{The \(\ell _2\) attack.}{8}{section*.19}\protected@file@percent }
-\newlabel{eq:cwl2}{{8}{8}{The \(\ell _2\) attack}{equation.3.8}{}}
-\@writefile{toc}{\contentsline {paragraph}{\(\ell _0\) and \(\ell _\infty \) variants.}{8}{section*.20}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Analysis.}{8}{section*.21}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.2.2}DeepFool}{9}{subsubsection.3.2.2}\protected@file@percent }
-\newlabel{sec:deepfool}{{3.2.2}{9}{DeepFool}{subsubsection.3.2.2}{}}
-\@writefile{toc}{\contentsline {paragraph}{Step 1: the linear binary case.}{9}{section*.22}\protected@file@percent }
-\newlabel{prop:hyperplane}{{3.4}{9}{Distance to a hyperplane}{theorem.3.4}{}}
-\@writefile{toc}{\contentsline {paragraph}{Step 2: the linear multiclass case.}{9}{section*.23}\protected@file@percent }
-\newlabel{eq:dfnearest}{{9}{9}{Step 2: the linear multiclass case}{equation.3.9}{}}
-\@writefile{toc}{\contentsline {paragraph}{Step 3: nonlinear classifiers.}{9}{section*.24}\protected@file@percent }
-\newlabel{eq:dfstep}{{10}{9}{Step 3: nonlinear classifiers}{equation.3.10}{}}
-\@writefile{toc}{\contentsline {paragraph}{General \(\ell _p\).}{9}{section*.25}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.2.1}Carlini and Wagner}{10}{subsubsection.4.2.1}\protected@file@percent }
+\newlabel{sec:cw}{{4.2.1}{10}{Carlini and Wagner}{subsubsection.4.2.1}{}}
+\@writefile{toc}{\contentsline {paragraph}{From a hard constraint to a penalty.}{10}{section*.25}\protected@file@percent }
+\newlabel{eq:cwloss}{{8}{10}{From a hard constraint to a penalty}{equation.4.8}{}}
+\@writefile{toc}{\contentsline {paragraph}{Removing the box constraint.}{10}{section*.26}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{The \(\ell _2\) attack.}{10}{section*.27}\protected@file@percent }
+\newlabel{eq:cwl2}{{9}{10}{The \(\ell _2\) attack}{equation.4.9}{}}
+\@writefile{toc}{\contentsline {paragraph}{\(\ell _0\) and \(\ell _\infty \) variants.}{10}{section*.28}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Analysis.}{10}{section*.29}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.2.2}DeepFool}{10}{subsubsection.4.2.2}\protected@file@percent }
+\newlabel{sec:deepfool}{{4.2.2}{10}{DeepFool}{subsubsection.4.2.2}{}}
+\@writefile{toc}{\contentsline {paragraph}{Step 1: the linear binary case.}{10}{section*.30}\protected@file@percent }
+\newlabel{prop:hyperplane}{{4.4}{10}{Distance to a hyperplane}{theorem.4.4}{}}
+\@writefile{toc}{\contentsline {paragraph}{Step 2: the linear multiclass case.}{11}{section*.31}\protected@file@percent }
+\newlabel{eq:dfnearest}{{10}{11}{Step 2: the linear multiclass case}{equation.4.10}{}}
+\@writefile{toc}{\contentsline {paragraph}{Step 3: nonlinear classifiers.}{11}{section*.32}\protected@file@percent }
+\newlabel{eq:dfstep}{{11}{11}{Step 3: nonlinear classifiers}{equation.4.11}{}}
+\@writefile{loa}{\contentsline {algorithm}{\numberline {2}{\ignorespaces DeepFool, \(\ell _2\), untargeted}}{11}{algorithm.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{General \(\ell _p\).}{11}{section*.33}\protected@file@percent }
 \citation{chen2017zoo}
 \citation{ilyas2018blackbox}
 \citation{uesato2018adversarial}
 \citation{andriushchenko2020square}
-\@writefile{loa}{\contentsline {algorithm}{\numberline {2}{\ignorespaces DeepFool, \(\ell _2\), untargeted}}{10}{algorithm.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Analysis.}{10}{section*.26}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {4}Query-Based Black-Box Attacks}{10}{section.4}\protected@file@percent }
-\newlabel{sec:query}{{4}{10}{Query-Based Black-Box Attacks}{section.4}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.1}Score-based attacks}{10}{subsection.4.1}\protected@file@percent }
-\newlabel{sec:score}{{4.1}{10}{Score-based attacks}{subsection.4.1}{}}
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.1.1}Zeroth-order gradient estimation}{10}{subsubsection.4.1.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Coordinate-wise finite differences.}{10}{section*.27}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Random-direction estimators (NES).}{10}{section*.28}\protected@file@percent }
-\newlabel{eq:nes}{{11}{10}{Random-direction estimators (NES)}{equation.4.11}{}}
+\@writefile{toc}{\contentsline {paragraph}{Analysis.}{12}{section*.34}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {5}Query-Based Black-Box Attacks}{12}{section.5}\protected@file@percent }
+\newlabel{sec:query}{{5}{12}{Query-Based Black-Box Attacks}{section.5}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.1}Score-based attacks}{12}{subsection.5.1}\protected@file@percent }
+\newlabel{sec:score}{{5.1}{12}{Score-based attacks}{subsection.5.1}{}}
+\@writefile{toc}{\contentsline {paragraph}{Which problem.}{12}{section*.35}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.1.1}Zeroth-order gradient estimation}{12}{subsubsection.5.1.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Coordinate-wise finite differences.}{12}{section*.36}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Random-direction estimators (NES).}{12}{section*.37}\protected@file@percent }
+\newlabel{eq:nes}{{12}{12}{Random-direction estimators (NES)}{equation.5.12}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.1.2}Gradient-free random search}{12}{subsubsection.5.1.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Square Attack.}{12}{section*.38}\protected@file@percent }
 \citation{brendel2018decision}
 \citation{chen2020hopskipjump}
 \citation{szegedy2014intriguing}
 \citation{papernot2017practical}
+\@writefile{toc}{\contentsline {paragraph}{Analysis.}{13}{section*.39}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.2}Decision-based attacks}{13}{subsection.5.2}\protected@file@percent }
+\newlabel{sec:decision}{{5.2}{13}{Decision-based attacks}{subsection.5.2}{}}
+\@writefile{toc}{\contentsline {paragraph}{Which problem.}{13}{section*.40}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Boundary Attack.}{13}{section*.41}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{HopSkipJump.}{13}{section*.42}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {6}Transfer-Based Black-Box Attacks}{13}{section.6}\protected@file@percent }
+\newlabel{sec:transfer}{{6}{13}{Transfer-Based Black-Box Attacks}{section.6}{}}
+\@writefile{toc}{\contentsline {paragraph}{Which problem.}{13}{section*.43}\protected@file@percent }
 \citation{tramer2017space}
 \citation{ilyas2019features}
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.1.2}Gradient-free random search}{11}{subsubsection.4.1.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Square Attack.}{11}{section*.29}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Analysis.}{11}{section*.30}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.2}Decision-based attacks}{11}{subsection.4.2}\protected@file@percent }
-\newlabel{sec:decision}{{4.2}{11}{Decision-based attacks}{subsection.4.2}{}}
-\@writefile{toc}{\contentsline {paragraph}{Boundary Attack.}{11}{section*.31}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{HopSkipJump.}{11}{section*.32}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {5}Transfer-Based Black-Box Attacks}{11}{section.5}\protected@file@percent }
-\newlabel{sec:transfer}{{5}{11}{Transfer-Based Black-Box Attacks}{section.5}{}}
-\@writefile{toc}{\contentsline {paragraph}{Why transfer works.}{11}{section*.33}\protected@file@percent }
 \citation{liu2017delving}
 \citation{dong2018boosting}
 \citation{xie2019improving}
 \citation{liu2017delving}
+\@writefile{toc}{\contentsline {paragraph}{Why transfer works.}{14}{section*.44}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{What makes examples transfer better.}{14}{section*.45}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {7}Ensembles: Surrogates and Targets}{14}{section.7}\protected@file@percent }
+\newlabel{sec:ensembles}{{7}{14}{Ensembles: Surrogates and Targets}{section.7}{}}
+\@writefile{toc}{\contentsline {paragraph}{Ensembles as surrogates.}{14}{section*.46}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Ensembles as defenses.}{14}{section*.47}\protected@file@percent }
 \citation{athalye2018eot}
 \citation{he2017ensemble}
 \citation{tramer2018ensemble}
-\@writefile{toc}{\contentsline {paragraph}{What makes examples transfer better.}{12}{section*.34}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {6}Ensembles: Surrogates and Targets}{12}{section.6}\protected@file@percent }
-\newlabel{sec:ensembles}{{6}{12}{Ensembles: Surrogates and Targets}{section.6}{}}
-\@writefile{toc}{\contentsline {paragraph}{Ensembles as surrogates.}{12}{section*.35}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Ensembles as defenses.}{12}{section*.36}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {7}Evasion Attacks on Large Language Models}{12}{section.7}\protected@file@percent }
-\newlabel{sec:llm}{{7}{12}{Evasion Attacks on Large Language Models}{section.7}{}}
 \citation{nist2025ai1002}
+\@writefile{toc}{\contentsline {section}{\numberline {8}Evasion Attacks on Large Language Models}{15}{section.8}\protected@file@percent }
+\newlabel{sec:llm}{{8}{15}{Evasion Attacks on Large Language Models}{section.8}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {8.1}Setting and threat model}{15}{subsection.8.1}\protected@file@percent }
+\newlabel{def:llmevasion}{{8.1}{15}{Evasion against an LLM}{definition.8.1}{}}
 \citation{ebrahimi2018hotflip}
-\@writefile{toc}{\contentsline {subsection}{\numberline {7.1}Setting and threat model}{13}{subsection.7.1}\protected@file@percent }
-\newlabel{def:llmevasion}{{7.1}{13}{Evasion against an LLM}{definition.7.1}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {7.2}A surrogate loss and the discrete budget problem}{13}{subsection.7.2}\protected@file@percent }
-\newlabel{eq:llmloss}{{12}{13}{A surrogate loss and the discrete budget problem}{equation.7.12}{}}
-\newlabel{eq:llmbudget}{{13}{13}{A surrogate loss and the discrete budget problem}{equation.7.13}{}}
-\@writefile{toc}{\contentsline {paragraph}{Linearizing a discrete problem.}{13}{section*.37}\protected@file@percent }
 \citation{zou2023universal}
+\@writefile{toc}{\contentsline {subsection}{\numberline {8.2}A surrogate loss and the two problems}{16}{subsection.8.2}\protected@file@percent }
+\newlabel{eq:llmloss}{{13}{16}{A surrogate loss and the two problems}{equation.8.13}{}}
+\newlabel{eq:llmbudget}{{14}{16}{A surrogate loss and the two problems}{equation.8.14}{}}
+\@writefile{toc}{\contentsline {paragraph}{Linearizing a discrete problem.}{16}{section*.48}\protected@file@percent }
+\newlabel{prop:swap}{{8.1}{16}{Best swap under the linear model}{theorem.8.1}{}}
+\@writefile{toc}{\contentsline {paragraph}{Why the linear model can only rank.}{16}{section*.49}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {8.3}White-box: Greedy Coordinate Gradient}{16}{subsection.8.3}\protected@file@percent }
 \citation{zou2023universal}
 \citation{carlini2023aligned}
-\newlabel{prop:swap}{{7.1}{14}{Best swap under the linear model}{theorem.7.1}{}}
-\@writefile{toc}{\contentsline {paragraph}{Why the linear model can only rank.}{14}{section*.38}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {7.3}White-box: Greedy Coordinate Gradient}{14}{subsection.7.3}\protected@file@percent }
-\@writefile{loa}{\contentsline {algorithm}{\numberline {3}{\ignorespaces GCG, suffix of length \(k\)}}{14}{algorithm.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Universal and transferable suffixes.}{14}{section*.39}\protected@file@percent }
 \citation{andriushchenko2024simple}
 \citation{chao2023jailbreaking}
 \citation{nist2025ai1002}
 \citation{wei2023jailbroken}
 \citation{greshake2023not,nist2025ai1002}
 \citation{nist2025ai1002}
+\@writefile{loa}{\contentsline {algorithm}{\numberline {3}{\ignorespaces GCG, suffix of length \(k\)}}{17}{algorithm.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Universal and transferable suffixes.}{17}{section*.50}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Embedding-space attacks.}{17}{section*.51}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {8.4}Black-box attacks}{17}{subsection.8.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Score-based.}{17}{section*.52}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Judge-based (the decision-based analogue).}{17}{section*.53}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Hand-crafted attacks (no optimization).}{17}{section*.54}\protected@file@percent }
 \citation{nist2025ai1002}
-\@writefile{toc}{\contentsline {paragraph}{Embedding-space attacks.}{15}{section*.40}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {7.4}Black-box attacks}{15}{subsection.7.4}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Score-based.}{15}{section*.41}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Judge-based (the decision-based analogue).}{15}{section*.42}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Hand-crafted attacks (no optimization).}{15}{section*.43}\protected@file@percent }
-\@writefile{lot}{\contentsline {table}{\numberline {2}{\ignorespaces LLM evasion attacks along the axes of Table~\ref {tab:taxonomy}. Entries summarize the cited papers.}}{15}{table.2}\protected@file@percent }
-\newlabel{tab:llmtaxonomy}{{2}{15}{LLM evasion attacks along the axes of Table~\ref {tab:taxonomy}. Entries summarize the cited papers}{table.2}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {7.5}Prompt injection}{15}{subsection.7.5}\protected@file@percent }
-\newlabel{sec:injection}{{7.5}{15}{Prompt injection}{subsection.7.5}{}}
 \citation{jain2023baseline}
 \citation{robey2023smoothllm}
 \citation{nist2025ai1002}
 \citation{carlini2019evaluating}
 \citation{tramer2020adaptive}
-\@writefile{toc}{\contentsline {subsection}{\numberline {7.6}Defenses and their limits}{16}{subsection.7.6}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {8}Hands-On: Implementing Evasion Attacks}{16}{section.8}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {8.1}FGSM and PGD}{16}{subsection.8.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {8.2}Carlini--Wagner \(\ell _2\) (single \(c\), no binary search)}{17}{subsection.8.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {8.3}A score-based attack: NES gradient estimate inside PGD}{17}{subsection.8.3}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {3}{\ignorespaces LLM evasion attacks along the axes of Table~\ref {tab:taxonomy}. Entries summarize the cited papers.}}{18}{table.3}\protected@file@percent }
+\newlabel{tab:llmtaxonomy}{{3}{18}{LLM evasion attacks along the axes of Table~\ref {tab:taxonomy}. Entries summarize the cited papers}{table.3}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {8.5}Prompt injection}{18}{subsection.8.5}\protected@file@percent }
+\newlabel{sec:injection}{{8.5}{18}{Prompt injection}{subsection.8.5}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {8.6}Defenses and their limits}{18}{subsection.8.6}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {9}Hands-On: Implementing Evasion Attacks}{19}{section.9}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {9.1}FGSM and PGD (budget problem)}{19}{subsection.9.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {9.2}Carlini--Wagner \(\ell _2\) (min-norm problem; single \(c\), no binary search)}{19}{subsection.9.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {9.3}A score-based attack: NES gradient estimate inside PGD}{20}{subsection.9.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {9.4}Transfer from an ensemble of surrogates}{20}{subsection.9.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {9.5}Suggested experiments}{20}{subsection.9.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{Exercises}{20}{section*.55}\protected@file@percent }
+\newlabel{ex:l1}{{{{\textbf  {1.}}}}{20}{The two problems and white-box attacks}{Item.10}{}}
 \bibstyle{apalike}
 \bibdata{references}
 \bibcite{andriushchenko2024simple}{{1}{2024}{{Andriushchenko et~al.}}{{}}}
 \bibcite{andriushchenko2020square}{{2}{2020}{{Andriushchenko et~al.}}{{}}}
 \bibcite{athalye2018eot}{{3}{2018}{{Athalye et~al.}}{{}}}
 \bibcite{brendel2018decision}{{4}{2018}{{Brendel et~al.}}{{}}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {8.4}Transfer from an ensemble of surrogates}{18}{subsection.8.4}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {8.5}Suggested experiments}{18}{subsection.8.5}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{Exercises}{18}{section*.45}\protected@file@percent }
 \bibcite{carlini2019evaluating}{{5}{2019}{{Carlini et~al.}}{{}}}
 \bibcite{carlini2023aligned}{{6}{2023}{{Carlini et~al.}}{{}}}
 \bibcite{carlini2017towards}{{7}{2017}{{Carlini and Wagner}}{{}}}
 \bibcite{chao2023jailbreaking}{{8}{2023}{{Chao et~al.}}{{}}}
 \bibcite{chen2020hopskipjump}{{9}{2020}{{Chen et~al.}}{{}}}
 \bibcite{chen2017zoo}{{10}{2017}{{Chen et~al.}}{{}}}
+\newlabel{ex:proj}{{{{\textbf  {2.}}}}{21}{The two problems and white-box attacks}{Item.11}{}}
 \bibcite{cohen2019certified}{{11}{2019}{{Cohen et~al.}}{{}}}
 \bibcite{croce2020reliable}{{12}{2020}{{Croce and Hein}}{{}}}
 \bibcite{dong2018boosting}{{13}{2018}{{Dong et~al.}}{{}}}
@@ -216,4 +246,4 @@
 \bibcite{wong2018provable}{{36}{2018}{{Wong and Kolter}}{{}}}
 \bibcite{xie2019improving}{{37}{2019}{{Xie et~al.}}{{}}}
 \bibcite{zou2023universal}{{38}{2023}{{Zou et~al.}}{{}}}
-\gdef \@abspage@last{20}
+\gdef \@abspage@last{23}
