@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.26 (TeX Live 2024) (preloaded format=pdflatex 2024.10.30)  27 OCT 2026 22:28
+This is pdfTeX, Version 3.141592653-2.6-1.40.26 (TeX Live 2024) (preloaded format=pdflatex 2024.10.30)  4 NOV 2026 23:36
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -889,37 +889,9 @@ Package fancyhdr Warning: \headheight is too small (14.0pt):
 (fancyhdr)                \addtolength{\topmargin}{-5.69997pt}.
 
 [4]
-
-Package natbib Warning: Citation `katz2017reluplex' on page 5 undefined on input line 235.
-
-
-Package natbib Warning: Citation `wong2018provable' on page 5 undefined on input line 247.
-
-
-Package natbib Warning: Citation `gowal2019scalable' on page 5 undefined on input line 247.
-
-
-Package natbib Warning: Citation `cohen2019certified' on page 5 undefined on input line 247.
-
-
-Package natbib Warning: Citation `engstrom2019exploring' on page 5 undefined on input line 281.
-
-
-Package natbib Warning: Citation `wong2019wasserstein' on page 5 undefined on input line 281.
-
-
-Package natbib Warning: Citation `brown2017adversarial' on page 5 undefined on input line 281.
-
-
-Package natbib Warning: Citation `athalye2018eot' on page 5 undefined on input line 281.
-
-
 Underfull \hbox (badness 10000) in paragraph at lines 281--281
 []|$\OMS/cmsy/m/n/9 f\OML/cmm/m/it/9 ^^\\OT1/cmr/m/n/9 (+20) (\OT1/cmr/bx/n/9 (+20) x[]\OT1/cmr/m/n/9 (+20) ) :  \OML/cmm/m/it/9 ^^\ \OMS/cmsy/m/n/9 ^^X
  []
-
-
-Package natbib Warning: Citation `pierazzi2020intriguing' on page 5 undefined on input line 281.
 
 
 LaTeX Warning: `h' float specifier changed to `ht'.
@@ -942,9 +914,6 @@ Underfull \hbox (badness 2096) in paragraph at lines 325--325
 LaTeX Warning: `h' float specifier changed to `ht'.
 
 
-Package natbib Warning: Citation `ilyas2018blackbox' on page 6 undefined on input line 330.
-
-
 
 
 Package fancyhdr Warning: \headheight is too small (14.0pt): 
@@ -964,16 +933,6 @@ Package fancyhdr Warning: \headheight is too small (14.0pt):
 
 [7{c:/texlive/2024/texmf-dist/fonts/enc/dvips/cm-super/cm-super-ts1.enc}]
 
-Package natbib Warning: Citation `goodfellow2015explaining' on page 8 undefined on input line 387.
-
-
-Package natbib Warning: Citation `goodfellow2015explaining' on page 8 undefined on input line 391.
-
-
-Package natbib Warning: Citation `tramer2018ensemble' on page 8 undefined on input line 407.
-
-
-
 
 Package fancyhdr Warning: \headheight is too small (14.0pt): 
 (fancyhdr)                Make it at least 19.69997pt, for example:
@@ -982,13 +941,6 @@ Package fancyhdr Warning: \headheight is too small (14.0pt):
 (fancyhdr)                \addtolength{\topmargin}{-5.69997pt}.
 
 [8]
-
-Package natbib Warning: Citation `kurakin2017physical' on page 9 undefined on input line 411.
-
-
-Package natbib Warning: Citation `madry2018towards' on page 9 undefined on input line 428.
-
-
 
 
 Package fancyhdr Warning: \headheight is too small (14.0pt): 
@@ -1001,16 +953,6 @@ Package fancyhdr Warning: \headheight is too small (14.0pt):
 Package hyperref Info: bookmark level for unknown algorithm defaults to 0 on input line 469.
 
 
-Package natbib Warning: Citation `madry2018towards' on page 10 undefined on input line 485.
-
-
-Package natbib Warning: Citation `croce2020reliable' on page 10 undefined on input line 491.
-
-
-Package natbib Warning: Citation `tramer2020adaptive' on page 10 undefined on input line 491.
-
-
-
 
 Package fancyhdr Warning: \headheight is too small (14.0pt): 
 (fancyhdr)                Make it at least 19.69997pt, for example:
@@ -1020,16 +962,6 @@ Package fancyhdr Warning: \headheight is too small (14.0pt):
 
 [10]
 
-Package natbib Warning: Citation `carlini2019evaluating' on page 11 undefined on input line 495.
-
-
-Package natbib Warning: Citation `carlini2017towards' on page 11 undefined on input line 502.
-
-
-Package natbib Warning: Citation `moosavi2016deepfool' on page 11 undefined on input line 503.
-
-
-
 
 Package fancyhdr Warning: \headheight is too small (14.0pt): 
 (fancyhdr)                Make it at least 19.69997pt, for example:
@@ -1038,10 +970,6 @@ Package fancyhdr Warning: \headheight is too small (14.0pt):
 (fancyhdr)                \addtolength{\topmargin}{-5.69997pt}.
 
 [11]
-
-Package natbib Warning: Citation `moosavi2016deepfool' on page 12 undefined on input line 546.
-
-
 
 
 Package fancyhdr Warning: \headheight is too small (14.0pt): 
@@ -1061,22 +989,6 @@ Package fancyhdr Warning: \headheight is too small (14.0pt):
 
 [13]
 
-Package natbib Warning: Citation `chen2017zoo' on page 14 undefined on input line 636.
-
-
-Package natbib Warning: Citation `ilyas2018blackbox' on page 14 undefined on input line 642.
-
-
-Package natbib Warning: Citation `uesato2018adversarial' on page 14 undefined on input line 646.
-
-
-Package natbib Warning: Citation `carlini2019evaluating' on page 14 undefined on input line 646.
-
-
-Package natbib Warning: Citation `andriushchenko2020square' on page 14 undefined on input line 650.
-
-
-
 
 Package fancyhdr Warning: \headheight is too small (14.0pt): 
 (fancyhdr)                Make it at least 19.69997pt, for example:
@@ -1085,19 +997,6 @@ Package fancyhdr Warning: \headheight is too small (14.0pt):
 (fancyhdr)                \addtolength{\topmargin}{-5.69997pt}.
 
 [14]
-
-Package natbib Warning: Citation `brendel2018decision' on page 15 undefined on input line 658.
-
-
-Package natbib Warning: Citation `chen2020hopskipjump' on page 15 undefined on input line 660.
-
-
-Package natbib Warning: Citation `szegedy2014intriguing' on page 15 undefined on input line 685.
-
-
-Package natbib Warning: Citation `papernot2017practical' on page 15 undefined on input line 685.
-
-
 
 
 Package fancyhdr Warning: \headheight is too small (14.0pt): 
@@ -1108,25 +1007,6 @@ Package fancyhdr Warning: \headheight is too small (14.0pt):
 
 [15]
 
-Package natbib Warning: Citation `tramer2017space' on page 16 undefined on input line 700.
-
-
-Package natbib Warning: Citation `ilyas2019features' on page 16 undefined on input line 701.
-
-
-Package natbib Warning: Citation `liu2017delving' on page 16 undefined on input line 706.
-
-
-Package natbib Warning: Citation `dong2018boosting' on page 16 undefined on input line 708.
-
-
-Package natbib Warning: Citation `xie2019improving' on page 16 undefined on input line 713.
-
-
-Package natbib Warning: Citation `liu2017delving' on page 16 undefined on input line 726.
-
-
-
 
 Package fancyhdr Warning: \headheight is too small (14.0pt): 
 (fancyhdr)                Make it at least 19.69997pt, for example:
@@ -1135,22 +1015,9 @@ Package fancyhdr Warning: \headheight is too small (14.0pt):
 (fancyhdr)                \addtolength{\topmargin}{-5.69997pt}.
 
 [16]
-
-Package natbib Warning: Citation `athalye2018eot' on page 17 undefined on input line 737.
-
-
 Overfull \hbox (46.32762pt too wide) in paragraph at lines 737--738
 []\T1/cmr/m/n/10 (-20) For ran-dom mem-ber se-lec-tion, solve the bud-get prob-lem with the \T1/cmr/m/it/10 (-20) ex-pected \T1/cmr/m/n/10 (-20) loss as ob-jec-tive, $[][] \U/msb/m/n/10 E[]\OT1/cmr/m/n/10 (-20) [\OMS/cmsy/m/n/10 L[]\OT1/cmr/m/n/10 (-20) (\OT1/cmr/bx/n/10 (-20) x[]\OML/cmm/m/it/10 ; y\OT1/cmr/m/n/10 (-20) )]$\T1/cmr/m/n/10 (-20) ,
  []
-
-
-Package natbib Warning: Citation `he2017ensemble' on page 17 undefined on input line 738.
-
-
-Package natbib Warning: Citation `tramer2018ensemble' on page 17 undefined on input line 740.
-
-
-Package natbib Warning: Citation `nist2025ai1002' on page 17 undefined on input line 750.
 
 
 
@@ -1163,10 +1030,6 @@ Package fancyhdr Warning: \headheight is too small (14.0pt):
 
 [17]
 
-Package natbib Warning: Citation `ebrahimi2018hotflip' on page 18 undefined on input line 796.
-
-
-
 
 Package fancyhdr Warning: \headheight is too small (14.0pt): 
 (fancyhdr)                Make it at least 19.69997pt, for example:
@@ -1176,25 +1039,6 @@ Package fancyhdr Warning: \headheight is too small (14.0pt):
 
 [18]
 
-Package natbib Warning: Citation `zou2023universal' on page 19 undefined on input line 812.
-
-
-Package natbib Warning: Citation `zou2023universal' on page 19 undefined on input line 835.
-
-
-Package natbib Warning: Citation `carlini2023aligned' on page 19 undefined on input line 837.
-
-
-Package natbib Warning: Citation `andriushchenko2024simple' on page 19 undefined on input line 843.
-
-
-Package natbib Warning: Citation `chao2023jailbreaking' on page 19 undefined on input line 845.
-
-
-Package natbib Warning: Citation `nist2025ai1002' on page 19 undefined on input line 845.
-
-
-
 
 Package fancyhdr Warning: \headheight is too small (14.0pt): 
 (fancyhdr)                Make it at least 19.69997pt, for example:
@@ -1203,28 +1047,9 @@ Package fancyhdr Warning: \headheight is too small (14.0pt):
 (fancyhdr)                \addtolength{\topmargin}{-5.69997pt}.
 
 [19]
-
-Package natbib Warning: Citation `wei2023jailbroken' on page 20 undefined on input line 847.
-
-
 Underfull \hbox (badness 1622) in paragraph at lines 864--864
 []|\T1/cmr/m/n/9 (+20) gradient-ranked can-di-dates,
  []
-
-
-Package natbib Warning: Citation `greshake2023not' on page 20 undefined on input line 871.
-
-
-Package natbib Warning: Citation `nist2025ai1002' on page 20 undefined on input line 871.
-
-
-Package natbib Warning: Citation `nist2025ai1002' on page 20 undefined on input line 871.
-
-
-Package natbib Warning: Citation `nist2025ai1002' on page 20 undefined on input line 873.
-
-
-Package natbib Warning: Citation `jain2023baseline' on page 20 undefined on input line 880.
 
 
 
@@ -1236,20 +1061,8 @@ Package fancyhdr Warning: \headheight is too small (14.0pt):
 (fancyhdr)                \addtolength{\topmargin}{-5.69997pt}.
 
 [20]
-
-Package natbib Warning: Citation `robey2023smoothllm' on page 21 undefined on input line 881.
-
-
-Package natbib Warning: Citation `nist2025ai1002' on page 21 undefined on input line 882.
-
-
-Package natbib Warning: Citation `carlini2019evaluating' on page 21 undefined on input line 890.
-
-
-Package natbib Warning: Citation `tramer2020adaptive' on page 21 undefined on input line 890.
-
 LaTeX Font Info:    Trying to load font information for T1+cmtt on input line 897.
-(c:/texlive/2024/texmf-dist/tex/latex/base/t1cmtt.fd
+ (c:/texlive/2024/texmf-dist/tex/latex/base/t1cmtt.fd
 File: t1cmtt.fd 2023/04/13 v2.5m Standard LaTeX font definitions
 )
 Package microtype Info: Loading generic protrusion settings for font family
@@ -1289,12 +1102,7 @@ Package fancyhdr Warning: \headheight is too small (14.0pt):
 (fancyhdr)                You might also make \topmargin smaller to compensate:
 (fancyhdr)                \addtolength{\topmargin}{-5.69997pt}.
 
-[22]
-No file chapter2.bbl.
-
-Package natbib Warning: There were undefined citations.
-
-
+[22] (./chapter2.bbl
 
 
 Package fancyhdr Warning: \headheight is too small (14.0pt): 
@@ -1303,7 +1111,25 @@ Package fancyhdr Warning: \headheight is too small (14.0pt):
 (fancyhdr)                You might also make \topmargin smaller to compensate:
 (fancyhdr)                \addtolength{\topmargin}{-5.69997pt}.
 
-[23] (./chapter2.aux)
+[23]
+
+
+Package fancyhdr Warning: \headheight is too small (14.0pt): 
+(fancyhdr)                Make it at least 19.69997pt, for example:
+(fancyhdr)                \setlength{\headheight}{19.69997pt}.
+(fancyhdr)                You might also make \topmargin smaller to compensate:
+(fancyhdr)                \addtolength{\topmargin}{-5.69997pt}.
+
+[24])
+
+
+Package fancyhdr Warning: \headheight is too small (14.0pt): 
+(fancyhdr)                Make it at least 19.69997pt, for example:
+(fancyhdr)                \setlength{\headheight}{19.69997pt}.
+(fancyhdr)                You might also make \topmargin smaller to compensate:
+(fancyhdr)                \addtolength{\topmargin}{-5.69997pt}.
+
+[25] (./chapter2.aux)
  ***********
 LaTeX2e <2024-06-01> patch level 2
 L3 programming layer <2024-10-09>
@@ -1312,18 +1138,18 @@ Package rerunfilecheck Info: File `chapter2.out' has not changed.
 (rerunfilecheck)             Checksum: CBA95CD6FA5D45E55DC0B1F43335AF43;6671.
  ) 
 Here is how much of TeX's memory you used:
- 34192 strings out of 473577
- 657483 string characters out of 5732224
+ 34360 strings out of 473577
+ 661770 string characters out of 5732224
  1839115 words of memory out of 5000000
- 55836 multiletter control sequences out of 15000+600000
- 596925 words of font info for 314 fonts, out of 8000000 for 9000
+ 55963 multiletter control sequences out of 15000+600000
+ 596080 words of font info for 310 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
  116i,18n,121p,1556b,2179s stack positions out of 10000i,1000n,20000p,200000b,200000s
-<c:/texlive/2024/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx10.pfb><c:/texlive/2024/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx7.pfb><c:/texlive/2024/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx9.pfb><c:/texlive/2024/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb><c:/texlive/2024/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb><c:/texlive/2024/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi12.pfb><c:/texlive/2024/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi5.pfb><c:/texlive/2024/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi6.pfb><c:/texlive/2024/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi7.pfb><c:/texlive/2024/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi9.pfb><c:/texlive/2024/texmf-dist/fonts/type1/public/amsfonts/cm/cmmib10.pfb><c:/texlive/2024/texmf-dist/fonts/type1/public/amsfonts/cmextra/cmmib6.pfb><c:/texlive/2024/texmf-dist/fonts/type1/public/amsfonts/cmextra/cmmib7.pfb><c:/texlive/2024/texmf-dist/fonts/type1/public/amsfonts/cmextra/cmmib9.pfb><c:/texlive/2024/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb><c:/texlive/2024/texmf-dist/fonts/type1/public/amsfonts/cm/cmr5.pfb><c:/texlive/2024/texmf-dist/fonts/type1/public/amsfonts/cm/cmr6.pfb><c:/texlive/2024/texmf-dist/fonts/type1/public/amsfonts/cm/cmr7.pfb><c:/texlive/2024/texmf-dist/fonts/type1/public/amsfonts/cm/cmr8.pfb><c:/texlive/2024/texmf-dist/fonts/type1/public/amsfonts/cm/cmr9.pfb><c:/texlive/2024/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb><c:/texlive/2024/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy5.pfb><c:/texlive/2024/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy6.pfb><c:/texlive/2024/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy7.pfb><c:/texlive/2024/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy9.pfb><c:/texlive/2024/texmf-dist/fonts/type1/public/amsfonts/symbols/msbm10.pfb><c:/texlive/2024/texmf-dist/fonts/type1/public/cm-super/sfbx0900.pfb><c:/texlive/2024/texmf-dist/fonts/type1/public/cm-super/sfbx1000.pfb><c:/texlive/2024/texmf-dist/fonts/type1/public/cm-super/sfbx1200.pfb><c:/texlive/2024/texmf-dist/fonts/type1/public/cm-super/sfbx1440.pfb><c:/texlive/2024/texmf-dist/fonts/type1/public/cm-super/sfrm0700.pfb><c:/texlive/2024/texmf-dist/fonts/type1/public/cm-super/sfrm0800.pfb><c:/texlive/2024/texmf-dist/fonts/type1/public/cm-super/sfrm0900.pfb><c:/texlive/2024/texmf-dist/fonts/type1/public/cm-super/sfrm1000.pfb><c:/texlive/2024/texmf-dist/fonts/type1/public/cm-super/sfrm1200.pfb><c:/texlive/2024/texmf-dist/fonts/type1/public/cm-super/sfrm1728.pfb><c:/texlive/2024/texmf-dist/fonts/type1/public/cm-super/sfti1000.pfb><c:/texlive/2024/texmf-dist/fonts/type1/public/cm-super/sftt0800.pfb><c:/texlive/2024/texmf-dist/fonts/type1/public/cm-super/sftt1000.pfb>
-Output written on chapter2.pdf (23 pages, 739097 bytes).
+<c:/texlive/2024/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx10.pfb><c:/texlive/2024/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx7.pfb><c:/texlive/2024/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx9.pfb><c:/texlive/2024/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb><c:/texlive/2024/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb><c:/texlive/2024/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi12.pfb><c:/texlive/2024/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi5.pfb><c:/texlive/2024/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi6.pfb><c:/texlive/2024/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi7.pfb><c:/texlive/2024/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi9.pfb><c:/texlive/2024/texmf-dist/fonts/type1/public/amsfonts/cm/cmmib10.pfb><c:/texlive/2024/texmf-dist/fonts/type1/public/amsfonts/cmextra/cmmib6.pfb><c:/texlive/2024/texmf-dist/fonts/type1/public/amsfonts/cmextra/cmmib7.pfb><c:/texlive/2024/texmf-dist/fonts/type1/public/amsfonts/cmextra/cmmib9.pfb><c:/texlive/2024/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb><c:/texlive/2024/texmf-dist/fonts/type1/public/amsfonts/cm/cmr5.pfb><c:/texlive/2024/texmf-dist/fonts/type1/public/amsfonts/cm/cmr6.pfb><c:/texlive/2024/texmf-dist/fonts/type1/public/amsfonts/cm/cmr7.pfb><c:/texlive/2024/texmf-dist/fonts/type1/public/amsfonts/cm/cmr8.pfb><c:/texlive/2024/texmf-dist/fonts/type1/public/amsfonts/cm/cmr9.pfb><c:/texlive/2024/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb><c:/texlive/2024/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy5.pfb><c:/texlive/2024/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy6.pfb><c:/texlive/2024/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy7.pfb><c:/texlive/2024/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy9.pfb><c:/texlive/2024/texmf-dist/fonts/type1/public/amsfonts/symbols/msbm10.pfb><c:/texlive/2024/texmf-dist/fonts/type1/public/cm-super/sfbx1000.pfb><c:/texlive/2024/texmf-dist/fonts/type1/public/cm-super/sfbx1200.pfb><c:/texlive/2024/texmf-dist/fonts/type1/public/cm-super/sfbx1440.pfb><c:/texlive/2024/texmf-dist/fonts/type1/public/cm-super/sfrm0700.pfb><c:/texlive/2024/texmf-dist/fonts/type1/public/cm-super/sfrm0800.pfb><c:/texlive/2024/texmf-dist/fonts/type1/public/cm-super/sfrm0900.pfb><c:/texlive/2024/texmf-dist/fonts/type1/public/cm-super/sfrm1000.pfb><c:/texlive/2024/texmf-dist/fonts/type1/public/cm-super/sfrm1200.pfb><c:/texlive/2024/texmf-dist/fonts/type1/public/cm-super/sfrm1728.pfb><c:/texlive/2024/texmf-dist/fonts/type1/public/cm-super/sfti1000.pfb><c:/texlive/2024/texmf-dist/fonts/type1/public/cm-super/sftt0800.pfb><c:/texlive/2024/texmf-dist/fonts/type1/public/cm-super/sftt1000.pfb>
+Output written on chapter2.pdf (25 pages, 749116 bytes).
 PDF statistics:
- 976 PDF objects out of 1000 (max. 8388607)
- 837 compressed objects within 9 object streams
- 269 named destinations out of 1000 (max. 500000)
- 60893 words of extra memory for PDF output out of 61914 (max. 10000000)
+ 1170 PDF objects out of 1200 (max. 8388607)
+ 1009 compressed objects within 11 object streams
+ 314 named destinations out of 1000 (max. 500000)
+ 58845 words of extra memory for PDF output out of 61914 (max. 10000000)
 
