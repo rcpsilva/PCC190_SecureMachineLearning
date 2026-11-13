@@ -1,0 +1,263 @@
+\begin{thebibliography}{}
+
+\bibitem[Andriushchenko et~al., 2025]{andriushchenko2024simple}
+Andriushchenko, M., Croce, F., and Flammarion, N. (2025).
+\newblock Jailbreaking leading safety-aligned {LLMs} with simple adaptive attacks.
+\newblock In {\em International Conference on Learning Representations (ICLR)}.
+
+\bibitem[Andriushchenko et~al., 2020]{andriushchenko2020square}
+Andriushchenko, M., Croce, F., Flammarion, N., and Hein, M. (2020).
+\newblock Square attack: A query-efficient black-box adversarial attack via random search.
+\newblock In {\em European Conference on Computer Vision (ECCV)}, pages 484--501.
+
+\bibitem[Athalye et~al., 2018]{athalye2018eot}
+Athalye, A., Engstrom, L., Ilyas, A., and Kwok, K. (2018).
+\newblock Synthesizing robust adversarial examples.
+\newblock In {\em Proceedings of the 35th International Conference on Machine Learning (ICML)}, pages 284--293.
+
+\bibitem[Bagdasaryan et~al., 2020]{bagdasaryan2020backdoor}
+Bagdasaryan, E., Veit, A., Hua, Y., Estrin, D., and Shmatikov, V. (2020).
+\newblock How to backdoor federated learning.
+\newblock In {\em Proceedings of the 23rd International Conference on Artificial Intelligence and Statistics (AISTATS)}, pages 2938--2948.
+
+\bibitem[Biggio et~al., 2012]{biggio2012poisoning}
+Biggio, B., Nelson, B., and Laskov, P. (2012).
+\newblock Poisoning attacks against support vector machines.
+\newblock In {\em Proceedings of the 29th International Conference on Machine Learning (ICML)}.
+
+\bibitem[Brendel et~al., 2018]{brendel2018decision}
+Brendel, W., Rauber, J., and Bethge, M. (2018).
+\newblock Decision-based adversarial attacks: Reliable attacks against black-box machine learning models.
+\newblock In {\em International Conference on Learning Representations (ICLR)}.
+
+\bibitem[Carlini et~al., 2022]{carlini2022membership}
+Carlini, N., Chien, S., Nasr, M., Song, S., Terzis, A., and Tram{\`e}r, F. (2022).
+\newblock Membership inference attacks from first principles.
+\newblock In {\em IEEE Symposium on Security and Privacy (S\&P)}, pages 1897--1914.
+
+\bibitem[Carlini et~al., 2020]{carlini2020cryptanalytic}
+Carlini, N., Jagielski, M., and Mironov, I. (2020).
+\newblock Cryptanalytic extraction of neural network models.
+\newblock In {\em Advances in Cryptology (CRYPTO)}, pages 189--218.
+
+\bibitem[Carlini et~al., 2021]{carlini2021extracting}
+Carlini, N., Tram{\`e}r, F., Wallace, E., Jagielski, M., Herbert-Voss, A., Lee, K., Roberts, A., Brown, T., Song, D., Erlingsson, {\'U}., Oprea, A., and Raffel, C. (2021).
+\newblock Extracting training data from large language models.
+\newblock In {\em 30th USENIX Security Symposium}, pages 2633--2650.
+
+\bibitem[Carlini and Wagner, 2017]{carlini2017towards}
+Carlini, N. and Wagner, D. (2017).
+\newblock Towards evaluating the robustness of neural networks.
+\newblock In {\em IEEE Symposium on Security and Privacy (S\&P)}, pages 39--57.
+
+\bibitem[Chao et~al., 2025]{chao2023jailbreaking}
+Chao, P., Robey, A., Dobriban, E., Hassani, H., Pappas, G.~J., and Wong, E. (2025).
+\newblock Jailbreaking black box large language models in twenty queries.
+\newblock In {\em IEEE Conference on Secure and Trustworthy Machine Learning (SaTML)}, pages 23--42.
+
+\bibitem[Chen et~al., 2020]{chen2020hopskipjump}
+Chen, J., Jordan, M.~I., and Wainwright, M.~J. (2020).
+\newblock {HopSkipJumpAttack}: A query-efficient decision-based attack.
+\newblock In {\em IEEE Symposium on Security and Privacy (S\&P)}, pages 1277--1294.
+
+\bibitem[Choquette-Choo et~al., 2021]{choquette2021label}
+Choquette-Choo, C.~A., Tram{\`e}r, F., Carlini, N., and Papernot, N. (2021).
+\newblock Label-only membership inference attacks.
+\newblock In {\em Proceedings of the 38th International Conference on Machine Learning (ICML)}, pages 1964--1974.
+
+\bibitem[Cohen et~al., 2019]{cohen2019certified}
+Cohen, J., Rosenfeld, E., and Kolter, J.~Z. (2019).
+\newblock Certified adversarial robustness via randomized smoothing.
+\newblock In {\em Proceedings of the 36th International Conference on Machine Learning (ICML)}, pages 1310--1320.
+
+\bibitem[Fredrikson et~al., 2015]{fredrikson2015model}
+Fredrikson, M., Jha, S., and Ristenpart, T. (2015).
+\newblock Model inversion attacks that exploit confidence information and basic countermeasures.
+\newblock In {\em Proceedings of the 22nd ACM SIGSAC Conference on Computer and Communications Security (CCS)}, pages 1322--1333.
+
+\bibitem[Fredrikson et~al., 2014]{fredrikson2014privacy}
+Fredrikson, M., Lantz, E., Jha, S., Lin, S., Page, D., and Ristenpart, T. (2014).
+\newblock Privacy in pharmacogenetics: An end-to-end case study of personalized warfarin dosing.
+\newblock In {\em 23rd USENIX Security Symposium}, pages 17--32.
+
+\bibitem[Geiping et~al., 2020]{geiping2020inverting}
+Geiping, J., Bauermeister, H., Dr{\"o}ge, H., and Moeller, M. (2020).
+\newblock Inverting gradients -- how easy is it to break privacy in federated learning?
+\newblock In {\em Advances in Neural Information Processing Systems (NeurIPS)}.
+
+\bibitem[Geiping et~al., 2021]{geiping2021witches}
+Geiping, J., Fowl, L., Huang, W.~R., Czaja, W., Taylor, G., Moeller, M., and Goldstein, T. (2021).
+\newblock Witches' brew: Industrial scale data poisoning via gradient matching.
+\newblock In {\em International Conference on Learning Representations (ICLR)}.
+
+\bibitem[Greshake et~al., 2023]{greshake2023not}
+Greshake, K., Abdelnabi, S., Mishra, S., Endres, C., Holz, T., and Fritz, M. (2023).
+\newblock Not what you've signed up for: Compromising real-world {LLM}-integrated applications with indirect prompt injection.
+\newblock In {\em Proceedings of the 16th ACM Workshop on Artificial Intelligence and Security (AISec)}, pages 79--90.
+
+\bibitem[Gu et~al., 2019]{gu2019badnets}
+Gu, T., Liu, K., Dolan-Gavitt, B., and Garg, S. (2019).
+\newblock {BadNets}: Evaluating backdooring attacks on deep neural networks.
+\newblock {\em IEEE Access}, 7:47230--47244.
+
+\bibitem[Huang et~al., 2020]{huang2020metapoison}
+Huang, W.~R., Geiping, J., Fowl, L., Taylor, G., and Goldstein, T. (2020).
+\newblock {MetaPoison}: Practical general-purpose clean-label data poisoning.
+\newblock In {\em Advances in Neural Information Processing Systems (NeurIPS)}.
+
+\bibitem[Ilyas et~al., 2018]{ilyas2018blackbox}
+Ilyas, A., Engstrom, L., Athalye, A., and Lin, J. (2018).
+\newblock Black-box adversarial attacks with limited queries and information.
+\newblock In {\em Proceedings of the 35th International Conference on Machine Learning (ICML)}, pages 2142--2151.
+
+\bibitem[Jagielski et~al., 2020]{jagielski2020high}
+Jagielski, M., Carlini, N., Berthelot, D., Kurakin, A., and Papernot, N. (2020).
+\newblock High accuracy and high fidelity extraction of neural networks.
+\newblock In {\em 29th USENIX Security Symposium}, pages 1345--1362.
+
+\bibitem[Jayaraman et~al., 2021]{jayaraman2021revisiting}
+Jayaraman, B., Wang, L., Knipmeyer, K., Gu, Q., and Evans, D. (2021).
+\newblock Revisiting membership inference under realistic assumptions.
+\newblock {\em Proceedings on Privacy Enhancing Technologies}, 2021(2):348--368.
+
+\bibitem[Katz et~al., 2017]{katz2017reluplex}
+Katz, G., Barrett, C., Dill, D.~L., Julian, K., and Kochenderfer, M.~J. (2017).
+\newblock Reluplex: An efficient {SMT} solver for verifying deep neural networks.
+\newblock In {\em Computer Aided Verification (CAV)}, pages 97--117.
+
+\bibitem[Liu et~al., 2024]{liu2024formalizing}
+Liu, Y., Jia, Y., Geng, R., Jia, J., and Gong, N.~Z. (2024).
+\newblock Formalizing and benchmarking prompt injection attacks and defenses.
+\newblock In {\em 33rd USENIX Security Symposium (USENIX Security 24)}, pages 1831--1847. USENIX Association.
+
+\bibitem[Liu et~al., 2018]{liu2018trojaning}
+Liu, Y., Ma, S., Aafer, Y., Lee, W.-C., Zhai, J., Wang, W., and Zhang, X. (2018).
+\newblock Trojaning attack on neural networks.
+\newblock In {\em Network and Distributed System Security Symposium (NDSS)}.
+
+\bibitem[Madry et~al., 2018]{madry2018towards}
+Madry, A., Makelov, A., Schmidt, L., Tsipras, D., and Vladu, A. (2018).
+\newblock Towards deep learning models resistant to adversarial attacks.
+\newblock In {\em International Conference on Learning Representations (ICLR)}.
+
+\bibitem[Moosavi-Dezfooli et~al., 2016]{moosavi2016deepfool}
+Moosavi-Dezfooli, S.-M., Fawzi, A., and Frossard, P. (2016).
+\newblock {DeepFool}: A simple and accurate method to fool deep neural networks.
+\newblock In {\em IEEE Conference on Computer Vision and Pattern Recognition (CVPR)}, pages 2574--2582.
+
+\bibitem[Mu{\~n}oz-Gonz{\'a}lez et~al., 2017]{munoz2017backgradient}
+Mu{\~n}oz-Gonz{\'a}lez, L., Biggio, B., Demontis, A., Paudice, A., Wongrassamee, V., Lupu, E.~C., and Roli, F. (2017).
+\newblock Towards poisoning of deep learning algorithms with back-gradient optimization.
+\newblock In {\em Proceedings of the 10th ACM Workshop on Artificial Intelligence and Security (AISec)}, pages 27--38.
+
+\bibitem[Orekondy et~al., 2019]{orekondy2019knockoff}
+Orekondy, T., Schiele, B., and Fritz, M. (2019).
+\newblock Knockoff nets: Stealing functionality of black-box models.
+\newblock In {\em IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)}, pages 4954--4963.
+
+\bibitem[Papernot et~al., 2017]{papernot2017practical}
+Papernot, N., McDaniel, P., Goodfellow, I., Jha, S., Celik, Z.~B., and Swami, A. (2017).
+\newblock Practical black-box attacks against machine learning.
+\newblock In {\em Proceedings of the ACM Asia Conference on Computer and Communications Security (ASIACCS)}, pages 506--519.
+
+\bibitem[Saha et~al., 2020]{saha2020hidden}
+Saha, A., Subramanya, A., and Pirsiavash, H. (2020).
+\newblock Hidden trigger backdoor attacks.
+\newblock In {\em Proceedings of the AAAI Conference on Artificial Intelligence}, pages 11957--11965.
+
+\bibitem[Salem et~al., 2019]{salem2019mlleaks}
+Salem, A., Zhang, Y., Humbert, M., Berrang, P., Fritz, M., and Backes, M. (2019).
+\newblock {ML-Leaks}: Model and data independent membership inference attacks and defenses on machine learning models.
+\newblock In {\em Network and Distributed System Security Symposium (NDSS)}.
+
+\bibitem[Shafahi et~al., 2018]{shafahi2018poison}
+Shafahi, A., Huang, W.~R., Najibi, M., Suciu, O., Studer, C., Dumitras, T., and Goldstein, T. (2018).
+\newblock Poison frogs! {Targeted} clean-label poisoning attacks on neural networks.
+\newblock In {\em Advances in Neural Information Processing Systems (NeurIPS)}, pages 6106--6116.
+
+\bibitem[Shokri et~al., 2017]{shokri2017membership}
+Shokri, R., Stronati, M., Song, C., and Shmatikov, V. (2017).
+\newblock Membership inference attacks against machine learning models.
+\newblock In {\em IEEE Symposium on Security and Privacy (S\&P)}, pages 3--18.
+
+\bibitem[Song and Shmatikov, 2020]{song2020overlearning}
+Song, C. and Shmatikov, V. (2020).
+\newblock Overlearning reveals sensitive attributes.
+\newblock In {\em International Conference on Learning Representations (ICLR)}.
+
+\bibitem[Steinhardt et~al., 2017]{steinhardt2017certified}
+Steinhardt, J., Koh, P.~W., and Liang, P. (2017).
+\newblock Certified defenses for data poisoning attacks.
+\newblock In {\em Advances in Neural Information Processing Systems (NeurIPS)}, pages 3517--3529.
+
+\bibitem[Szegedy et~al., 2014]{szegedy2014intriguing}
+Szegedy, C., Zaremba, W., Sutskever, I., Bruna, J., Erhan, D., Goodfellow, I., and Fergus, R. (2014).
+\newblock Intriguing properties of neural networks.
+\newblock In {\em International Conference on Learning Representations (ICLR)}.
+
+\bibitem[Tram{\`e}r et~al., 2020]{tramer2020adaptive}
+Tram{\`e}r, F., Carlini, N., Brendel, W., and Madry, A. (2020).
+\newblock On adaptive attacks to adversarial example defenses.
+\newblock In {\em Advances in Neural Information Processing Systems (NeurIPS)}.
+
+\bibitem[Tram{\`e}r et~al., 2016]{tramer2016stealing}
+Tram{\`e}r, F., Zhang, F., Juels, A., Reiter, M.~K., and Ristenpart, T. (2016).
+\newblock Stealing machine learning models via prediction {APIs}.
+\newblock In {\em 25th USENIX Security Symposium}, pages 601--618.
+
+\bibitem[Turner et~al., 2019]{turner2019label}
+Turner, A., Tsipras, D., and Madry, A. (2019).
+\newblock Label-consistent backdoor attacks.
+\newblock {\em arXiv preprint arXiv:1912.02771}.
+
+\bibitem[Vassilev et~al., 2025]{nist2025ai1002}
+Vassilev, A., Oprea, A., Fordyce, A., Anderson, H., Davies, X., and Hamin, M. (2025).
+\newblock Adversarial machine learning: A taxonomy and terminology of attacks and mitigations.
+\newblock Technical Report NIST AI 100-2e2025, National Institute of Standards and Technology.
+
+\bibitem[Wei et~al., 2023]{wei2023jailbroken}
+Wei, A., Haghtalab, N., and Steinhardt, J. (2023).
+\newblock Jailbroken: How does {LLM} safety training fail?
+\newblock In {\em Advances in Neural Information Processing Systems (NeurIPS)}.
+
+\bibitem[Wong and Kolter, 2018]{wong2018provable}
+Wong, E. and Kolter, J.~Z. (2018).
+\newblock Provable defenses against adversarial examples via the convex outer adversarial polytope.
+\newblock In {\em Proceedings of the 35th International Conference on Machine Learning (ICML)}, pages 5283--5292.
+
+\bibitem[Wu et~al., 2016]{wu2016methodology}
+Wu, X., Fredrikson, M., Jha, S., and Naughton, J.~F. (2016).
+\newblock A methodology for formalizing model-inversion attacks.
+\newblock In {\em 2016 IEEE 29th Computer Security Foundations Symposium (CSF)}, pages 355--370. IEEE.
+
+\bibitem[Xiao et~al., 2012]{xiao2012labelflip}
+Xiao, H., Xiao, H., and Eckert, C. (2012).
+\newblock Adversarial label flips attack on support vector machines.
+\newblock In {\em Proceedings of the 20th European Conference on Artificial Intelligence (ECAI)}, pages 870--875.
+
+\bibitem[Yeom et~al., 2018]{yeom2018privacy}
+Yeom, S., Giacomelli, I., Fredrikson, M., and Jha, S. (2018).
+\newblock Privacy risk in machine learning: Analyzing the connection to overfitting.
+\newblock In {\em IEEE 31st Computer Security Foundations Symposium (CSF)}, pages 268--282.
+
+\bibitem[Zhang et~al., 2020]{zhang2020secret}
+Zhang, Y., Jia, R., Pei, H., Wang, W., Li, B., and Song, D. (2020).
+\newblock The secret revealer: Generative model-inversion attacks against deep neural networks.
+\newblock In {\em IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)}, pages 250--258.
+
+\bibitem[Zhu et~al., 2019a]{zhu2019transferable}
+Zhu, C., Huang, W.~R., Li, H., Taylor, G., Studer, C., and Goldstein, T. (2019a).
+\newblock Transferable clean-label poisoning attacks on deep neural nets.
+\newblock In {\em Proceedings of the 36th International Conference on Machine Learning (ICML)}, pages 7614--7623.
+
+\bibitem[Zhu et~al., 2019b]{zhu2019deep}
+Zhu, L., Liu, Z., and Han, S. (2019b).
+\newblock Deep leakage from gradients.
+\newblock In {\em Advances in Neural Information Processing Systems (NeurIPS)}, pages 14747--14756.
+
+\bibitem[Zou et~al., 2023]{zou2023universal}
+Zou, A., Wang, Z., Carlini, N., Nasr, M., Kolter, J.~Z., and Fredrikson, M. (2023).
+\newblock Universal and transferable adversarial attacks on aligned language models.
+\newblock {\em arXiv preprint arXiv:2307.15043}.
+
+\end{thebibliography}

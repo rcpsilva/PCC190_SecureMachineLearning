@@ -1,0 +1,607 @@
+\documentclass[10pt,a4paper]{extarticle}
+\newcommand{\coursehead}{PCC190 -- Adversarial Machine Learning}
+\newcommand{\dochead}{Attack Compendium}
+\usepackage{parskip}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[english]{babel}
+\usepackage{amsmath, amssymb, amsthm}
+\usepackage{geometry}
+\usepackage{xcolor}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{tabularx}
+\usepackage{enumitem}
+\usepackage{microtype}
+\usepackage{csquotes}
+\usepackage{natbib}
+\usepackage{fancyhdr}
+\usepackage[most]{tcolorbox}
+\usepackage{hyperref}
+
+\definecolor{dblue}{RGB}{16, 42, 92}
+\definecolor{dorange}{RGB}{230, 115, 0}
+
+\hypersetup{colorlinks=true, linkcolor=dblue, citecolor=dorange, urlcolor=dblue}
+
+\setlist{nosep}
+\geometry{margin=2cm, headheight=14pt}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\color{dblue}\coursehead}
+\fancyhead[R]{\small\color{dblue}\dochead}
+\fancyfoot[C]{\small\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\headrule}{\hbox to\headwidth{\color{dorange}\leaders\hrule height \headrulewidth\hfill}}
+
+\newtcolorbox{keybox}[1][]{colback=dblue!5, colframe=dblue, fonttitle=\bfseries, title={#1}, breakable}
+\newtcolorbox{warnbox}[1][]{colback=dorange!7, colframe=dorange, fonttitle=\bfseries, title={#1}, breakable}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}[section]
+\newtheorem{example}{Example}[section]
+\newtheorem{remark}{Remark}[section]
+
+% Notation
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\X}{\mathcal{X}}
+\newcommand{\Y}{\mathcal{Y}}
+\newcommand{\D}{\mathcal{D}}
+\newcommand{\Loss}{\mathcal{L}}
+\newcommand{\x}{\mathbf{x}}
+\newcommand{\xadv}{\mathbf{x}'}
+\newcommand{\bdelta}{\boldsymbol{\delta}}
+\newcommand{\btheta}{\boldsymbol{\theta}}
+\newcommand{\B}{\mathcal{B}}
+\newcommand{\T}{\mathcal{T}}
+\newcommand{\Info}{\mathcal{I}}
+\newcommand{\Train}{\mathsf{Train}}
+\newcommand{\Adv}{\mathrm{Adv}}
+\newcommand{\ind}{\mathbb{1}}
+\DeclareMathOperator*{\argmax}{arg\,max}
+\DeclareMathOperator*{\argmin}{arg\,min}
+
+% Threat model block
+\newcommand{\threatmodel}[3]{%
+\par\noindent\textbf{Threat model.}
+\begin{itemize}[leftmargin=1.5em]
+  \item \emph{Goal:} #1
+  \item \emph{Knowledge:} #2
+  \item \emph{Capability:} #3
+\end{itemize}\par}
+
+\setcounter{tocdepth}{1}
+
+\title{Attack Compendium\\Definitions, Problems and Limitations}
+\author{PCC190 -- Adversarial Machine Learning\\Prof.\ Rodrigo C.\ P.\ Silva -- DECOM/UFOP}
+\date{\today}
+
+\begin{document}
+\maketitle
+\thispagestyle{fancy}
+\tableofcontents
+
+%==========================================================================
+\section*{How to read this document}
+\addcontentsline{toc}{section}{How to read this document}
+
+This document presents the main attacks on machine learning systems, each one in the same four parts: an informal definition; a formal definition, which opens with the threat model (goal, knowledge, capability, following the taxonomy of \citealp{nist2025ai1002}) and ends with the success criterion; the mathematical problem the attacker solves, stated first in its ideal form and then in the form actually solved; and the limitations of the formal definition itself, as opposed to limitations of particular algorithms.
+
+Sections are organized by attack goal, not by algorithm. PGD and Carlini--Wagner, for instance, are solvers for the same evasion problem and appear inside that section. Capabilities such as label flipping or clean-label poisoning are constraints on the attacker's feasible set and appear inside the poisoning sections.
+
+\begin{keybox}[Provenance of the definitions]
+Some definitions are adapted from the literature and some are formulated here because no standard source provides one. The title of each definition says which: \emph{after} a citation for the first case and \emph{formulated here} for the second. Definitions formulated here are proposals for the course and should be read as such.
+\end{keybox}
+
+\subsection*{Shared notation}
+
+The data distribution is $\D$ over $\X\times\Y$, with $\Y=\{1,\dots,K\}$ and $z=(\x,y)$. A classifier is $f_{\btheta}(\x)=\argmax_k Z_k(\x;\btheta)$, with logits $Z$ and probabilities $F=\mathrm{softmax}(Z)$. The loss is $\Loss(\btheta;\x,y)$; when $\btheta$ is fixed (inference time) we write $\Loss(\x,y)$. A training set is $S\sim\D^n$ and $\Train$ is the (possibly randomized) training algorithm, so $\hat\btheta=\Train(S)$; when training is modeled as exact empirical risk minimization, $\hat\btheta(S)\in\argmin_{\btheta}\sum_{z\in S}\Loss(\btheta;z)$.
+
+An attack is an algorithm $\mathcal{A}$. Its access to the model is the information level $\Info$: parameters, gradients, scores, labels, or none; in federated learning it also includes the gradients and updates shared during training. A threat set is $\T_\epsilon(\x)\subseteq\X$, a nested family of admissible inputs indexed by a budget $\epsilon$, with the $\ell_p$ instance $\mathcal{S}_p(\x,\epsilon)=\B_p(\x,\epsilon)\cap\X$. A backdoor trigger is a map $\psi:\X\to\X$. The perturbation budget is $\epsilon$ and the differential privacy parameter is $\varepsilon$. For language models, $\mathcal{V}$ is the vocabulary, $\oplus$ is concatenation, $p(\mathbf{r}\mid\x)$ is the response distribution, and $J$ is a judge predicate.
+
+\begin{keybox}[A pattern that recurs in every section]
+Almost every attack has an \emph{ideal problem}, whose objective is the quantity the attacker actually cares about (a misclassification indicator, a judge verdict, a bilevel training outcome, membership itself), and a \emph{surrogate problem}, which is what is actually solved (a loss, an affirmative-prefix likelihood, gradient alignment, a likelihood ratio under a Gaussian model). The distance between the two is the \emph{surrogate gap}: optimizing the surrogate well does not guarantee that the ideal objective is attained, so every candidate must be checked against the ideal criterion. The gap explains why a failed attack proves nothing about robustness or privacy, and why each section below states both problems.
+\end{keybox}
+
+%==========================================================================
+\part{Inference-time integrity attacks}
+
+%==========================================================================
+\section{Evasion of classifiers}\label{sec:evasion}
+
+\subsection{Informal definition}
+
+The attacker modifies a test input, within a set of admissible modifications, so that a fixed, already trained model misclassifies it. Weights and training data are not touched.
+
+\subsection{Formal definition}
+
+\threatmodel{integrity of individual predictions, either any wrong label (untargeted) or a chosen label $t\neq y$ (targeted).}{an information level $\Info$, from gradients (white-box) through scores and labels (query-based black-box) to none (transfer from a surrogate).}{replace a clean input $\x$ by any $\xadv\in\T_\epsilon(\x)$ at inference time.}
+
+\begin{definition}[Adversarial example and evasion attack; after \citealp{szegedy2014intriguing,madry2018towards}]\label{def:evasion}
+Let $(\x,y)$ satisfy $f(\x)=y$. A point $\xadv$ is an adversarial example at budget $\epsilon$ if $\xadv\in\T_\epsilon(\x)$ and $f(\xadv)\neq y$ (untargeted) or $f(\xadv)=t$ (targeted). An evasion attack $\mathcal{A}^{\Info(f)}(\x,y)$ returns a candidate $\xadv$; it succeeds on $(\x,y)$ if the candidate is an adversarial example. The attack success rate and the robust accuracy are
+\[
+\mathrm{ASR}(\mathcal{A},\epsilon)=\Pr_{(\x,y)\sim\D}\big[\xadv\in\T_\epsilon(\x),\ f(\xadv)\neq y\mid f(\x)=y\big],\qquad
+\mathrm{RA}(f,\epsilon)=\Pr_{(\x,y)\sim\D}\big[\forall\xadv\in\T_\epsilon(\x):\ f(\xadv)=y\big].
+\]
+\end{definition}
+
+ASR depends on the attack; RA depends only on $f$. Every attack yields an upper bound on RA, and only certification yields a lower bound \citep{wong2018provable,cohen2019certified}.
+
+\subsection{The attacker's problem}
+
+The ideal objective is the indicator $\ind[f(\xadv)\neq y]$, which has zero gradient almost everywhere. Two optimization problems replace it:
+\begin{align}
+\text{(budget)}&\qquad \max_{\xadv\in\T_\epsilon(\x)}\ \Loss(\xadv,y), \label{eq:budget}\\
+\text{(min-cost)}&\qquad \epsilon^\star(\x,y)=\inf_{\xadv\in\X}\ c(\x,\xadv)\quad\text{s.t.}\quad f(\xadv)\neq y, \label{eq:mincost}
+\end{align}
+with $c(\x,\xadv)=\|\xadv-\x\|_p$ for $\ell_p$ threat sets. Problem~\eqref{eq:budget} has a convex feasible set and a nonconcave objective; problem~\eqref{eq:mincost} has a convex objective and a nonconvex, discrete constraint. They are dual in the sense that $\epsilon\mapsto\mathrm{RA}(f,\epsilon)$ is, up to ties, the survival function of $\epsilon^\star$. The penalty form $\min_{\bdelta}\|\bdelta\|_p+c\,h(\x+\bdelta)$, with $h$ a logit margin, links them algorithmically.
+
+The information level decides how the problem is solved, not which problem it is. With gradients: FGSM, BIM, PGD and APGD solve~\eqref{eq:budget}; Carlini--Wagner and DeepFool solve~\eqref{eq:mincost} \citep{madry2018towards,carlini2017towards,moosavi2016deepfool}. With scores: NES and SPSA estimate the gradient of~\eqref{eq:budget}, and Square Attack searches the vertices of the $\ell_\infty$ ball \citep{ilyas2018blackbox,andriushchenko2020square}. With labels: Boundary Attack and HopSkipJump solve~\eqref{eq:mincost} \citep{brendel2018decision,chen2020hopskipjump}. With no access: any of the above, run on a surrogate or an ensemble of surrogates.
+
+\subsection{Limitations of the formal definition}
+
+\begin{itemize}[leftmargin=1.5em]
+  \item \textbf{The threat set is a proxy.} $\T_\epsilon(\x)$ stands in for \enquote{imperceptible} or \enquote{semantics-preserving}, and for $\ell_p$ balls it is neither necessary nor sufficient for either: a one-pixel shift of a whole image has a large $\ell_p$ distance and is invisible, while a perturbation concentrated on a few pixels can have a small $\ell_2$ norm and be obvious. Every statement about RA is a statement about the chosen set.
+  \item \textbf{The label is assumed invariant.} The definition calls $\xadv$ an error whenever $f(\xadv)\neq y$, which presumes that the true label of every point of $\T_\epsilon(\x)$ is still $y$. For large budgets or loose threat sets this can fail, and a \enquote{successful} attack may then be a correct prediction.
+  \item \textbf{RA is not computable in general.} It quantifies over a continuous set, and deciding $\epsilon^\star(\x,y)\le\epsilon$ is NP-hard for ReLU networks \citep{katz2017reluplex}. In practice only the interval between a certified lower bound and an attack upper bound is known.
+  \item \textbf{Deterministic, static model.} The definition assumes a deterministic $f$ that does not react to the attacker. Randomized defenses require success in expectation over the randomness, as in Expectation over Transformation \citep{athalye2018eot}, and adaptive defenses require the evaluation to attack the defended system, not the base model \citep{tramer2020adaptive}.
+  \item \textbf{One input at a time.} Success is defined per input. Universal perturbations, query budgets shared across inputs, and costs such as detectability are not part of the definition and must be added when they matter.
+\end{itemize}
+
+%==========================================================================
+\section{Evasion of language models (jailbreaking)}\label{sec:jailbreak}
+
+\subsection{Informal definition}
+
+The attacker crafts a prompt, within what it controls, that leads a safety-trained language model to produce a response its policy forbids.
+
+\subsection{Formal definition}
+
+\threatmodel{a policy-violating response to a request $q$ that the model should refuse.}{open weights (gradients), log-probabilities (scores), only the response text judged by a judge (the label analogue), or nothing beyond transfer.}{submit any prompt in a threat set $\T(q)\subseteq\mathcal{V}^*$, such as a suffix of length $k$, $\T_k(q)=\{q\oplus\mathbf{s}:\mathbf{s}\in\mathcal{V}^k\}$, or an intent-preserving rewrite of $q$.}
+
+\begin{definition}[Evasion against an LLM; formulated here, following \citealp{zou2023universal,chao2023jailbreaking}]\label{def:jailbreak}
+Let $J(q,\mathbf{r})\in\{0,1\}$ equal $1$ when response $\mathbf{r}$ violates the policy for request $q$. An attack returns $\xadv\in\T(q)$ and succeeds at threshold $\tau$ if
+\[
+\Pr_{\mathbf{r}\sim p(\cdot\mid\xadv)}\big[J(q,\mathbf{r})=1\big]\ \ge\ \tau .
+\]
+\end{definition}
+
+\subsection{The attacker's problem}
+
+The ideal problem is $\max_{\xadv\in\T(q)}\Pr_{\mathbf{r}\sim p(\cdot\mid\xadv)}[J(q,\mathbf{r})=1]$, whose objective is neither differentiable nor cheap to evaluate. The standard surrogate is the likelihood of an affirmative prefix $\mathbf{r}^\star$, giving the discrete budget problem
+\begin{equation}\label{eq:gcg}
+\min_{\mathbf{s}\in\mathcal{V}^k}\ -\log p(\mathbf{r}^\star\mid q\oplus\mathbf{s}),
+\end{equation}
+with $|\mathcal{V}|^k$ candidates. GCG solves it by ranking token swaps with one gradient and selecting among them with forward passes \citep{zou2023universal}; random search on log-probabilities solves it with scores \citep{andriushchenko2024simple}; PAIR searches the intent-preserving set with an attacker LLM guided by the judge \citep{chao2023jailbreaking}. Summing~\eqref{eq:gcg} over requests and open models gives universal, transferable suffixes. The min-cost analogue (shortest suffix, fewest edited tokens) exists but is rarely used, because every feasibility check requires sampling and judging. Hand-crafted jailbreaks solve no problem; they exploit competing objectives and mismatched generalization \citep{wei2023jailbroken}.
+
+\subsection{Limitations of the formal definition}
+
+\begin{itemize}[leftmargin=1.5em]
+  \item \textbf{The predicate is the threat model.} Success is defined through $J$, which in practice is a human, a classifier or another LLM. Changing the judge changes which attacks succeed, so a reported ASR without the judge is not a well-defined quantity.
+  \item \textbf{The intent-preserving set is not checkable.} Deciding whether a rewrite asks for the same thing as $q$ is itself a judgment, so for that threat set the definition depends on a second, unformalized predicate.
+  \item \textbf{Decoding is part of the definition.} The probability in Definition~\ref{def:jailbreak} depends on temperature, sampling strategy and the number of samples, and the threshold $\tau$ ranges from \enquote{at least one sample} to \enquote{reliably}. These must be fixed for two results to be comparable.
+  \item \textbf{No reference point.} There is no clean pair with $f(\x)=y$ and no distance from it, so there is no notion of a minimal adversarial prompt and no analogue of robust accuracy as a curve in $\epsilon$.
+  \item \textbf{Fragile surrogate.} A response can begin with $\mathbf{r}^\star$ and then refuse, or comply without it, so low loss in~\eqref{eq:gcg} is neither necessary nor sufficient for success.
+  \item \textbf{Embedding attacks change the threat set.} PGD on continuous embeddings is an upper bound for token attacks, not an instance of Definition~\ref{def:jailbreak}, because arbitrary embeddings need not correspond to any token sequence.
+\end{itemize}
+
+%==========================================================================
+\section{Prompt injection}\label{sec:injection}
+
+\subsection{Informal definition}
+
+An application combines an instruction with data from an external source and sends both to a language model. An attacker who controls the data, but not the instruction, places instructions inside it so that the application performs the attacker's task instead of the intended one.
+
+\subsection{Formal definition}
+
+\threatmodel{the application accomplishes an attacker-chosen task or behavior instead of the intended one.}{usually black-box; the attacker may not know the instruction prompt or the backend model.}{modify the data channel only, for example a web page, an email or a retrieved document; the instruction prompt and the model are not modified \citep{liu2024formalizing}.}
+
+\begin{definition}[Prompt injection; after \citealp{liu2024formalizing}]\label{def:injection}
+A \emph{target task} has instruction $\mathbf{s}^t$ and data $\mathbf{x}^t$, and the application returns $f(\mathbf{s}^t\oplus\mathbf{x}^t)$. An \emph{injected task} has instruction $\mathbf{s}^e$, data $\mathbf{x}^e$ and reference output $\mathbf{y}^e$. A prompt injection attack produces compromised data
+\[
+\tilde{\mathbf{x}}=\mathcal{A}(\mathbf{x}^t,\mathbf{s}^e,\mathbf{x}^e),
+\]
+and succeeds if $f(\mathbf{s}^t\oplus\tilde{\mathbf{x}})$ accomplishes the injected task instead of the target task. Over sets of target and injected examples $\D^t,\D^e$, success is measured by the attack success value
+\[
+\mathrm{ASV}=\frac{1}{|\D^t||\D^e|}\sum_{\mathbf{x}^t\in\D^t}\ \sum_{(\mathbf{x}^e,\mathbf{y}^e)\in\D^e}\mathcal{M}^e\big[f(\mathbf{s}^t\oplus\mathcal{A}(\mathbf{x}^t,\mathbf{s}^e,\mathbf{x}^e)),\,\mathbf{y}^e\big],
+\]
+where $\mathcal{M}^e$ is the injected task's evaluation metric.
+\end{definition}
+
+The same setting can be written with a system prompt $\mathbf{z}$, a user request $u$ and a document $d$, the model receiving $\mathbf{z}\oplus u\oplus d$, and a target behavior $b$ (a tool call, an exfiltration) in place of an injected task \citep{greshake2023not}.
+
+\subsection{The attacker's problem}
+
+Because the attacker usually does not know $\mathbf{s}^t$ or $u$, the natural ideal problem is a universal one over the target tasks the document may meet:
+\[
+\max_{d\in\mathcal{C}}\ \mathbb{E}_{(\mathbf{z},u)}\Big[\Pr\big(\text{behavior } b \mid \mathbf{z}\oplus u\oplus d\big)\Big],
+\]
+with $\mathcal{C}$ the documents the attacker can place in the context. Most published attacks do not optimize at all: they compose templates (escape characters, context-ignoring text, fake completions, or their combination) and evaluate them empirically \citep{liu2024formalizing}. When gradients or log-probabilities are available, the GCG surrogate~\eqref{eq:gcg} applies to $d$ with the likelihood of the target behavior as objective.
+
+\subsection{Limitations of the formal definition}
+
+\begin{itemize}[leftmargin=1.5em]
+  \item \textbf{\enquote{Accomplishes} is measured by task competence.} ASV is bounded by the model's performance on the injected task in isolation, so a low ASV can mean that the injection failed or that the model is poor at the injected task. \citet{liu2024formalizing} add a matching rate against $f(\mathbf{s}^e\oplus\mathbf{x}^e)$ for this reason.
+  \item \textbf{Ambiguity when tasks coincide.} If the target and injected tasks are of the same type, a correct-looking output does not reveal whether the injection worked; evaluations must choose examples with different reference labels to disambiguate.
+  \item \textbf{Instruction and data are not defined at the model level.} The definition presupposes a separation between $\mathbf{s}^t$ and $\mathbf{x}^t$ that exists in the application but not in the model, which receives one token sequence. This is the root cause of the attack and the reason model-only defenses cannot satisfy a definition stated in these terms.
+  \item \textbf{Scope.} The definition is task-level and single-turn. Agentic effects (tool calls, persistent memory, multi-step plans) and direct injection, where the attacker is the user, are outside it and need the behavior-based form.
+\end{itemize}
+
+%==========================================================================
+\part{Training-time attacks}
+
+All three poisoning sections share one setting: clean set $S$, poison set $S_p\in\mathcal{C}$ with $|S_p|=m$ and rate $\gamma=m/(n+m)$, and the poisoned model $\hat\btheta(S_p)=\Train(S\cup S_p)$. They differ in the goal, and therefore in the outer objective and the success criterion.
+
+%==========================================================================
+\section{Availability poisoning}\label{sec:availability}
+
+\subsection{Informal definition}
+
+The attacker adds or modifies training data so that the trained model performs badly on clean data.
+
+\subsection{Formal definition}
+
+\threatmodel{availability: high error on clean inputs.}{the learning algorithm and usually the clean data or its distribution.}{choose $S_p\in\mathcal{C}$, which may mean adding $m$ points, flipping up to $m$ labels, or perturbing features within bounds.}
+
+\begin{definition}[Availability poisoning; formulated here]\label{def:availability}
+Let $R(\btheta)=\mathbb{E}_{(\x,y)\sim\D}\,\ind[f_{\btheta}(\x)\neq y]$. An availability attack outputs $S_p\in\mathcal{C}$ and succeeds at level $\eta>0$ if
+\[
+\mathbb{E}_{\Train}\big[R(\Train(S\cup S_p))\big]-\mathbb{E}_{\Train}\big[R(\Train(S))\big]\ \ge\ \eta,
+\]
+the expectations being over the randomness of training.
+\end{definition}
+
+\subsection{The attacker's problem}
+
+The ideal problem is a bilevel program with a validation loss as the outer objective \citep{biggio2012poisoning}:
+\begin{equation}\label{eq:bilevel}
+\max_{S_p\in\mathcal{C}}\ \sum_{(\x,y)\in S_{\text{val}}}\Loss\big(\hat\btheta;\x,y\big)
+\quad\text{s.t.}\quad
+\hat\btheta\in\argmin_{\btheta}\sum_{(\x,y)\in S\cup S_p}\Loss(\btheta;\x,y).
+\end{equation}
+For label flipping, $\mathcal{C}$ is a family of label subsets and the problem is combinatorial; approximations flip points near the margin or with high influence \citep{xiao2012labelflip}. For feature perturbations, gradient ascent on the poison points needs the hypergradient $(\nabla_{\x^p}\hat\btheta)^\top\nabla_{\btheta}\Loss_{\text{val}}$, obtained by implicit differentiation (exact for convex learners), by unrolling a few training steps, or by approximations such as MetaPoison \citep{biggio2012poisoning,munoz2017backgradient,huang2020metapoison}.
+
+\subsection{Limitations of the formal definition}
+
+\begin{itemize}[leftmargin=1.5em]
+  \item \textbf{Training is not an argmin.} The constraint in~\eqref{eq:bilevel} models training as exact minimization. For nonconvex models trained by SGD, $\hat\btheta$ is a random variable that depends on initialization and data order, and the argmin is a set, so the bilevel program is ill-posed until one chooses an optimistic or pessimistic reading. Definition~\ref{def:availability} uses expectations over $\Train$ for this reason.
+  \item \textbf{Validation loss is a proxy.} The outer objective is a finite-sample, surrogate-loss estimate of $R$, and the attacker typically does not have the defender's validation set.
+  \item \textbf{The definition ignores detection.} Availability attacks are loud: a defender who monitors validation accuracy stops deployment. An attack can satisfy Definition~\ref{def:availability} and still achieve nothing in practice. Sanitization can be folded into $\mathcal{C}$, which is the route to the certified bounds of \citet{steinhardt2017certified}, but it is not part of the basic definition.
+  \item \textbf{Learner-specific.} Success is defined against one $\Train$. Effects measured on convex learners do not transfer to large networks trained on large datasets, where small-$\gamma$ availability poisoning has proven much harder.
+\end{itemize}
+
+%==========================================================================
+\section{Targeted poisoning}\label{sec:targeted}
+
+\subsection{Informal definition}
+
+The attacker poisons the training data so that one specific test input, chosen in advance, is classified as an attacker-chosen class, while accuracy on everything else stays intact.
+
+\subsection{Formal definition}
+
+\threatmodel{integrity of a single prediction: $f_{\hat\btheta}(\x_t)=y_{\text{adv}}$, with clean accuracy preserved.}{the target $\x_t$, the architecture or a surrogate, often a pretrained feature extractor.}{add or perturb $m$ training points; in the clean-label case, perturb base images $\mathbf{b}_j$ of class $y_{\text{adv}}$ within $\|\bdelta_j\|_\infty\le\epsilon$ without changing their labels.}
+
+\begin{definition}[Targeted poisoning; formulated here]\label{def:targeted}
+A targeted poisoning attack outputs $S_p\in\mathcal{C}$. It succeeds with probability $\rho$ and stealth $\alpha$ if
+\[
+\Pr_{\Train}\big[f_{\Train(S\cup S_p)}(\x_t)=y_{\text{adv}}\big]\ \ge\ \rho
+\quad\text{and}\quad
+\mathbb{E}_{\Train}\big[R(\Train(S\cup S_p))\big]-\mathbb{E}_{\Train}\big[R(\Train(S))\big]\ \le\ \alpha .
+\]
+\end{definition}
+
+\subsection{The attacker's problem}
+
+The ideal problem is the bilevel program~\eqref{eq:bilevel} with $\Loss(\hat\btheta;\x_t,y_{\text{adv}})$ as the outer objective, to be minimized over $\{\bdelta_j\}$ with $\|\bdelta_j\|_\infty\le\epsilon$. Three surrogates avoid the inner argmin:
+\begin{itemize}[leftmargin=1.5em]
+  \item \emph{Feature collision} \citep{shafahi2018poison}, for a frozen extractor $\mathbf{h}$: $\x^p=\argmin_{\x}\|\mathbf{h}(\x)-\mathbf{h}(\x_t)\|_2^2+\beta\|\x-\mathbf{b}\|_2^2$; convex polytopes over surrogate extractors improve transfer \citep{zhu2019transferable}.
+  \item \emph{Gradient matching} \citep{geiping2021witches}: maximize the cosine between $\nabla_{\btheta}\Loss(\btheta;\x_t,y_{\text{adv}})$ and $\sum_j\nabla_{\btheta}\Loss(\btheta;\mathbf{b}_j+\bdelta_j,y_{\text{adv}})$ at a model pretrained on clean data.
+  \item \emph{Partial unrolling} \citep{huang2020metapoison}: differentiate through a few training steps at several training stages.
+\end{itemize}
+
+\subsection{Limitations of the formal definition}
+
+\begin{itemize}[leftmargin=1.5em]
+  \item \textbf{Stealth is not in the bilevel objective.} The bilevel program constrains only the poison budget; the requirement that clean accuracy be preserved, which is what makes the attack an integrity attack, does not appear in it. Definition~\ref{def:targeted} adds it explicitly.
+  \item \textbf{Success is random.} For networks trained from scratch, whether $\x_t$ flips depends on the training seed, so single-run success is an anecdote. The success probability $\rho$ is the meaningful quantity.
+  \item \textbf{\enquote{Clean label} is not formal.} The intended property is that a human inspector accepts each poison as correctly labeled. The $\ell_\infty$ ball around a base image is a proxy for it, with the same weaknesses as $\ell_p$ balls in evasion.
+  \item \textbf{Surrogates assume a frozen geometry.} Feature collision assumes the extractor does not change, and gradient matching assumes that gradient alignment at one parameter vector persists along the training trajectory. Both are assumptions about $\Train$ that the definition does not state.
+\end{itemize}
+
+%==========================================================================
+\section{Backdoor poisoning}\label{sec:backdoor}
+
+\subsection{Informal definition}
+
+The attacker implants a hidden rule in the model: inputs carrying a trigger are classified as a target class, while inputs without it are classified normally.
+
+\subsection{Formal definition}
+
+\threatmodel{a trigger-to-target mapping that is active at test time while clean behavior is unchanged.}{ranges from none (data contribution only) to full control of training (outsourced or pretrained models), or a participant's view in federated learning.}{add poisoned samples; in the clean-label case only correctly labeled ones; in federated learning, submit model updates; for model-level trojans, modify a released model.}
+
+\begin{definition}[Backdoor attack; formulated here]\label{def:backdoor}
+Let $\psi:\X\to\X$ be a trigger and $y_{\text{adv}}$ a target class. A backdoor attack outputs $(\psi,S_p)$ with $S_p\in\mathcal{C}$. Let $\hat\btheta=\Train(S\cup S_p)$ and
+\[
+\mathrm{CA}=\Pr_{(\x,y)\sim\D}\big[f_{\hat\btheta}(\x)=y\big],\qquad
+\mathrm{ASR}=\Pr_{(\x,y)\sim\D}\big[f_{\hat\btheta}(\psi(\x))=y_{\text{adv}}\ \big|\ y\neq y_{\text{adv}}\big].
+\]
+The attack is $(\alpha,\beta)$-successful if $\mathrm{CA}\ge\mathrm{CA}_{\text{clean}}-\alpha$ and $\mathrm{ASR}\ge\beta$, where $\mathrm{CA}_{\text{clean}}$ is the clean accuracy of $\Train(S)$.
+\end{definition}
+
+\subsection{The attacker's problem}
+
+As a bilevel program, with $\Psi$ the admissible triggers,
+\[
+\max_{\psi\in\Psi,\ S_p\in\mathcal{C}}\ \mathbb{E}_{(\x,y)\sim\D,\,y\neq y_{\text{adv}}}\Big[\log F_{y_{\text{adv}}}\big(\psi(\x);\hat\btheta\big)\Big]
+\quad\text{s.t.}\quad
+\hat\btheta\in\argmin_{\btheta}\sum_{S\cup S_p}\Loss(\btheta;\x,y),\quad \mathrm{CA}\ge\mathrm{CA}_{\text{clean}}-\alpha .
+\]
+For dirty-label backdoors the bilevel structure collapses. With $S_p=\{(\psi(\x_i),y_{\text{adv}})\}$, as in BadNets \citep{gu2019badnets}, the inner training objective is a weighted sum of the clean loss and the backdoor loss, so the defender's own training solves the attacker's problem and no optimization is needed beyond choosing $\psi$ and $m$. Optimization reappears when the capability is restricted: clean-label backdoors must make the trigger the easiest feature to learn, by adversarially perturbing or feature-colliding the poisons \citep{turner2019label,saha2020hidden}; model-level trojans optimize $\psi$ to activate chosen neurons \citep{liu2018trojaning}; federated backdoors scale the malicious update so it survives averaging \citep{bagdasaryan2020backdoor}.
+
+\subsection{Limitations of the formal definition}
+
+\begin{itemize}[leftmargin=1.5em]
+  \item \textbf{ASR has no baseline in the definition.} A universal adversarial patch can make a clean model output $y_{\text{adv}}$ with high probability. Without comparing to the ASR of $\psi$ (or of an optimized trigger) on $\Train(S)$, Definition~\ref{def:backdoor} cannot distinguish an implanted backdoor from a natural vulnerability.
+  \item \textbf{The trigger set is unconstrained.} Visibility, location dependence, sample specificity and robustness to transformations, the main design dimensions of triggers, are not in the definition. Without a constraint on $\Psi$, any perturbation is a valid trigger and the definition collapses toward evasion.
+  \item \textbf{One trigger instance.} ASR is measured with the attacker's exact $\psi$. Physical triggers vary with viewpoint and lighting, so the relevant quantity is an expectation over a distribution of trigger applications.
+  \item \textbf{No persistence requirement.} Survival under fine-tuning, pruning or transfer learning, which is what makes backdoors a supply-chain risk, is not part of the success criterion.
+\end{itemize}
+
+%==========================================================================
+\part{Confidentiality attacks}
+
+%==========================================================================
+\section{Membership inference}\label{sec:mia}
+
+\subsection{Informal definition}
+
+Given a record and access to a trained model, the attacker decides whether the record was in the training set.
+
+\subsection{Formal definition}
+
+\threatmodel{confidentiality of training-set membership.}{the data distribution $\D$ (or samples from it), $n$, and the training algorithm, which are needed for shadow models.}{query the model at the available information level: parameters, scores, or labels only.}
+
+\begin{definition}[Membership inference experiment; after \citealp{yeom2018privacy}]\label{def:mia}
+Sample $S\sim\D^n$ and set $\hat\btheta=\Train(S)$. Flip a fair bit $b$; if $b=1$ draw $z$ uniformly from $S$, otherwise draw a fresh $z\sim\D$. The adversary receives $z$ and access to $\hat\btheta$ and outputs $\hat b$. Its advantage is
+\[
+\Adv=\mathrm{TPR}-\mathrm{FPR}=2\Pr[\hat b=b]-1 .
+\]
+\end{definition}
+
+\subsection{The attacker's problem}
+
+Membership inference is a hypothesis test, not an optimization. For an observation $o(z)$ of the model on $z$ (a loss, a logit-scaled confidence, a robustness radius), the attacker tests $H_0: z\notin S$ against $H_1: z\in S$, and the ideal problem is
+\[
+\max_{\text{tests }\hat b}\ \Pr[\hat b=1\mid H_1]\quad\text{s.t.}\quad \Pr[\hat b=1\mid H_0]\le\alpha .
+\]
+By the Neyman--Pearson lemma the solution thresholds the likelihood ratio $p(o\mid H_1)/p(o\mid H_0)$. The attacks differ in how they approximate it. The loss threshold $\ind[\ell(z)<\tau]$ uses one global threshold \citep{yeom2018privacy}; shadow models learn the decision from outputs of models with known membership \citep{shokri2017membership,salem2019mlleaks}; LiRA fits per-example Gaussians to IN and OUT shadow statistics and computes the ratio explicitly \citep{carlini2022membership}; label-only attacks replace the loss by the distance to the decision boundary \citep{choquette2021label}.
+
+\subsection{Limitations of the formal definition}
+
+\begin{itemize}[leftmargin=1.5em]
+  \item \textbf{Balanced prior.} The fair bit makes members and non-members equally likely. In realistic settings members are a small fraction of the candidates, and a fixed advantage can correspond to a low positive predictive value \citep{jayaraman2021revisiting}.
+  \item \textbf{Average case.} The advantage averages over $z$, so it hides attacks that are certain about a few records. This is why \citet{carlini2022membership} argue for TPR at very low FPR on a log-log ROC curve.
+  \item \textbf{It scores the algorithm, not the model.} The experiment resamples $S$, so it measures $\Train$ on $\D$. A deployed model is one draw, and its risk to specific records is a different quantity.
+  \item \textbf{Non-members can be members.} A fresh $z\sim\D$ may coincide with a point of $S$, which caps the achievable advantage below $1$ \citep{yeom2018privacy}. Duplicates and near-duplicates, common in web-scale data, make \enquote{membership} itself ill-defined.
+\end{itemize}
+
+%==========================================================================
+\section{Attribute inference}\label{sec:attribute}
+
+\subsection{Informal definition}
+
+Knowing part of a record and having access to the model, the attacker infers a sensitive attribute of that record that it does not know.
+
+\subsection{Formal definition}
+
+\threatmodel{confidentiality of a sensitive attribute $s$ of a record.}{the non-sensitive part of the record, possibly its label, and the population prior of $s$.}{query the model, or read a released representation.}
+
+\begin{definition}[Attribute advantage; after \citealp{yeom2018privacy}]\label{def:attribute}
+Write a record as $z=(v,s,y)$, let $\varphi(z)$ be the part known to the adversary and $\pi(z)=s$ the sensitive part. Run the experiment of Definition~\ref{def:mia}, but give the adversary only $\varphi(z)$ and access to $\hat\btheta$, and ask for a guess $\hat s$. The attribute advantage is
+\[
+\Adv^{\mathsf{A}}=\Pr\big[\hat s=\pi(z)\mid z\text{ member}\big]-\Pr\big[\hat s=\pi(z)\mid z\text{ non-member}\big].
+\]
+An alternative compares the adversary on members with the Bayes-optimal simulator, which has no model access,
+\[
+\mathcal{S}(\varphi(z))=\argmax_{s}\ \Pr_{z\sim\D}\big[\pi(z)=s\mid\varphi(z)\big].
+\]
+\end{definition}
+
+\subsection{The attacker's problem}
+
+The attacker solves a MAP estimation problem. In the warfarin study the model output is matched against the known label for each candidate value, weighted by the prior \citep{fredrikson2014privacy}:
+\[
+\hat s=\argmax_{s}\ \Pr\big[f(v,s)=y\big]\cdot\Pr[s],
+\]
+or, with a noise model $f_{\mathcal{A}}$ for the error, $\hat s=\argmax_s\Pr[s]\,f_{\mathcal{A}}\big(y-f(v,s)\big)$ \citep{yeom2018privacy}. When the attack surface is a released representation $\mathbf{h}(\x)$, the problem becomes supervised learning of $s$ from $\mathbf{h}(\x)$ on auxiliary data \citep{song2020overlearning}.
+
+\subsection{Limitations of the formal definition}
+
+\begin{itemize}[leftmargin=1.5em]
+  \item \textbf{Two definitions, two answers.} The member-versus-non-member advantage isolates leakage specific to the training set, but it can be inflated by an adversary that deliberately performs worse when it believes the record is a non-member, as \citet{yeom2018privacy} note. The simulator-based version removes that incentive but credits the model for learning population correlations, which is inference, not leakage.
+  \item \textbf{Harm is not captured by either.} If the model lets anyone predict $s$ equally well for people outside the training set, neither advantage flags an issue, yet the person is still exposed. Differential privacy, which protects individual records and not population statistics, does not prevent this either.
+  \item \textbf{Discrete attribute, known prior.} The MAP formulation assumes a finite set of candidate values with known frequencies; continuous or high-dimensional attributes need a different success criterion.
+\end{itemize}
+
+%==========================================================================
+\section{Model inversion (class level)}\label{sec:inversion}
+
+\subsection{Informal definition}
+
+The attacker reconstructs an input that the model strongly associates with a class, for example a face for a name in a face recognition model.
+
+\subsection{Formal definition}
+
+\threatmodel{reveal what the training data of a class looks like.}{white-box access, or scores; often a public dataset from a related distribution, used to train a generative prior.}{query the model or differentiate through it.}
+
+The original attack \citep{fredrikson2015model} comes without a formal criterion of success. \citet{wu2016methodology} formalize model inversion with two-world games, mainly for attribute recovery in black-box and Boolean settings, which is the case already covered by Definition~\ref{def:attribute}. For reconstruction of high-dimensional inputs, the literature defines success operationally, through an independent evaluation classifier and feature-space distances \citep{zhang2020secret}. The definition below makes that operational criterion explicit.
+
+\begin{definition}[Class-level inversion; formulated here after the evaluation protocol of \citealp{zhang2020secret}]\label{def:inversion}
+An inversion attack receives a class $c$ and returns $\x^\star$. Let $E$ be an evaluation classifier trained on the same private data but different from the target, and let $\mathbf{g}$ be its penultimate-layer features. The attack succeeds on $c$ if $E(\x^\star)=c$; its quality is measured by the distance from $\mathbf{g}(\x^\star)$ to the nearest training example of class $c$ in feature space. Over classes, the attack accuracy is the fraction of classes on which the attack succeeds.
+\end{definition}
+
+\subsection{The attacker's problem}
+
+\[
+\x^\star=\argmin_{\x}\ \big(1-F_c(\x)\big)+\lambda\,\mathcal{R}(\x),
+\]
+or, with a generator $G$ trained on public data,
+\[
+\mathbf{w}^\star=\argmin_{\mathbf{w}}\ -\log F_c\big(G(\mathbf{w})\big)+\lambda\,\mathcal{R}_G(\mathbf{w}),\qquad \x^\star=G(\mathbf{w}^\star),
+\]
+with $\mathcal{R}$ a smoothness or total-variation prior \citep{fredrikson2015model} and $\mathcal{R}_G$ a realism term for the generator \citep{zhang2020secret}. Without a prior the problem is ill-posed for deep networks: its maximizers include adversarial noise, which is classified as $c$ with high confidence but looks like nothing.
+
+\subsection{Limitations of the formal definition}
+
+\begin{itemize}[leftmargin=1.5em]
+  \item \textbf{Success is another model's opinion.} Definition~\ref{def:inversion} delegates the judgment to $E$. Features shared by $E$ and the target, or a weak $E$, inflate or deflate the result; the evaluator is part of the threat model, as the judge is in Section~\ref{sec:jailbreak}.
+  \item \textbf{Representative is not individual.} A reconstruction of a typical member of class $c$ may reveal population knowledge rather than a training record. The distinction disappears only when a class corresponds to one person.
+  \item \textbf{The prior can do the work.} With a generator trained on public data, part of the reconstruction comes from the prior, not from the target model. A fair evaluation compares with what the prior alone produces for class $c$, and the definition does not require this.
+\end{itemize}
+
+%==========================================================================
+\section{Gradient inversion}\label{sec:gradinv}
+
+\subsection{Informal definition}
+
+In federated learning, the server (or anyone who observes the updates) reconstructs a client's private training batch from the gradient or model update the client sent.
+
+\subsection{Formal definition}
+
+\threatmodel{confidentiality of the client's local data.}{an honest-but-curious server: the current parameters $\btheta$, the architecture, and often the batch size and number of local steps.}{observe the client's update; no modification of the protocol.}
+
+\begin{definition}[Gradient inversion; formulated here]\label{def:gradinv}
+A client holds a batch $\{(\x_i,y_i)\}_{i=1}^{b}$ and sends $\mathbf{g}=\frac1b\sum_{i}\nabla_{\btheta}\Loss(\btheta;\x_i,y_i)$, or the update $\Delta\btheta$ after several local steps. An inversion attack returns $\{\hat\x_i\}_{i=1}^{b}$. Because averaging is permutation-invariant, its reconstruction error is
+\[
+\mathrm{err}=\min_{\sigma\in\mathfrak{S}_b}\ \frac1b\sum_{i=1}^{b}d\big(\x_i,\hat\x_{\sigma(i)}\big),
+\]
+for an image distance $d$ (MSE, or PSNR in its place). The attack succeeds at level $\eta$ if $\mathrm{err}\le\eta$, or per sample if $d(\x_i,\hat\x_{\sigma(i)})\le\eta$ for a given $i$.
+\end{definition}
+
+\subsection{The attacker's problem}
+
+The original formulation matches gradients in Euclidean distance \citep{zhu2019deep},
+\[
+(\x^\star,y^\star)=\argmin_{\x',y'}\ \big\|\nabla_{\btheta}\Loss(\btheta;\x',y')-\mathbf{g}\big\|_2^2 ,
+\]
+and the formulation of \citet{geiping2020inverting} matches directions,
+\[
+\x^\star=\argmin_{\x'\in[0,1]^d}\ 1-\cos\big(\nabla_{\btheta}\Loss(\btheta;\x',y),\mathbf{g}\big)+\lambda\,\mathrm{TV}(\x').
+\]
+The second form matches only the direction of the gradient, constrains the search to the input domain, and adds total variation as an image prior. Labels can often be read analytically from the last-layer gradient, which removes $y'$ from the search (see the discussion in \citealp{geiping2020inverting}).
+
+\subsection{Limitations of the formal definition}
+
+\begin{itemize}[leftmargin=1.5em]
+  \item \textbf{Pixel metrics do not measure privacy.} PSNR and MSE do not track whether a reconstruction is recognizable; \citet{geiping2020inverting} report PSNR while noting that it does not correlate perfectly with visual success. A semantically faithful but shifted image can score worse than a blurred one.
+  \item \textbf{Averages hide breaches.} Recovering one image out of a hundred is a privacy failure, yet the batch-averaged error in Definition~\ref{def:gradinv} can still be large. The per-sample criterion is the relevant one for privacy.
+  \item \textbf{Identifiability.} For large batches or many local steps, different batches can produce the same update, so \enquote{the} reconstruction is not defined, and a close match may be to a different plausible input.
+  \item \textbf{Honest-but-curious only.} A server that modifies $\btheta$ or the architecture to make inversion easier is a strictly stronger adversary and is outside this definition.
+\end{itemize}
+
+%==========================================================================
+\section{Training data extraction}\label{sec:extraction}
+
+\subsection{Informal definition}
+
+The attacker interacts with a generative model and recovers verbatim sequences from its training data.
+
+\subsection{Formal definition}
+
+\threatmodel{confidentiality of verbatim training content, especially content that appears in few documents.}{black-box query access; the ability to compute sequence likelihoods; a reference model or compressor for comparison.}{generate from the model with chosen prefixes and decoding strategies.}
+
+\begin{definition}[Extractable string and $k$-eidetic memorization; after \citealp{carlini2021extracting}]\label{def:extraction}
+A string $s$ is extractable from a language model $f_{\btheta}$ if there is a prefix $c$ such that
+\[
+s=\argmax_{s':\,|s'|=N}\ f_{\btheta}(s'\mid c),
+\]
+where in practice the intractable argmax is replaced by the decoding strategy used by the model (for example, greedy decoding). The string is $k$-eidetic memorized if it is extractable and appears in at most $k$ training examples, $|\{\x\in S:\ s\subseteq\x\}|\le k$. An extraction attack outputs a set of candidate strings; it is measured by how many are memorized, how long they are, and how small their $k$ is.
+\end{definition}
+
+\subsection{The attacker's problem}
+
+The attack reduces to membership inference over the model's own samples. The attacker generates a large candidate set $\mathcal{G}$ (top-$n$ sampling, decaying temperature, or prefixes from Internet text) and ranks each candidate by a score that is high when the target model finds it unusually likely relative to a reference, such as the ratio of log-perplexities under the target and a smaller model, or of the log-perplexity to the zlib entropy \citep{carlini2021extracting}. The output is the top of the ranking. The ideal problem, finding all extractable strings with small $k$, is not posed explicitly; generation provides recall and ranking provides precision.
+
+\subsection{Limitations of the formal definition}
+
+\begin{itemize}[leftmargin=1.5em]
+  \item \textbf{Prompts can carry the answer.} With unrestricted prefixes, a prompt such as \enquote{repeat the following sentence: \ldots} makes any string extractable. \citet{carlini2021extracting} acknowledge this corner case and avoid it by using short prefixes, which is a restriction outside the definition.
+  \item \textbf{Depends on the sampler.} Replacing the argmax by a decoding strategy makes extractability a property of the model together with its decoder; a string can be extractable with beam search and not with greedy decoding.
+  \item \textbf{Verbatim only.} Paraphrased or approximately reproduced content is not covered, although it can carry the same private information.
+  \item \textbf{$k$ counts documents.} A string repeated many times inside one document has $k=1$; the severity scale therefore depends on what counts as an example.
+  \item \textbf{Verification needs the training data.} Confirming that a candidate is memorized requires access to the training set, which the attacker usually lacks, so reported results are lower bounds confirmed with the model owner's cooperation.
+\end{itemize}
+
+%==========================================================================
+\section{Model stealing}\label{sec:stealing}
+
+\subsection{Informal definition}
+
+The attacker queries a deployed model and builds a copy, either to avoid paying for it or to obtain a white-box surrogate for further attacks.
+
+\subsection{Formal definition}
+
+\threatmodel{confidentiality of the model itself: its functionality or its parameters.}{task domain knowledge, possibly the architecture, and auxiliary unlabeled data.}{a budget of $Q$ queries returning labels, top-$k$ scores, full scores, or logits.}
+
+\begin{definition}[Extraction goals; after \citealp{jagielski2020high}]\label{def:stealing}
+Let $O$ be the victim oracle and $\hat O=\mathcal{A}(O)$ the extracted model.
+\begin{itemize}[leftmargin=1.5em]
+  \item \emph{Functionally equivalent extraction:} $\hat O(\x)=O(\x)$ for all $\x\in\X$.
+  \item \emph{Fidelity extraction:} for a distribution $\D_F$ over $\X$ and a similarity $S$, maximize $\Pr_{\x\sim\D_F}\big[S(\hat O(\x),O(\x))\big]$; with label agreement, $S(p_1,p_2)=\ind[\argmax p_1=\argmax p_2]$.
+  \item \emph{Task accuracy extraction:} for the task distribution $\D_A$, maximize $\Pr_{(\x,y)\sim\D_A}\big[\argmax\hat O(\x)=y\big]$.
+\end{itemize}
+Exact extraction, identical architecture and weights, is not achievable for ReLU networks from input-output access, because rescaling a neuron's incoming and outgoing weights or permuting hidden units leaves the function unchanged; the best possible outcome is a member of the victim's equivalence class.
+\end{definition}
+
+\subsection{The attacker's problem}
+
+For models that can be solved exactly, extraction is a system of equations. For binary logistic regression each score gives $\sigma^{-1}(F(\x))=\mathbf{w}^\top\x+b$, so $d+1$ queries in general position determine $(\mathbf{w},b)$ \citep{tramer2016stealing}; for ReLU networks, the critical points where neurons switch on or off reveal the weights layer by layer \citep{carlini2020cryptanalytic,jagielski2020high}. For deep networks the problem is learning-based:
+\[
+\min_{\tilde\btheta}\ \sum_{i=1}^{Q}\ell\big(\tilde f_{\tilde\btheta}(\x_i),O(\x_i)\big),
+\]
+where the attacker also chooses the transfer set $\{\x_i\}$, adaptively or from natural data of another distribution \citep{orekondy2019knockoff,papernot2017practical}.
+
+\subsection{Limitations of the formal definition}
+
+\begin{itemize}[leftmargin=1.5em]
+  \item \textbf{Fidelity depends on $\D_F$.} High agreement on natural data says little about agreement off the data manifold, which is where transfer attacks operate. The goal is meaningful only together with the distribution it is measured on.
+  \item \textbf{The strongest goal is not verifiable.} There are depth-2 ReLU networks that require a number of queries exponential in their width to extract functionally, and deciding whether two given networks are functionally equivalent is NP-hard \citep{jagielski2020high}.
+  \item \textbf{Learning cannot reach full fidelity.} Training nondeterminism alone limits agreement: in the experiments of \citet{jagielski2020high}, even a copy trained with the victim's data, initialization and batch order did not exceed about 94\% test fidelity.
+  \item \textbf{Cost is outside the goal.} The definitions do not include the query budget, the information returned per query, or detectability, all of which decide whether an extraction is practical.
+\end{itemize}
+
+%==========================================================================
+\section*{Summary}
+\addcontentsline{toc}{section}{Summary}
+
+\begin{table}[h]
+\centering
+\small
+\renewcommand{\arraystretch}{1.15}
+\begin{tabularx}{\textwidth}{@{}l l l X X@{}}
+\toprule
+Attack & Phase & Property & Typical access & Problem type \\
+\midrule
+Evasion & inference & integrity & gradients to none & budget or min-cost optimization \\
+Jailbreak & inference & integrity & weights to judge verdict & discrete budget optimization of a surrogate \\
+Prompt injection & inference & integrity & data channel only & template search; optimization when scores exist \\
+Availability poisoning & training & availability & training algorithm & bilevel optimization \\
+Targeted poisoning & training & integrity & surrogate model & bilevel, replaced by collision or gradient matching \\
+Backdoor & training & integrity & data, updates or model & bilevel that collapses for dirty labels \\
+Membership inference & inference & confidentiality & scores or labels & hypothesis test \\
+Attribute inference & inference & confidentiality & scores or representation & MAP estimation \\
+Model inversion & inference & confidentiality & gradients or scores & regularized input optimization \\
+Gradient inversion & training (FL) & confidentiality & shared gradients & gradient matching \\
+Data extraction & inference & confidentiality & generation and likelihoods & generation plus membership ranking \\
+Model stealing & inference & confidentiality & queries & equation solving or distillation \\
+\bottomrule
+\end{tabularx}
+\caption{The attacks of this compendium. \enquote{Phase} is when the attacker acts; gradient inversion acts during federated training but leaves the model unchanged.}
+\end{table}
+
+\bibliographystyle{apalike}
+\bibliography{referencesmerged}
+\end{document}
