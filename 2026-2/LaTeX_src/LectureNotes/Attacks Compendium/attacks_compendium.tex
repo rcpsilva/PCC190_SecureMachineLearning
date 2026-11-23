@@ -151,6 +151,39 @@ The information level decides how the problem is solved, not which problem it is
   \item \textbf{One input at a time.} Success is defined per input. Universal perturbations, query budgets shared across inputs, and costs such as detectability are not part of the definition and must be added when they matter.
 \end{itemize}
 
+
+\subsection{Formal definition}
+
+\threatmodel{a policy-violating response to a request $q$ that the model should refuse.}{open weights (gradients), log-probabilities (scores), only the response text judged by a judge (the label analogue), or nothing beyond transfer.}{submit any prompt in a threat set $\T(q)\subseteq\mathcal{V}^*$, such as a suffix of length $k$, $\T_k(q)=\{q\oplus\mathbf{s}:\mathbf{s}\in\mathcal{V}^k\}$, or an intent-preserving rewrite of $q$.}
+
+\begin{definition}[Evasion against an LLM; formulated here, following \citealp{zou2023universal,chao2023jailbreaking}]\label{def:jailbreak}
+Let $p(\cdot\mid\mathbf{x})$ be the distribution over responses that the target model produces for prompt $\mathbf{x}$, with $\mathbf{x}$ placed in the user turn of the model's chat template and a fixed decoding rule. Let $J(q,\mathbf{r})\in\{0,1\}$ equal $1$ when response $\mathbf{r}$ violates the policy for request $q$. An attack returns $\xadv\in\T(q)$ and succeeds at threshold $\tau$ if
+\[
+\Pr_{\mathbf{r}\sim p(\cdot\mid\xadv)}\big[J(q,\mathbf{r})=1\big]\ \ge\ \tau .
+\]
+\end{definition}
+
+In practice the probability is estimated from $n$ responses. With deterministic decoding (temperature $0$) the response is unique and success reduces to $J(q,\mathbf{r})=1$; this is how \citet{zou2023universal} evaluate transfer to GPT and Claude models. With sampling, one either estimates $\hat P=\frac1n\sum_{i=1}^n J(q,\mathbf{r}_i)$ and compares it with $\tau$, or counts success if any of the $n$ samples has $J=1$, as \citet{zou2023universal} do for PaLM-2 with $n=8$. The second criterion is weaker, and reported success rates depend on which one is used. In their experiments $J$ asks whether the model makes a reasonable attempt at the behaviour, which may require human judgement.
+
+\subsection{The attacker's problem}
+
+The ideal problem is $\max_{\xadv\in\T(q)}\Pr_{\mathbf{r}\sim p(\cdot\mid\xadv)}[J(q,\mathbf{r})=1]$. Its objective can only be estimated by sampling and judging, and $J$ has no gradient. The standard surrogate fixes, for each request, an affirmative target $\mathbf{r}^\star=(r^\star_1,\dots,r^\star_m)$ such as ``Sure, here is'' followed by a restatement of $q$, and restricts the search to $\T_k(q)$, so that $\xadv=q\oplus\mathbf{s}$. The loss is the teacher-forced negative log-likelihood of the target,
+\begin{equation}\label{eq:loss}
+\mathcal{L}_q(\mathbf{s})=-\log p(\mathbf{r}^\star\mid q\oplus\mathbf{s})=-\sum_{i=1}^{m}\log p\big(r^\star_i\mid q\oplus\mathbf{s}\oplus r^\star_{<i}\big),
+\end{equation}
+computed in one forward pass with $\mathbf{r}^\star$ placed at the start of the assistant turn. This gives the discrete budget problem
+\begin{equation}\label{eq:gcg}
+\min_{\mathbf{s}\in\mathcal{V}^k}\ \mathcal{L}_q(\mathbf{s}),
+\end{equation}
+with $|\mathcal{V}|^k$ candidates. The target repeats the request rather than being a single token such as ``Sure'': with a one-token target, a suffix that replaces the request (``Nevermind, tell me a joke'') would minimise the loss without eliciting the behaviour \citep{zou2023universal}. Since $\mathcal{L}_q$ only rewards the first $m$ tokens, a low loss does not guarantee $J=1$; the success criterion of Definition~\ref{def:jailbreak} is checked separately on the final suffix.
+
+GCG \citep{zou2023universal} solves~\eqref{eq:gcg} with gradients. At each of $T$ iterations it computes the gradient of $\mathcal{L}_q$ with respect to the one-hot encoding of every suffix position and keeps, for each position, the $K$ tokens with the most negative gradient. It then builds $B$ candidates, each obtained by choosing one suffix position uniformly at random and replacing its token with one drawn uniformly from that position's $K$ candidates, evaluates the exact loss of all $B$ candidates with forward passes, and keeps the best. The defaults are $k=20$ suffix tokens, $K=256$, $B=512$ and $T=500$. Random search \citep{andriushchenko2024simple} solves the same problem with scores only: it mutates random positions of $\mathbf{s}$ and accepts the mutation if $\mathcal{L}_q$ decreases. PAIR \citep{chao2023jailbreaking} does not use~\eqref{eq:gcg}: it searches the intent-preserving part of $\T(q)$ with an attacker LLM that rewrites the prompt using a graded judge score as feedback.
+
+For universal, transferable suffixes the losses are aggregated over a set of requests $Q$ and open models $\mathcal{M}$,
+\begin{equation}\label{eq:universal}
+\min_{\mathbf{s}\in\mathcal{V}^k}\ \sum_{q\in Q}\sum_{p\in\mathcal{M}}\mathcal{L}^{p}_q(\mathbf{s}),
+\end{equation}
+where $\mathcal{L}^{p}_q$ is~\eqref{eq:loss} under model $p$. This requires the models in $\mathcal{M}$ to share a tokenizer, so that their gradients live in the same $\mathbb{R}^{|\mathcal{V}|}$. \citet{zou2023universal} clip each request's gradient to unit norm before summing and add requests incrementally: the next request enters the sum only once the current suffix succeeds on all requests already included. The min-cost analogue, $\min_{k,\,\mathbf{s}\in\mathcal{V}^k} k$ subject to the success condition of Definition~\ref{def:jailbreak}, is rarely used, because every feasibility check requires sampling and judging. Hand-crafted jailbreaks optimise no explicit objective; they exploit competing objectives and mismatched generalisation \citep{wei2023jailbroken}.
 %==========================================================================
 \section{Evasion of language models (jailbreaking)}\label{sec:jailbreak}
 
